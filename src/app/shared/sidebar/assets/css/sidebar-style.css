@@ -1,0 +1,30 @@
+
+.aside-content{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.aside-content button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background-color: white;
+    border: #EBECF2;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: border 0.3s ease;
+    width: 100%;
+}
+
+.aside-content button:hover{
+    border: #EBECF2;
+    background-color: #EBECF2;
+}
+
+.button-img{
+    width: 24px;
+    height: 24px;
+}

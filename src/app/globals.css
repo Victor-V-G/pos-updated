@@ -1,0 +1,65 @@
+
+/*Page.tsx*/
+
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,700&display=swap');
+
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+html{
+    font-family: 'General Sans', sans-serif;
+    height: 100%;
+}
+
+body{
+    min-height: 100%;
+}
+
+.grid-container{
+    display: grid;
+    height: 100vh;
+    grid-template-areas: 
+        "aside header header"
+        "aside main main"
+        "aside footer footer";
+    grid-template-columns: 270px 1fr;
+    grid-template-rows: 80px auto 80px;
+}
+
+.aside{
+    display: grid;
+    grid-area: aside;
+    background-color: #fff;
+}
+
+.header{
+    display: grid;
+    grid-area: header;
+    background-color: #EBECF2;
+}
+
+.main{
+    display: grid;
+    grid-area: main;
+    background-color: #EBECF2;
+}
+
+.footer{
+    display: grid;
+    grid-area: footer;
+    background-color: #EBECF2;
+}
+
+@media (min-width: 120px){
+    .grid-container{
+        grid-template-areas: 
+            "aside header header"
+            "aside main main"
+            "aside footer footer";
+        grid-template-rows: 80px auto 80px;
+    }
+}
+
