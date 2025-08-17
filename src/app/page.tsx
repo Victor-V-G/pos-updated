@@ -36,7 +36,6 @@ export default function Home() {
           {/*--------------------------------------------------*/}
 
           <header className="header">
-            header
           </header>
 
           {/*-----------------Carga de Modals------------------*/}
@@ -76,7 +75,6 @@ export default function Home() {
           {/*--------------------------------------------------*/}
 
           <footer className="footer">
-            footer
           </footer>
 
 

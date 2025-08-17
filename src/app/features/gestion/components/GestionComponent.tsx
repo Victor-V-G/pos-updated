@@ -1,7 +1,11 @@
 
+
 export const GestionComponent = () => {
+
     return (
-        <h1>GESTION</h1>
+        <>
+            <h1>MENU DE GESTION</h1>
+        </>
     )
 }
 
