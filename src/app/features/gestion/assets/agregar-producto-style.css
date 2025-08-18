@@ -1,0 +1,48 @@
+
+.agregar-producto-style{
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 90%;
+    height: 100%;
+    border-radius: 20px;
+    margin-left: 5%;
+    text-align: center;
+}
+
+.agregar-producto-style form{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.agregar-producto-style input{
+    width: 100%;
+    height: 40px;
+    border-radius: 5px;
+    border: 1px solid #D1D5DB;
+    padding-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+}
+
+.agregar-producto-style button{
+    width: 100%;
+    height: 50px;
+    background-color: #EBECF2;
+    color: black;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.agregar-producto-style button:hover{
+    background-color: #D1D5DB;
+    border: #EBECF2;
+}

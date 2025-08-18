@@ -7,6 +7,8 @@ import GestionComponent from "../components/GestionComponent";
 
 export const GestionModals = ({OpenManager} : ModalsInterfaceProps) => {
     
+   
+
     const [OpenManagerLogin, setOpenManagerLogin] = useState(true)
 
     useEffect(() => {
