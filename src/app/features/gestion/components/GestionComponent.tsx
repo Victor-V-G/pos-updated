@@ -1,6 +1,6 @@
 import { useState } from "react"
 import AgregarProductoModals from "../modals/AgregarProductoModals"
-
+import '../assets/gestion-component-style.css'
 
 
 
@@ -14,26 +14,34 @@ export const GestionComponent = () => {
         return (
             <>
 
-                <header>
-                    <h1>MENU DE GESTION</h1>
-                </header>
-                
-                <main>
-                    
-                    <button
-                        onClick={()=>{
-                            setOpenManagerAgregarProducto(true);
-                            setOpenManagerGestionComponent(false);
-                        }}>
-                        <span>AGREGAR PRODUCTO</span>
-                    </button>
+                <div className="gestion-component-style">
 
-                    <button>
-                        <span>GESTIONAR INVENTARIO</span>
-                    </button>
+                    <header>
+                        <h1>MENU DE GESTION</h1>
+                    </header>
                     
-                </main>
+                    <main>
 
+                        <nav>
+
+                            <button
+                                onClick={()=>{
+                                    setOpenManagerAgregarProducto(true);
+                                    setOpenManagerGestionComponent(false);
+                                }}>
+                                <span>AGREGAR PRODUCTO</span>
+                            </button>
+
+                            <button>
+                                <span>GESTIONAR INVENTARIO</span>
+                            </button>
+
+                        </nav>
+                        
+                    </main>
+
+                </div>
+                    
             </>
         )
 
@@ -46,7 +54,7 @@ export const GestionComponent = () => {
 
                 <AgregarProductoModals
                         OpenManager={OpenManagerAgregarProducto}
-                        setOpenManager={()=>setOpenManagerAgregarProducto}
+                        setOpenManager={()=>setOpenManagerAgregarProducto(false)}
                         OpenManagerSetter={OpenManagerGestionComponent}
                         SetOpenManagerGestionComponentSetter={setOpenManagerGestionComponent}
                 />

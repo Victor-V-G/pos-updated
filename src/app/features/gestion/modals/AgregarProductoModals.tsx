@@ -2,7 +2,7 @@ import { GestionModalsSetters } from '@/app/shared/interfaces/gestion/GestionMod
 import '../assets/agregar-producto-style.css'
 import { useEffect } from 'react';
 
-export const AgregarProductoModals = ({OpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => {
+export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => {
 
     if (OpenManager == false) {
         return null
@@ -14,17 +14,22 @@ export const AgregarProductoModals = ({OpenManager, SetOpenManagerGestionCompone
         }, [])
     }
 
+
     return (
         <>
             <div className='agregar-producto-style'>
 
-                <header>
-                    <h1>REGISTRAR PRODUCTO</h1>
-                </header>
-
                 <main>
+                    
+                    <section className='section-title-style'>
+                        
+                        <div>
+                            <h1>REGISTRAR PRODUCTO</h1> <br />
+                        </div>
+                        
+                    </section> <br />
 
-                    <form>
+                    <form className='agregar-form'>
 
                         <span>NOMBRE DEL PRODUCTO</span> <br />
                         <input 
@@ -50,7 +55,10 @@ export const AgregarProductoModals = ({OpenManager, SetOpenManagerGestionCompone
                             name="Stock"
                         /> <br />
 
-                        <button>
+                        <button
+                            onClick={(e)=>{
+                                e.preventDefault();
+                            }}>
                             <span>REGISTRAR</span>
                         </button>
 
@@ -58,7 +66,21 @@ export const AgregarProductoModals = ({OpenManager, SetOpenManagerGestionCompone
 
                 </main>
                 
+                <div className='div-modals-cerrar'>
+
+                        <button 
+                            className='modals-cerrar'
+                                onClick={()=>{
+                                    setOpenManager(false);
+                                    SetOpenManagerGestionComponentSetter(true);
+                            }}>
+                            <span>VOLVER ATRAS</span>
+                        </button>
+
+                </div>
+                
             </div>
+
         </>
     )
 }

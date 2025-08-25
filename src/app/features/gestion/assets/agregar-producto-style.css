@@ -1,38 +1,95 @@
 
 .agregar-producto-style{
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    width: 90%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
-    border-radius: 20px;
-    margin-left: 5%;
-    text-align: center;
+    /* Fondo negro semitransparente, para oscurecer */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Blur fuerte para difuminar TODO lo que está detrás */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    flex-direction: column;
+    
 }
 
-.agregar-producto-style form{
+.agregar-producto-style main{
+    background-color: #D1D5DB;
+    width: 50%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom: 15px;
+    justify-content: space-between;
+
+}
+
+
+/*---------PARTE SUPERIOR-----------*/
+.section-title-style{
     width: 100%;
+    border-radius: 10px;
+    background-color: #2d3748;
+    color: #EBECF2;
+    display: flex;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+/* TEXTO LEYENDA */
+.section-title-style div{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+}
+/*-----------------------------------*/
+
+
+/*----------PARTE INFERIOR-----------*/
+.agregar-producto-style form{
+    width: 70%;
+    margin-left: 15%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    margin-bottom: 5%;
 }
 
 .agregar-producto-style input{
+    font-size: 16px;
+    outline: none;
+    padding: 10px 15px;
+    display: block;
     width: 100%;
-    height: 40px;
-    border-radius: 5px;
-    border: 1px solid #D1D5DB;
-    padding-left: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 2px;
+    border: none;
+    border-radius: 7px;
+    border: 2px solid #999;
+    position: relative;
 }
 
-.agregar-producto-style button{
+.agregar-producto-style input:focus{
+    border-color: #3679ff;
+}
+
+.agregar-producto-style input:nth-of-type(even){
+    background-color: #f8f9fa;
+}
+
+.agregar-producto-style input:nth-of-type(odd){
+    background-color: #e9ecef;
+}
+
+.agregar-form button{
     width: 100%;
     height: 50px;
     background-color: #EBECF2;
@@ -42,7 +99,31 @@
     cursor: pointer;
 }
 
-.agregar-producto-style button:hover{
+.agregar-form button:hover{
     background-color: #D1D5DB;
     border: #EBECF2;
 }
+/*-----------------------------------*/
+
+
+/* BOTON CERRAR */
+.div-modals-cerrar{
+    display: flex;
+    justify-content: flex-end;
+    width: 10%;
+}
+
+.div-modals-cerrar button{
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #2d3748;
+    color: white;
+    cursor: pointer;
+}
+
+.div-modals-cerrar button:hover {
+  background: #1a202c;
+}
+/*-----------------------------------*/
