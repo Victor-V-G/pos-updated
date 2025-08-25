@@ -1,0 +1,35 @@
+import { GestionModalsSetters } from "@/app/shared/interfaces/gestion/GestionModalsSetters";
+import { useEffect } from "react";
+
+export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => { 
+
+    if (OpenManager == false){
+        return null
+    }
+
+    if (OpenManager == true){
+        useEffect(() => {
+            SetOpenManagerGestionComponentSetter(false);
+        }, [])
+    }
+
+    return (
+
+        <>
+            <div>hola</div>
+            <button 
+                onClick={()=>{
+                    setOpenManager(false);
+                    SetOpenManagerGestionComponentSetter(true);
+                }}>
+                <span>VOLVER ATRAS</span>
+            </button>
+        </>
+
+    )
+
+
+
+}
+
+export default GestionarProductosModals;

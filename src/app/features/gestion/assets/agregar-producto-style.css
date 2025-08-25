@@ -56,6 +56,7 @@
 
 /*----------PARTE INFERIOR-----------*/
 .agregar-producto-style form{
+    margin-top: 10px;
     width: 70%;
     margin-left: 15%;
     display: flex;
@@ -63,9 +64,16 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 5%;
+    position: relative;
 }
 
-.agregar-producto-style input{
+.input-box {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px; 
+}
+
+.agregar-form input{
     font-size: 16px;
     outline: none;
     padding: 10px 15px;
@@ -73,35 +81,46 @@
     width: 100%;
     border: none;
     border-radius: 7px;
-    border: 2px solid #999;
-    position: relative;
+    border: 2px solid #1a202c;
+    background: transparent;
+    color: #2d3748;
 }
 
-.agregar-producto-style input:focus{
-    border-color: #3679ff;
+.agregar-form input:focus{
+    border: 2px solid #3679ff;
 }
 
-.agregar-producto-style input:nth-of-type(even){
-    background-color: #f8f9fa;
+.agregar-form label {
+    position: absolute;
+    top: 37%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #2d3748;
+    font-size: 20px;
+    pointer-events: none;
+    transition: .3s;
 }
 
-.agregar-producto-style input:nth-of-type(odd){
-    background-color: #e9ecef;
+.agregar-form input:focus ~ label,
+.agregar-form input:valid ~ label{
+    top: 0;
+    font-size: 16px;
+    padding: 0 10px;
+    background: #D1D5DB;
 }
 
 .agregar-form button{
     width: 100%;
     height: 50px;
-    background-color: #EBECF2;
-    color: black;
+    background-color: #2d3748;
+    color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 10px;
     cursor: pointer;
 }
 
 .agregar-form button:hover{
-    background-color: #D1D5DB;
-    border: #EBECF2;
+    background: #1a202c;
 }
 /*-----------------------------------*/
 

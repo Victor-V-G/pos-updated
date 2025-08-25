@@ -31,30 +31,42 @@ export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManag
 
                     <form className='agregar-form'>
 
-                        <span>NOMBRE DEL PRODUCTO</span> <br />
-                        <input 
-                            type="text"
-                            name="Nombre"
-                        /> <br />
+                        <div className='input-box'>
+                            <input 
+                                type="text"
+                                name="Nombre"
+                                required spellCheck="false"
+                            />
+                            <label>NOMBRE DEL PRODUCTO</label> <br />
+                        </div>
                         
-                        <span>CODIGO DE BARRAS</span> <br />
-                        <input 
-                            type="text" 
-                            name="CodigoDeBarras"
-                        /> <br />
+                        <div className='input-box'>
+                            <input 
+                                type="text" 
+                                name="CodigoDeBarras"
+                                required spellCheck="false"
+                            /> 
+                            <label>CODIGO DE BARRAS</label><br />
+                        </div>
                         
-                        <span>PRECIO</span> <br />
-                        <input 
-                            type="text" 
-                            name="Precio"
-                        /> <br />
-
-                        <span>STOCK</span> <br />
-                        <input 
-                            type="text" 
-                            name="Stock"
-                        /> <br />
-
+                        <div className='input-box'>
+                            <input 
+                                type="text" 
+                                name="Precio"
+                                required spellCheck="false"
+                            />
+                            <label>PRECIO</label> <br />
+                        </div>
+                        
+                        <div className='input-box'>
+                            <input 
+                                type="text" 
+                                name="Stock"
+                                required spellCheck="false"
+                            /> 
+                            <label>STOCK</label><br />
+                        </div>
+                        
                         <button
                             onClick={(e)=>{
                                 e.preventDefault();
@@ -70,9 +82,9 @@ export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManag
 
                         <button 
                             className='modals-cerrar'
-                                onClick={()=>{
-                                    setOpenManager(false);
-                                    SetOpenManagerGestionComponentSetter(true);
+                            onClick={()=>{
+                                setOpenManager(false);
+                                SetOpenManagerGestionComponentSetter(true);
                             }}>
                             <span>VOLVER ATRAS</span>
                         </button>

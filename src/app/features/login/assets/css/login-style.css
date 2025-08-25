@@ -36,15 +36,15 @@
 .main-login button{
     width: 50%;
     height: 50px;
-    background-color: #EBECF2;
-    color: black;
+    background-color: #2d3748;
+    color: white;
+    font-size: 15px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
 .main-login button:hover{
-    background-color: #D1D5DB;
-    border: #EBECF2;
+    background-color: #1a202c;
 }
 
