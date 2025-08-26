@@ -14,6 +14,7 @@ export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManag
         }, [])
     }
 
+    
 
     return (
         <>

@@ -1,5 +1,6 @@
 import { GestionModalsSetters } from "@/app/shared/interfaces/gestion/GestionModalsSetters";
 import { useEffect } from "react";
+import GestionProductosComponent from "../components/GestionarProductosComponent";
 
 export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => { 
 
@@ -16,7 +17,9 @@ export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenMa
     return (
 
         <>
-            <div>hola</div>
+
+            <GestionProductosComponent/>
+            
             <button 
                 onClick={()=>{
                     setOpenManager(false);
