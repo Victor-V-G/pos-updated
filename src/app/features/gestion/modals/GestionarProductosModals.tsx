@@ -27,6 +27,7 @@ export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenMa
                 }}>
                 <span>VOLVER ATRAS</span>
             </button>
+
         </>
 
     )
