@@ -2,7 +2,7 @@ import { ProductoInterface } from '@/app/shared/interfaces/producto/ProductoInte
 import '../assets/agregar-producto-style.css'
 import { useState } from 'react';
 import { registrarProductoPromise } from '@/app/firebase/Promesas';
-import { error } from 'console';
+
 
 const InitialStateProducto : ProductoInterface = {
     NombreProducto : "",

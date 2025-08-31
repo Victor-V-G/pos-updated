@@ -1,4 +1,5 @@
 
 export interface ModificarProductoInterface {
-    ObtenerIndexModificar : number
+    ObtenerIndexModificar : number,
+    setRefrescarProductos : (value : boolean) => void;
 }

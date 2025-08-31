@@ -15,8 +15,7 @@ export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManag
         }, [])
     }
 
-
-
+    
     return (
         <>
             <div className='agregar-producto-style'>

@@ -41,6 +41,19 @@ export const obtenerIDProductosPromise = async () => {
 }
 
 
+export const modificarProductoPromise = async (idGet : IDDocumentosInterface, productoModificadoGet : ProductoInterface) => {
+    const docRef = doc(db, "Productos", idGet.IDDocumento);
+        await updateDoc(docRef, {
+            NombreProducto : productoModificadoGet.NombreProducto,
+            CodigoDeBarras : productoModificadoGet.CodigoDeBarras,
+            Precio : productoModificadoGet.Precio,
+            Stock : productoModificadoGet.Stock
+        });
+    console.log("PRODUCTO MODIFICADO CON ID: ", idGet.IDDocumento);
+}
+
+
+
 export const eliminarProductoPromise = async (idGet : IDDocumentosInterface) => {
     await deleteDoc(doc(db, "Productos", idGet.IDDocumento));
     console.log("PRODUCTO ELIMINADO CON ID: ", idGet.IDDocumento);

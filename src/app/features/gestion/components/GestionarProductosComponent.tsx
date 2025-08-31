@@ -1,4 +1,4 @@
-import { eliminarProductoPromise, obtenerProductosPromise } from "@/app/firebase/Promesas";
+import { obtenerProductosPromise } from "@/app/firebase/Promesas";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import { useEffect, useState } from "react";
 import ModificarProductoComponent from "./ModificarProductoComponent";
@@ -52,7 +52,10 @@ export const GestionProductosComponent = () => {
 
                                 <td>
 
-                                    <ModificarProductoComponent ObtenerIndexModificar={index}/>
+                                    <ModificarProductoComponent 
+                                        ObtenerIndexModificar={index}
+                                        setRefrescarProductos={setRefrescarProductos}
+                                    />
                                     
                                     <ElimiarProductoComponent 
                                         ObtenerIndexEliminar={index}
