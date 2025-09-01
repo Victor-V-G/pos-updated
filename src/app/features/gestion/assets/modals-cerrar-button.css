@@ -1,0 +1,21 @@
+
+.modals-cerrar-button {
+    display: flex;
+    justify-content: flex-end;
+    width: 15%;
+    margin-left: 42%;
+}
+
+.modals-cerrar-button button{
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #2d3748;
+    color: white;
+    cursor: pointer;
+}
+
+.modals-cerrar-button button:hover {
+  background: #1a202c;
+}

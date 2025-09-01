@@ -1,9 +1,8 @@
-import { obtenerIDProductosPromise } from "@/app/firebase/Promesas";
-import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface";
-import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface";
-import { useEffect, useState } from "react";
-import ModificarProductoModals from "../modals/ModificarProductoModals";
 
+import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface";
+import { useState } from "react";
+import ModificarProductoModals from "../modals/ModificarProductoModals";
+import '../assets/gestion-productos-table.css'
 
 
 export const ModificarProductoComponent = ({ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoInterface) => {
@@ -30,8 +29,8 @@ export const ModificarProductoComponent = ({ObtenerIndexModificar, setRefrescarP
 
         <>
 
-            {ObtenerIndexModificar}
             <button 
+                className="modificar-button"
                 onClick={()=>{
                     setOpenManager(true);
                 }}>

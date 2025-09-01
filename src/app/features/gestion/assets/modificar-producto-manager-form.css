@@ -1,0 +1,148 @@
+
+.modificar-producto-style{
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Fondo negro semitransparente, para oscurecer */
+    background-color: rgba(0, 0, 0, 0.5);
+    /* Blur fuerte para difuminar TODO lo que está detrás */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    flex-direction: column;
+    
+}
+
+.modificar-producto-style main{
+    background-color: #D1D5DB;
+    width: 50%;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom: 15px;
+    justify-content: space-between;
+
+}
+
+
+/*---------PARTE SUPERIOR-----------*/
+.section-title-style{
+    width: 100%;
+    border-radius: 10px;
+    background-color: #2d3748;
+    color: #EBECF2;
+    display: flex;
+    padding-bottom: 10px;
+    padding-top: 10px;
+}
+
+/* TEXTO LEYENDA */
+.section-title-style div{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+}
+/*-----------------------------------*/
+
+
+/*----------PARTE INFERIOR-----------*/
+.modificar-producto-style form{
+    margin-top: 10px;
+    width: 70%;
+    margin-left: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5%;
+    position: relative;
+}
+
+.input-box {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px; 
+}
+
+.modificar-form input{
+    font-size: 16px;
+    outline: none;
+    padding: 10px 15px;
+    display: block;
+    width: 100%;
+    border: none;
+    border-radius: 7px;
+    border: 2px solid #1a202c;
+    background: transparent;
+    color: #2d3748;
+}
+
+.modificar-form input:focus{
+    border: 2px solid #3679ff;
+}
+
+.modificar-form label {
+    position: absolute;
+    top: 37%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #2d3748;
+    font-size: 20px;
+    pointer-events: none;
+    transition: .3s;
+}
+
+.modificar-form input:focus ~ label,
+.modificar-form input:valid ~ label{
+    top: 0;
+    font-size: 16px;
+    padding: 0 10px;
+    background: #D1D5DB;
+}
+
+.modificar-form button{
+    width: 100%;
+    height: 50px;
+    background-color: #2d3748;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.modificar-form button:hover{
+    background: #1a202c;
+}
+/*-----------------------------------*/
+
+
+/* BOTON CERRAR */
+.div-modals-cerrar{
+    display: flex;
+    justify-content: flex-end;
+    width: 10%;
+}
+
+.div-modals-cerrar button{
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 10px;
+    background: #2d3748;
+    color: white;
+    cursor: pointer;
+}
+
+.div-modals-cerrar button:hover {
+  background: #1a202c;
+}
+/*-----------------------------------*/

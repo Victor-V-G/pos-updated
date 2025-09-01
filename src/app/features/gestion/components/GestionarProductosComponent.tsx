@@ -3,6 +3,7 @@ import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInte
 import { useEffect, useState } from "react";
 import ModificarProductoComponent from "./ModificarProductoComponent";
 import ElimiarProductoComponent from "./EliminarProductoComponent";
+import '../assets/gestion-productos-table.css'
 
 export const GestionProductosComponent = () => {
 
@@ -25,7 +26,7 @@ export const GestionProductosComponent = () => {
     return (
         <>
             
-            <table>
+            <table className="tabla-gestion-style">
 
                 <tbody>
 
