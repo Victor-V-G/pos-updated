@@ -60,10 +60,18 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
                     name="CodigoDeBarrasInput"
                     onChange={(e)=>{
                         handleCodigoDeBarrasInput(e.currentTarget.name, e.currentTarget.value)
-                        handleLlamarPromesaObtenerIDEspecifica();
+                        
                     }}
                 />
                 <label>INGRESE EL CODIGO DE BARRAS</label>
+                
+                <button
+                    onClick={(e)=>{
+                        e.preventDefault();
+                        handleLlamarPromesaObtenerIDEspecifica();
+                    }}>
+                    <span>BUSCAR</span>
+                </button>
 
             </form>
             
