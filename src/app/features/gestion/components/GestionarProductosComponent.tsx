@@ -4,12 +4,15 @@ import { useEffect, useState } from "react";
 import ModificarProductoComponent from "./ModificarProductoComponent";
 import ElimiarProductoComponent from "./EliminarProductoComponent";
 import '../assets/gestion-productos-table.css'
+import SearchModals from "../modals/SearchModals";
 
 export const GestionProductosComponent = () => {
 
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
 
     const [RefrescarProductos, setRefrescarProductos] = useState(false)
+
+    const [OpenManagerSearch, setOpenManagerSearch] = useState(false)
 
     useEffect(() => {
         obtenerProductosPromise().then((productoGet) => {
@@ -22,10 +25,26 @@ export const GestionProductosComponent = () => {
     }, [RefrescarProductos == true])
     
 
-
     return (
         <>
             
+            <section>
+
+                <button
+                    onClick={()=>{
+                        setOpenManagerSearch(true);
+                    }}>
+                    <span>BUSCAR PRODUCTO</span>
+                </button>
+
+            </section>
+
+            <SearchModals
+                OpenManager={OpenManagerSearch}
+                setOpenManager={setOpenManagerSearch}
+                setRefrescarProductos={setRefrescarProductos}
+            />
+
             <table className="tabla-gestion-style">
 
                 <tbody>

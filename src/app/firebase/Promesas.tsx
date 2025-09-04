@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -53,8 +53,27 @@ export const modificarProductoPromise = async (idGet : IDDocumentosInterface, pr
 }
 
 
-
 export const eliminarProductoPromise = async (idGet : IDDocumentosInterface) => {
     await deleteDoc(doc(db, "Productos", idGet.IDDocumento));
     console.log("PRODUCTO ELIMINADO CON ID: ", idGet.IDDocumento);
+}
+
+
+
+export const obtenerIDProductoSearchModificarPromise = async (campo : string, valor : string) => {
+    const DatosAPreguntar = query(collection(db, "Productos"), where(campo, "==", valor));
+    const querySnapshot = await getDocs(DatosAPreguntar);
+    if (querySnapshot.empty) {
+        alert("NO SE ENCONTRO EL PRODUCTO EN LA BASE DE DATOS");
+        return null;
+    }
+
+    const doc = querySnapshot.docs[0];
+    const idDocumentoGet : IDDocumentosInterface = {
+        IDDocumento: doc.id,
+    };
+    console.log("DOCUMENTO ENCONTRADO:")
+    console.log(idDocumentoGet)
+
+    return idDocumentoGet;
 }

@@ -15,7 +15,7 @@ const InitialStateProductoSeleccionadoForm : ProductoInterface = {
 
 export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoInterface) => {
 
-        /*-----------------------ALMACENAR DATOS RECUPERADOS DE LAS PROMISES----------------------*/
+    /*-----------------------ALMACENAR DATOS RECUPERADOS DE LAS PROMISES----------------------*/
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
     
     const [IDSRecuperados, setIDSRecuperados] = useState<IDDocumentosInterface[]>([])
