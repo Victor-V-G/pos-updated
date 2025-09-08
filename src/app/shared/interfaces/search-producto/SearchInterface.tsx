@@ -1,4 +1,5 @@
 
 export interface SearchInterface {
-    setRefrescarProductos : (value : boolean) => void;
+    RefrescarProductos : boolean;
+    setRefrescarProductos : (value : boolean) => void
 }

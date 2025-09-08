@@ -1,9 +1,10 @@
-import { modificarProductoPromise, obtenerIDProductosPromise, obtenerProductosPromise } from "@/app/firebase/Promesas"
+import { modificarProductoPromise, obtenerIDProductoSearchModificarPromise, searchObtenerProductoPorIdPromise } from "@/app/firebase/Promesas"
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface"
-import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface"
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
 import { useEffect, useState } from "react"
-import '../assets/modificar-producto-manager-form.css'
+import '../../assets/modificar-producto-manager-form.css'
+import { SearchModificarProductoInterface } from "@/app/shared/interfaces/search-producto/SearchModificarProductoInterface"
+
 
 const InitialStateProductoSeleccionadoForm : ProductoInterface = {
     NombreProducto : "",
@@ -13,87 +14,25 @@ const InitialStateProductoSeleccionadoForm : ProductoInterface = {
 }
 
 
-export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoInterface) => {
+export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRefrescarProductos} : SearchModificarProductoInterface) => {
+
 
     /*-----------------------ALMACENAR DATOS RECUPERADOS DE LAS PROMISES----------------------*/
-    const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
+    const [ProductoRecuperado, setProductoRecuperado] = useState<ProductoInterface[]>([])
     
-    const [IDSRecuperados, setIDSRecuperados] = useState<IDDocumentosInterface[]>([])
+    const [IDRecuperado, setIDRecuperado] = useState<IDDocumentosInterface[]>([])
     /*----------------------------------------------------------------------------------------*/
 
 
-    /*-------------------VERIFICAR QUE LOS DATOS SE OBTUVIERON DE LAS PROMISES-----------------*/
-    const [SeObtuvoProducto, setSeObtuvoProducto] = useState(false)
-    
-    const [SeObtuvoIDS, setSeObtuvoIDS] = useState(false)
+    /*------------------------SE VALIDA QUE SE OBTUVO EL PRODUCTO-----------------------------*/
+    const [SeObtuvo, setSeObtuvo] = useState(false)
     /*----------------------------------------------------------------------------------------*/
+
 
     /*-------------------------ALMACENA EL DATO SELECCIONADO A MODIFICAR----------------------*/
-    const [IDSeleccionadaModificar, setIDSeleccionadaModificar] = useState<IDDocumentosInterface[]>([])
-
     const [ProductoSeleccionadoForm, setProductoSeleccionadoForm] = useState(InitialStateProductoSeleccionadoForm)
     /*----------------------------------------------------------------------------------------*/
 
-
-
-    useEffect(() => {
-        obtenerProductosPromise().then((productoGet) => {
-            setProductosRecuperados(productoGet)
-            console.log("PRODUCTO RECUPERADO CORRECTAMENTE")
-            setSeObtuvoProducto(true)
-        }).catch((error) => {
-            alert("OCURRIO UN ERROR AL RECUPERAR LOS PRODUCTOS")
-            console.log(error)
-        })
-    }, [])
-    
-
-    useEffect(() => {
-      obtenerIDProductosPromise().then((idsDocumentosGet) => {
-        setIDSRecuperados(idsDocumentosGet);
-        console.log("IDS RECUPERADAS CORRECTAMENTE")
-        setSeObtuvoIDS(true)
-      }).catch((error) => {
-        alert("OCURRIO UN ERROR AL RECUPERAR LAS IDS")
-        console.log(error)
-      })
-    }, [])
-    
-
-    /*---------------------------HANDLE CARGAR FUNCIONES----------------------------*/
-    const handleCargarFunciones = () => {
-
-        /*-------------------------HANDLE RECUPERAR ID------------------------------*/
-        const IdSeleccionada = IDSRecuperados[ObtenerIndexModificar];
-            setIDSeleccionadaModificar([IdSeleccionada])
-            console.log(IdSeleccionada);
-            if (!IdSeleccionada) {
-                alert("LA ID SELECCIONADA NO FUE ENCONTRADA")
-                return
-            }
-        /*--------------------------------------------------------------------------*/
-
-        /*----------------------HANDLE SELECCIONAR PRODUCTO-------------------------*/
-        const ProductoSeleccionado = ProductosRecuperados[ObtenerIndexModificar];
-            setProductoSeleccionadoForm(ProductoSeleccionado)
-            console.log(ProductoSeleccionado)
-            if (!ProductoSeleccionado) {
-                alert("EL PRODUCTO SELECCIONADO NO FUE ENCONTRADO")
-                return
-            }
-        /*--------------------------------------------------------------------------*/
-        
-    }
-    /*------------------------------------------------------------------------------*/
-
-
-    /*----AQUI SE EJECUTA EL HANDLE UNA VEZ SE RECUPEREN TODOS LOS DATOS DE LAS PROMISE---*/
-    useEffect(() => {
-      if (SeObtuvoProducto == true && SeObtuvoIDS == true) {
-        handleCargarFunciones();
-      }
-    }, [ProductosRecuperados, IDSRecuperados])
-    /*------------------------------------------------------------------------------------*/
 
 
     /*--------------------HANDLE REESCRIBIR FORM------------------*/
@@ -105,9 +44,55 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
     /*-----------------------------------------------------------*/
 
 
+    const handleLlamarPromesaObtenerIDEspecifica = () => {
+        obtenerIDProductoSearchModificarPromise("CodigoDeBarras", ObtenerCodigoDeBarras).then((idRecuperadaDocumentosGet)=>{
+            setIDRecuperado(idRecuperadaDocumentosGet)
+        }).catch((error) => {
+            alert("OCURRIO UN ERROR AL RECUPERAR LA ID")
+            console.log(error)
+        })
+    }
+
+
+    useEffect(() => {
+      handleLlamarPromesaObtenerIDEspecifica();
+    }, [])
+
+
+    useEffect(() => {
+      searchObtenerProductoPorIdPromise(IDRecuperado[0]).then((productoGet) => {
+        setProductoRecuperado(productoGet)
+        setSeObtuvo(true)
+      }).catch((error) => {
+        console.log("SE PRODUJO UN ERROR AL RECUPERAR EL PRODUCTO MEDIANTE ID")
+        console.log(error)
+      })
+    }, [IDRecuperado])
+
+
+    const handleLlenarFormulario = () => {
+
+        if (ProductoRecuperado.length == 0) {
+            return;
+        }
+
+        const ProductoSeleccionado = ProductoRecuperado[0];
+        if (!ProductoSeleccionado) {
+            alert("EL PRODUCTO SELECCIONADO NO FUE ENCONTRADO")
+            return;
+        }
+
+        setProductoSeleccionadoForm(ProductoSeleccionado)
+    }
+    
+
+    useEffect(() => {
+      handleLlenarFormulario();
+    }, [SeObtuvo == true])
+    
     /*-------------------HANDLE LLAMAR A LA PROMESA DE MODIFICAR----------------*/
     const handleCallPromiseModificarProducto = () => {
-        modificarProductoPromise(IDSeleccionadaModificar[0], ProductoSeleccionadoForm).then(() => {
+        modificarProductoPromise(IDRecuperado[0], ProductoSeleccionadoForm).then(() => {
             alert("PRODUCTO MODIFICADO CORRECTAMENTE")
         }).catch((error) => {
             alert("OCURRIO UN ERROR AL MODIFICAR EL PRODUCTO")
@@ -125,7 +110,7 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
                 <section className='section-title-style'>
                         
                         <div>
-                            <h1>MODIFICAR PRODUCTO SEARCH</h1> <br />
+                            <h1>MODIFICAR PRODUCTO</h1> <br />
                         </div>
                         
                 </section> <br />
@@ -180,8 +165,8 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
                         className="modificar-form"
                         onClick={(e)=>{
                             e.preventDefault();
-                            handleCallPromiseModificarProducto();
                             setRefrescarProductos(true);
+                            handleCallPromiseModificarProducto();
                         }}>
                         <span>MODIFICAR PRODUCTO</span>
                     </button>
@@ -196,4 +181,4 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
 
 }
 
-export default ModificarProductoManagerFrom;
+export default SearchModificarProductoManagerForm;

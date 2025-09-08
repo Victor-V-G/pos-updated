@@ -1,9 +1,10 @@
-import { obtenerIDProductoSearchModificarPromise, obtenerProductosPromise } from "@/app/firebase/Promesas";
+import { obtenerProductosPromise } from "@/app/firebase/Promesas";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import { CodigoDeBarrasInputInterface } from "@/app/shared/interfaces/search-producto/CodigoDeBarrasInputInterface";
 import { useEffect, useState } from "react";
-import ModificarProductoComponent from "./ModificarProductoComponent";
 import { SearchInterface } from "@/app/shared/interfaces/search-producto/SearchInterface";
+import SearchModificarComponent from "./SearchModificarComponent";
+
 
 
 const InitialStateCodigoDeBarrasInput : CodigoDeBarrasInputInterface = {
@@ -11,7 +12,7 @@ const InitialStateCodigoDeBarrasInput : CodigoDeBarrasInputInterface = {
 }
 
 
-export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
+export const SearchComponent = ({RefrescarProductos, setRefrescarProductos} : SearchInterface) => {
 
 
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
@@ -37,14 +38,20 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
     }
 
 
+    useEffect(() => {
+        obtenerProductosPromise().then((productoGet) => {
+            setProductosRecuperados(productoGet)
+            console.log("PRODUCTO RECUPERADO CORRECTAMENTE")
+        }).catch((error) => {
+            alert("OCURRIO UN ERROR AL RECUPERAR LOS PRODUCTOS")
+            console.log(error)
+        })
+    }, [RefrescarProductos == true])
+
+
     const ProductoFiltrado = ProductosRecuperados.filter(ElementoProductoFiltrado => ElementoProductoFiltrado.CodigoDeBarras == CodigoDeBarrasInput.CodigoDeBarrasInput)
-{/* PROBLEMAS CON EL INDEX, RECUPERA MAL*/}
-                    
-    const handleLlamarPromesaObtenerIDEspecifica = () => {
-        obtenerIDProductoSearchModificarPromise("CodigoDeBarras", CodigoDeBarrasInput.CodigoDeBarrasInput);
-    }
-{/* PROBLEMAS CON EL INDEX, RECUPERA MAL*/}
-                    
+
+
     return (
 
         <>
@@ -52,8 +59,6 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
             <h1>COMPONENTE SEARCH</h1>
 
             <form>
-
-                {CodigoDeBarrasInput.CodigoDeBarrasInput}
 
                 <input 
                     type="number"
@@ -64,14 +69,6 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
                     }}
                 />
                 <label>INGRESE EL CODIGO DE BARRAS</label>
-                
-                <button
-                    onClick={(e)=>{
-                        e.preventDefault();
-                        handleLlamarPromesaObtenerIDEspecifica();
-                    }}>
-                    <span>BUSCAR</span>
-                </button>
 
             </form>
             
@@ -88,7 +85,7 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
                         <td>ACCIONES</td>
 
                     </tr>
-                    {/* PROBLEMAS CON EL INDEX, RECUPERA MAL*/}
+
                     {
 
                         ProductoFiltrado.map((productoFiltradoMap, index) =>(
@@ -102,8 +99,8 @@ export const SearchComponent = ({setRefrescarProductos} : SearchInterface) => {
 
                                 <td>
 
-                                    <ModificarProductoComponent
-                                        ObtenerIndexModificar={index}
+                                    <SearchModificarComponent
+                                        ObtenerCodigoDeBarras={CodigoDeBarrasInput.CodigoDeBarrasInput}
                                         setRefrescarProductos={setRefrescarProductos}
                                     />
 

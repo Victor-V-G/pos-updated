@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -60,20 +60,44 @@ export const eliminarProductoPromise = async (idGet : IDDocumentosInterface) => 
 
 
 
+
+
+
+
 export const obtenerIDProductoSearchModificarPromise = async (campo : string, valor : string) => {
+    const idRecuperadaDocumentosGet : IDDocumentosInterface[] = []
     const DatosAPreguntar = query(collection(db, "Productos"), where(campo, "==", valor));
     const querySnapshot = await getDocs(DatosAPreguntar);
-    if (querySnapshot.empty) {
-        alert("NO SE ENCONTRO EL PRODUCTO EN LA BASE DE DATOS");
-        return null;
+    
+    querySnapshot.forEach((doc) => {
+        const idDocumentoGet : IDDocumentosInterface = {
+            IDDocumento : doc.id
+        };
+        idRecuperadaDocumentosGet.push(idDocumentoGet);
+        console.log("ID DEL DOCUMENTO RECUPERADO MEDIANTE CODIGO DE BARRAS")        
+    });
+    return idRecuperadaDocumentosGet;
+}
+
+
+export const searchObtenerProductoPorIdPromise = async (idGet: IDDocumentosInterface) => {
+    let listadoObtenidoGet: ProductoInterface[] = [];
+
+    const docRef = doc(db, "Productos", idGet.IDDocumento);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+        let productoGet: ProductoInterface = {
+            NombreProducto: docSnap.data().NombreProducto,
+            CodigoDeBarras: docSnap.data().CodigoDeBarras,
+            Precio: docSnap.data().Precio,
+            Stock: docSnap.data().Stock
+        };
+        listadoObtenidoGet.push(productoGet);
+        console.log("PRODUCTO RECUPERADO MEDIANTE ID");
+    } else {
+        console.log("NO SE ENCONTRÓ EL PRODUCTO CON ESE ID");
     }
 
-    const doc = querySnapshot.docs[0];
-    const idDocumentoGet : IDDocumentosInterface = {
-        IDDocumento: doc.id,
-    };
-    console.log("DOCUMENTO ENCONTRADO:")
-    console.log(idDocumentoGet)
-
-    return idDocumentoGet;
-}
+    return listadoObtenidoGet;
+};

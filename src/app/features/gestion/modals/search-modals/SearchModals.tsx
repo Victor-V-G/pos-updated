@@ -1,8 +1,9 @@
-import { ModalsInterfaceProps } from "@/app/shared/interfaces/modals/ModalsInterfaceProps";
-import SearchComponent from "../components/SearchComponent";
-import { ExtendsModalsRefrescar } from "@/app/shared/interfaces/search-producto/ExtendsModalsRefrescar";
 
-export const SearchModals = ({OpenManager, setOpenManager, setRefrescarProductos} : ExtendsModalsRefrescar) => {
+import SearchComponent from "../../components/search/SearchComponent";
+import { SearchModalsInterface } from "@/app/shared/interfaces/search-producto/SearchModalsInterface";
+
+
+export const SearchModals = ({OpenManager, setOpenManager, RefrescarProductos, setRefrescarProductos} : SearchModalsInterface) => {
 
     if (OpenManager == false) {
         return null
@@ -14,6 +15,7 @@ export const SearchModals = ({OpenManager, setOpenManager, setRefrescarProductos
         <>
         
             <SearchComponent
+                RefrescarProductos={RefrescarProductos}
                 setRefrescarProductos={setRefrescarProductos}
             />
             

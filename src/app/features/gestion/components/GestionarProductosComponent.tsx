@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ModificarProductoComponent from "./ModificarProductoComponent";
 import ElimiarProductoComponent from "./EliminarProductoComponent";
 import '../assets/gestion-productos-table.css'
-import SearchModals from "../modals/SearchModals";
+import SearchModals from "../modals/search-modals/SearchModals";
 
 export const GestionProductosComponent = () => {
 
@@ -42,6 +42,7 @@ export const GestionProductosComponent = () => {
             <SearchModals
                 OpenManager={OpenManagerSearch}
                 setOpenManager={setOpenManagerSearch}
+                RefrescarProductos={RefrescarProductos}
                 setRefrescarProductos={setRefrescarProductos}
             />
 
