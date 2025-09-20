@@ -105,15 +105,16 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
     return (
 
         <>
-            <main>
 
-                <section className='section-title-style'>
+            <header className='header-title-style'>
                         
-                        <div>
-                            <h1>MODIFICAR PRODUCTO</h1> <br />
-                        </div>
-                        
-                </section> <br />
+                <div>
+                    <h1>MODIFICAR PRODUCTO</h1> <br />
+                </div>
+                    
+            </header>
+
+            <main>
 
                 <form className='modificar-form'>
 

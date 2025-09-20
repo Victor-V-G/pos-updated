@@ -8,8 +8,8 @@
     /* Fondo negro semitransparente, para oscurecer */
     background-color: rgba(0, 0, 0, 0.5);
     /* Blur fuerte para difuminar TODO lo que está detrás */
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -21,20 +21,21 @@
 .modificar-producto-style main{
     background-color: #D1D5DB;
     width: 50%;
-    border-radius: 10px;
+    height: 60%;
     display: flex;
     flex-direction: column;
     position: relative;
     margin-bottom: 15px;
     justify-content: space-between;
-
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 
 
 /*---------PARTE SUPERIOR-----------*/
-.section-title-style{
-    width: 100%;
-    border-radius: 10px;
+.modificar-producto-style .header-title-style{
+    width: 50%;
+    height: 10%;
     background-color: #2d3748;
     color: #EBECF2;
     display: flex;
@@ -43,7 +44,7 @@
 }
 
 /* TEXTO LEYENDA */
-.section-title-style div{
+.header-title-style div{
     width: 100%;
     display: flex;
     align-items: center;
@@ -56,7 +57,7 @@
 
 /*----------PARTE INFERIOR-----------*/
 .modificar-producto-style form{
-    margin-top: 10px;
+    margin-top: 45px;
     width: 70%;
     margin-left: 15%;
     display: flex;
@@ -145,4 +146,4 @@
 .div-modals-cerrar button:hover {
   background: #1a202c;
 }
-/*-----------------------------------*/
+/*-----------------------------------*/  

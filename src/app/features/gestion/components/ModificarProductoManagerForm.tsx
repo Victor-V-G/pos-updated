@@ -120,15 +120,15 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
     return (
 
         <>
-            <main>
+            <header className='header-title-style'>
+                        
+                <div>
+                    <h1>MODIFICAR PRODUCTO</h1> <br />
+                </div>
+                        
+            </header>
 
-                <section className='section-title-style'>
-                        
-                        <div>
-                            <h1>MODIFICAR PRODUCTO SEARCH</h1> <br />
-                        </div>
-                        
-                </section> <br />
+            <main>
 
                 <form className='modificar-form'>
 

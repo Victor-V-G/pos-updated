@@ -33,16 +33,16 @@ export const AgregarProductoComponent = () => {
 
     return (
         <>
-        
-            <main>
 
-                <section className='section-title-style'>
-                    
+            <header className='header-title-style'>
+
                     <div>
                         <h1>REGISTRAR PRODUCTO</h1> <br />
                     </div>
-                    
-                </section> <br />
+
+            </header>
+
+            <main>
 
                 <form className='agregar-form'>
 
