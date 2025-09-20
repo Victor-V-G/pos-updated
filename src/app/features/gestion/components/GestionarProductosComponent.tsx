@@ -28,7 +28,11 @@ export const GestionProductosComponent = () => {
     return (
         <>
             
-            <section>
+            <section className="section-search-button">
+
+                <div>
+                    <h1>OPCIONES</h1>
+                </div>
 
                 <button
                     onClick={()=>{

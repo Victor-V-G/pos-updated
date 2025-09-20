@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { SearchInterface } from "@/app/shared/interfaces/search-producto/SearchInterface";
 import SearchModificarComponent from "./SearchModificarComponent";
 import '../../assets/search-style/search-component.css'
+import SearchEliminarProductoComponent from "./SearchEliminarProductoComponent";
 
 
 const InitialStateCodigoDeBarrasInput : CodigoDeBarrasInputInterface = {
@@ -122,6 +123,11 @@ export const SearchComponent = ({RefrescarProductos, setRefrescarProductos} : Se
                                     <td>
 
                                         <SearchModificarComponent
+                                            ObtenerCodigoDeBarras={CodigoDeBarrasInput.CodigoDeBarrasInput}
+                                            setRefrescarProductos={setRefrescarProductos}
+                                        />
+
+                                        <SearchEliminarProductoComponent
                                             ObtenerCodigoDeBarras={CodigoDeBarrasInput.CodigoDeBarrasInput}
                                             setRefrescarProductos={setRefrescarProductos}
                                         />

@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -101,3 +101,19 @@ export const searchObtenerProductoPorIdPromise = async (idGet: IDDocumentosInter
 
     return listadoObtenidoGet;
 };
+
+
+export const ObtenerIDProductoSearchEliminarPromise = async (campo : string, valor : string) => {
+    const idRecuperadaDocumentosGet : IDDocumentosInterface[] = []
+    const DatosAPreguntar = query(collection(db, "Productos"), where (campo, "==", valor));
+    const querySnapshot = await getDocs(DatosAPreguntar);
+
+    querySnapshot.forEach((doc) => {
+        const idDocumentoGet : IDDocumentosInterface = {
+            IDDocumento : doc.id
+        };
+        idRecuperadaDocumentosGet.push(idDocumentoGet);
+        console.log("ID DEL DOCUMENTO PARA ELIMINAR RECUPERADO MEDIANTE CODIGO DE BARRAS")  
+    })
+    return idRecuperadaDocumentosGet;
+}
