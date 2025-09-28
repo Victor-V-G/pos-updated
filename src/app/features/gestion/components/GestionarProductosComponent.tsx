@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ModificarProductoComponent from "./ModificarProductoComponent";
 import ElimiarProductoComponent from "./EliminarProductoComponent";
 import '../assets/gestion-productos-table.css'
+import '../assets/gestion-component-style/stock-bajo.css'
 import SearchModals from "../modals/search-modals/SearchModals";
 
 export const GestionProductosComponent = () => {
@@ -27,78 +28,94 @@ export const GestionProductosComponent = () => {
 
     return (
         <>
-            
-            <section className="section-search-button">
+            <div className="gestion-productos-container">
 
-                <div>
-                    <h1>OPCIONES</h1>
-                </div>
+                <section className="section-search-button">
 
-                <button
-                    onClick={()=>{
-                        setOpenManagerSearch(true);
-                    }}>
-                    <span>BUSCAR PRODUCTO</span>
-                </button>
+                    <div>
+                        <h1>OPCIONES</h1>
+                    </div>
 
-            </section>
+                    <button
+                        onClick={()=>{
+                            setOpenManagerSearch(true);
+                        }}>
+                        <span>BUSCAR PRODUCTO</span>
+                    </button>
 
-            <SearchModals
-                OpenManager={OpenManagerSearch}
-                setOpenManager={setOpenManagerSearch}
-                RefrescarProductos={RefrescarProductos}
-                setRefrescarProductos={setRefrescarProductos}
-            />
+                </section> 
 
-            <table className="tabla-gestion-style">
+                <SearchModals
+                    OpenManager={OpenManagerSearch}
+                    setOpenManager={setOpenManagerSearch}
+                    RefrescarProductos={RefrescarProductos}
+                    setRefrescarProductos={setRefrescarProductos}
+                /> <br /> <br />
 
-                <tbody>
+                <table className="tabla-gestion-style">
 
-                    <tr>
+                    <tbody>
 
-                        <td>NOMBRE DEL PRODUCTO</td>
-                        <td>CODIGO DE BARRAS</td>
-                        <td>PRECIO</td>
-                        <td>STOCK</td>
-                        <td>ACCIONES</td>
+                        <tr>
 
-                    </tr>
+                            <td>NOMBRE DEL PRODUCTO</td>
+                            <td>CODIGO DE BARRAS</td>
+                            <td>PRECIO</td>
+                            <td>STOCK</td>
+                            <td>ACCIONES</td>
 
-                    {
-                        
-                        ProductosRecuperados.map((productoMap, index) => (
+                        </tr>
 
-                            <tr key={index}>
+                        {
+                            ProductosRecuperados.length === 0 ? (
 
-                                <td>{productoMap.NombreProducto}</td>
-                                <td>{productoMap.CodigoDeBarras}</td>
-                                <td>{productoMap.Precio}</td>
-                                <td>{productoMap.Stock}</td>
+                                <tr>
+                                    <td colSpan={5}
+                                        className="no-productos">
+                                        SE DEBE REGISTRAR UN PRODUCTO PREVIAMENTE
+                                    </td> 
+                                </tr>
 
-                                <td>
+                            ) : (
 
-                                    <ModificarProductoComponent 
-                                        ObtenerIndexModificar={index}
-                                        setRefrescarProductos={setRefrescarProductos}
-                                    />
-                                    
-                                    <ElimiarProductoComponent 
-                                        ObtenerIndexEliminar={index}
-                                        setRefrescarProductos={setRefrescarProductos}
-                                    />
+                                ProductosRecuperados.map((productoMap, index) => (
+
+                                    <tr 
+                                        key={index}
+                                        className={Number(productoMap.Stock) <= 1 ? "fila-stock-bajo" : 
+                                            Number(productoMap.Stock) <= 5 ? "fila-stock-medio" : ""}>
+
+                                        <td>{productoMap.NombreProducto}</td>
+                                        <td>{productoMap.CodigoDeBarras}</td>
+                                        <td>{productoMap.Precio}</td>
+                                        <td>{productoMap.Stock}</td>
+
+                                        <td>
+
+                                            <ModificarProductoComponent 
+                                                ObtenerIndexModificar={index}
+                                                setRefrescarProductos={setRefrescarProductos}
+                                            />
+                                            
+                                            <ElimiarProductoComponent 
+                                                ObtenerIndexEliminar={index}
+                                                setRefrescarProductos={setRefrescarProductos}
+                                            />
+                                        
+                                        </td>
+
+                                    </tr>
                                 
-                                </td>
+                                ))
+                            )
+                        }
 
-                            </tr>
+                    </tbody>
 
-                        ))
-
-                    }
-
-                </tbody>
-
-            </table>
+                </table>
             
+            </div>
+
         </>
     )
 

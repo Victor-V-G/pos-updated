@@ -1,0 +1,11 @@
+.fila-stock-bajo {
+    background-color: #fd8b8b !important; /* rojo fuerte */
+    color: black !important;              /* texto visible */
+    font-weight: bold;
+}
+
+.fila-stock-medio {
+    background-color: #f8ff7c !important; /* rojo fuerte */
+    color: black !important;              /* texto visible */
+    font-weight: bold;
+}

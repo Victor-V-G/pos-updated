@@ -170,7 +170,7 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
                             handleCallPromiseModificarProducto();
                         }}>
                         <span>MODIFICAR PRODUCTO</span>
-                    </button>
+                    </button>   
 
                 </form>
 

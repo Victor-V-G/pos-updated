@@ -1,0 +1,42 @@
+/* ESTILOS DE LOS BOTONES */
+.modificar-search-button {
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+/* BOTON DE MODIFICAR*/
+.modificar-search-button{
+    background-color: #343f55;
+}
+
+.modificar-search-button:hover {
+    background-color: #2d3748;
+}
+/*------------------*/
+
+
+.button-eliminar {
+    padding: 6px 12px;
+    margin: 0 3px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+/* BOTON DE ELIMINAR */
+.button-eliminar {
+    background-color: #dc2626;
+}
+
+.button-eliminar:hover {
+    background-color: #b91c1c;
+}
+/*-------------------*/

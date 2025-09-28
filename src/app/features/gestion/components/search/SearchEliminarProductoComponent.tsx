@@ -2,6 +2,7 @@ import { eliminarProductoPromise, ObtenerIDProductoSearchEliminarPromise } from 
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface";
 import { SearchEliminarInterface } from "@/app/shared/interfaces/search-producto/SearchEliminarInterface";
 import { useEffect, useState } from "react";
+import '../../assets/search-style/search-button.css'
 
 export const SearchEliminarProductoComponent = ({ObtenerCodigoDeBarras, setRefrescarProductos} : SearchEliminarInterface) => {
 
@@ -35,6 +36,7 @@ export const SearchEliminarProductoComponent = ({ObtenerCodigoDeBarras, setRefre
         <>
 
             <button
+                className="button-eliminar"
                 onClick={()=>{
                     handleEliminarProducto();
                     setRefrescarProductos(true);

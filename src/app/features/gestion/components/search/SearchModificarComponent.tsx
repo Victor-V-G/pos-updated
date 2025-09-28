@@ -3,7 +3,7 @@ import { useState } from "react";
 import '../../assets/gestion-productos-table.css'
 import SearchModificarProducto from "../../modals/search-modals/SearchModificarProducto";
 import { SearchModificarProductoInterface } from "@/app/shared/interfaces/search-producto/SearchModificarProductoInterface";
-
+import '../../assets/search-style/search-button.css'
 
 export const SearchModificarComponent = ({ObtenerCodigoDeBarras, setRefrescarProductos} : SearchModificarProductoInterface) => {
 
@@ -29,8 +29,8 @@ export const SearchModificarComponent = ({ObtenerCodigoDeBarras, setRefrescarPro
 
         <>
 
-            <button 
-                className="modificar-button"
+            <button
+                className="modificar-search-button"
                 onClick={()=>{
                     setOpenManager(true);
                 }}>

@@ -1,9 +1,18 @@
 
-.aside-content{
+.aside-content {
+    position: fixed;     /* la fija en la pantalla */
+    top: 0;              /* pegada al borde superior */
+    left: 0;             /* pegada al borde izquierdo */
+    height: 100vh;       /* ocupa toda la altura de la ventana */
+    width: 270px;        /* ancho fijo para la sidebar */
+    background-color: #fff;  /* opcional, para diferenciarla */
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
+
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* opcional */
+    z-index: 1;       /* para que quede encima del contenido */
 }
 
 .aside-content button {

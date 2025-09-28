@@ -10,7 +10,7 @@ export const SearchModificarProducto = ({OpenManager, setOpenManager, ObtenerCod
         return null
     }
 
-
+    
     return (
 
         <>
