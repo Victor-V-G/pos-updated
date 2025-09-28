@@ -1,8 +1,8 @@
 
 import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface";
 import { useState } from "react";
-import ModificarProductoModals from "../modals/ModificarProductoModals";
-import '../assets/gestion-productos-table.css'
+import '../../../assets/css/gestion-productos-styles/table-productos-style/gestion-productos-table.css'
+import ModificarProductoModals from "../../../modals/gestion-productos-modals/modificar-productos/ModificarProductoAbrirFormModals";
 
 
 export const ModificarProductoComponent = ({ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoInterface) => {

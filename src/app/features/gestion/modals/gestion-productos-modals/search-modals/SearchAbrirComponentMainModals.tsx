@@ -1,10 +1,10 @@
 
-import SearchComponent from "../../components/search/SearchComponent";
+import { SearchMainComponent } from '../../../components/gestion-productos-components/search-components/SearchMainComponent'
 import { SearchModalsInterface } from "@/app/shared/interfaces/search-producto/SearchModalsInterface";
-import '../../assets/search-style/search-component.css'
+import '../../../assets/css/gestion-productos-styles/search-productos-style/search-component.css'
 
 
-export const SearchModals = ({OpenManager, setOpenManager, RefrescarProductos, setRefrescarProductos} : SearchModalsInterface) => {
+export const SearchAbrirComponentMainModals = ({OpenManager, setOpenManager, RefrescarProductos, setRefrescarProductos} : SearchModalsInterface) => {
 
     if (OpenManager == false) {
         return null
@@ -17,7 +17,7 @@ export const SearchModals = ({OpenManager, setOpenManager, RefrescarProductos, s
 
             <div className="search-component">
                 
-                <SearchComponent
+                <SearchMainComponent
                     RefrescarProductos={RefrescarProductos}
                     setRefrescarProductos={setRefrescarProductos}
                 />
@@ -41,4 +41,4 @@ export const SearchModals = ({OpenManager, setOpenManager, RefrescarProductos, s
 
 }
 
-export default SearchModals;
+export default SearchAbrirComponentMainModals;

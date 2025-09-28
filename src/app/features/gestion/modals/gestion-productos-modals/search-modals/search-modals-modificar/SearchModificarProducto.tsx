@@ -1,6 +1,6 @@
 
-import '../../assets/modificar-producto-manager-form.css'
-import SearchModificarProductoManagerForm from "../../components/search/SearchModificarProductoManagerForm";
+import SearchModificarProductoManagerForm from '@/app/features/gestion/components/gestion-productos-components/search-components/search-gestion-components/search-modificar-components/SearchModificarProductoManagerForm';
+import '../../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css'
 import { ExtendsModalsModificar } from "@/app/shared/interfaces/search-producto/ExtendsModalsModificar";
 
 export const SearchModificarProducto = ({OpenManager, setOpenManager, ObtenerCodigoDeBarras, setRefrescarProductos} : ExtendsModalsModificar) => {

@@ -4,7 +4,7 @@ import InicioModals from "./features/inicio/modals/InicioModals";
 import Sidebar from "./shared/sidebar/components/Sidebar";
 import VentaModals from "./features/venta/modals/VentaModals";
 import VerStockModals from "./features/ver-stock/modals/VerStockModals";
-import GestionModals from "./features/gestion/modals/GestionModals";
+import GestionModals from "./features/gestion/modals/main-modals/GestionModals";
 import HistorialDeVentaModals from "./features/historial-de-ventas/modals/HistorialDeVentasModals";
 
 

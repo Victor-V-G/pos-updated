@@ -1,7 +1,7 @@
 import { useState } from "react"
-import AgregarProductoModals from "../modals/AgregarProductoModals"
-import '../assets/gestion-component-style.css'
-import GestionarProductosModals from "../modals/GestionarProductosModals"
+import '../assets/css/component-main-style/gestion-component-style.css'
+import GestionarProductosModals from "../modals/gestion-main-modals/GestionarProductosAbrirMainComponentModals"
+import AgregarProductoModals from "../modals/gestion-productos-modals/agregar-productos/AgregarProductoModals"
 
 
 

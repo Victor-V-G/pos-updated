@@ -3,7 +3,7 @@ import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDD
 import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface"
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
 import { useEffect, useState } from "react"
-import '../assets/modificar-producto-manager-form.css'
+import '../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css'
 
 const InitialStateProductoSeleccionadoForm : ProductoInterface = {
     NombreProducto : "",

@@ -3,9 +3,9 @@ import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInte
 import { CodigoDeBarrasInputInterface } from "@/app/shared/interfaces/search-producto/CodigoDeBarrasInputInterface";
 import { useEffect, useState } from "react";
 import { SearchInterface } from "@/app/shared/interfaces/search-producto/SearchInterface";
-import SearchModificarComponent from "./SearchModificarComponent";
-import '../../assets/search-style/search-component.css'
-import SearchEliminarProductoComponent from "./SearchEliminarProductoComponent";
+import SearchModificarComponent from "./search-gestion-components/search-modificar-components/SearchModificarMainComponent";
+import '../../../assets/css/gestion-productos-styles/search-productos-style/search-component.css'
+import SearchEliminarProductoComponent from "./search-gestion-components/search-eliminar-component/SearchEliminarProductoComponent";
 
 
 const InitialStateCodigoDeBarrasInput : CodigoDeBarrasInputInterface = {
@@ -13,7 +13,7 @@ const InitialStateCodigoDeBarrasInput : CodigoDeBarrasInputInterface = {
 }
 
 
-export const SearchComponent = ({RefrescarProductos, setRefrescarProductos} : SearchInterface) => {
+export const SearchMainComponent = ({RefrescarProductos, setRefrescarProductos} : SearchInterface) => {
 
 
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
@@ -151,4 +151,4 @@ export const SearchComponent = ({RefrescarProductos, setRefrescarProductos} : Se
 
 }
 
-export default SearchComponent;
+export default SearchMainComponent;

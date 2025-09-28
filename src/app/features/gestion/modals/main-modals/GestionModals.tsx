@@ -1,8 +1,8 @@
 'use client'
 import { ModalsInterfaceProps } from "@/app/shared/interfaces/modals/ModalsInterfaceProps";
-import LoginModals from "../../login/modals/LoginModals";
+import LoginModals from "../../../login/modals/LoginModals";
 import { useEffect, useState } from "react";
-import GestionComponent from "../components/GestionComponent";
+import GestionComponent from "../../components/GestionComponent";
 
 
 export const GestionModals = ({OpenManager} : ModalsInterfaceProps) => {

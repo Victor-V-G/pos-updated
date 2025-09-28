@@ -2,7 +2,7 @@ import { eliminarProductoPromise, obtenerIDProductosPromise } from "@/app/fireba
 import { EliminarProductoInterface } from "@/app/shared/interfaces/eliminar-producto/EliminarProductoInterface";
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface";
 import { useEffect, useState } from "react";
-import '../assets/gestion-productos-table.css'
+import '../../../assets/css/gestion-productos-styles/eliminar-productos-style/eliminar-productos-style.css'
 
 export const ElimiarProductoComponent = ({ObtenerIndexEliminar, setRefrescarProductos} : EliminarProductoInterface) => {
 

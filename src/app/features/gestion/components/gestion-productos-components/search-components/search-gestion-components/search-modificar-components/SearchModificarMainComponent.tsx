@@ -1,9 +1,9 @@
 
 import { useState } from "react";
-import '../../assets/gestion-productos-table.css'
-import SearchModificarProducto from "../../modals/search-modals/SearchModificarProducto";
+import '../../../../../assets/css/gestion-productos-styles/table-productos-style/gestion-productos-table.css'
 import { SearchModificarProductoInterface } from "@/app/shared/interfaces/search-producto/SearchModificarProductoInterface";
-import '../../assets/search-style/search-button.css'
+import '../../../../../assets/css/gestion-productos-styles/search-productos-style/search-button.css'
+import SearchModificarProducto from "@/app/features/gestion/modals/gestion-productos-modals/search-modals/search-modals-modificar/SearchModificarProducto";
 
 export const SearchModificarComponent = ({ObtenerCodigoDeBarras, setRefrescarProductos} : SearchModificarProductoInterface) => {
 

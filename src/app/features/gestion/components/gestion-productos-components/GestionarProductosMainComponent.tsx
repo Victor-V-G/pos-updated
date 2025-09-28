@@ -1,13 +1,14 @@
 import { obtenerProductosPromise } from "@/app/firebase/Promesas";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import { useEffect, useState } from "react";
-import ModificarProductoComponent from "./ModificarProductoComponent";
-import ElimiarProductoComponent from "./EliminarProductoComponent";
-import '../assets/gestion-productos-table.css'
-import '../assets/gestion-component-style/stock-bajo.css'
-import SearchModals from "../modals/search-modals/SearchModals";
+import '../../assets/css/gestion-productos-styles/table-productos-style/gestion-productos-table.css'
+import '../../assets/css/gestion-productos-styles/advertencia-stock-style/stock-bajo.css'
+import SearchAbrirComponentMainModals from "../../modals/gestion-productos-modals/search-modals/SearchAbrirComponentMainModals";
+import ModificarProductoComponent from "./modificar-productos-component/ModificarProductoMainComponent";
+import ElimiarProductoComponent from "./eliminar-productos-component/EliminarProductoComponent";
 
-export const GestionProductosComponent = () => {
+
+export const GestionProductosMainComponent = () => {
 
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
 
@@ -45,7 +46,7 @@ export const GestionProductosComponent = () => {
 
                 </section> 
 
-                <SearchModals
+                <SearchAbrirComponentMainModals
                     OpenManager={OpenManagerSearch}
                     setOpenManager={setOpenManagerSearch}
                     RefrescarProductos={RefrescarProductos}
@@ -92,12 +93,12 @@ export const GestionProductosComponent = () => {
 
                                         <td>
 
-                                            <ModificarProductoComponent 
+                                            <ModificarProductoComponent
                                                 ObtenerIndexModificar={index}
                                                 setRefrescarProductos={setRefrescarProductos}
                                             />
                                             
-                                            <ElimiarProductoComponent 
+                                            <ElimiarProductoComponent
                                                 ObtenerIndexEliminar={index}
                                                 setRefrescarProductos={setRefrescarProductos}
                                             />
@@ -121,4 +122,4 @@ export const GestionProductosComponent = () => {
 
 }
 
-export default GestionProductosComponent;
+export default GestionProductosMainComponent;

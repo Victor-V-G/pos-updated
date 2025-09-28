@@ -2,7 +2,7 @@ import { modificarProductoPromise, obtenerIDProductoSearchModificarPromise, sear
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface"
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
 import { useEffect, useState } from "react"
-import '../../assets/modificar-producto-manager-form.css'
+import '../../../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css'
 import { SearchModificarProductoInterface } from "@/app/shared/interfaces/search-producto/SearchModificarProductoInterface"
 
 

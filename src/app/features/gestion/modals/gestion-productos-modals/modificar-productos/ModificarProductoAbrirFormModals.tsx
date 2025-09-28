@@ -1,7 +1,7 @@
 
 import { ModificarProductoModalsInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoModalsInterface";
-import ModificarProductoManagerFrom from "../components/ModificarProductoManagerForm";
-import '../assets/modificar-producto-manager-form.css'
+import ModificarProductoManagerFrom from "../../../components/gestion-productos-components/modificar-productos-component/ModificarProductoManagerForm";
+import '../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css'
 
 export const ModificarProductoModals = ({OpenManager, setOpenManager, ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoModalsInterface) => {
 

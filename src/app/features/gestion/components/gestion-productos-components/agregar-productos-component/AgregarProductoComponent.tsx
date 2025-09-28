@@ -1,5 +1,5 @@
 import { ProductoInterface } from '@/app/shared/interfaces/producto/ProductoInterface';
-import '../assets/agregar-producto-style.css'
+import '../../../assets/css/gestion-productos-styles/agregar-productos-style/agregar-producto-style.css'
 import { useState } from 'react';
 import { registrarProductoPromise } from '@/app/firebase/Promesas';
 
