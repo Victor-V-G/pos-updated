@@ -1,4 +1,4 @@
-import { modificarProductoPromise, obtenerIDProductosPromise, obtenerProductosPromise } from "@/app/firebase/Promesas"
+import { modificarProductoPromise, obtenerIDProductosPromise, obtenerProductosPromise, registrarMovimientosPromise } from "@/app/firebase/Promesas"
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface"
 import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface"
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
@@ -34,6 +34,9 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
     const [ProductoSeleccionadoForm, setProductoSeleccionadoForm] = useState(InitialStateProductoSeleccionadoForm)
     /*----------------------------------------------------------------------------------------*/
 
+    /*---------------------ALMACENA EL DATO QUE SE REALIZA EL MOVIMIENTO----------------------*/
+    const [ProductoOriginal, setProductoOriginal] = useState<ProductoInterface | null>(null)
+    /*----------------------------------------------------------------------------------------*/
 
 
     useEffect(() => {
@@ -76,6 +79,7 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
         /*----------------------HANDLE SELECCIONAR PRODUCTO-------------------------*/
         const ProductoSeleccionado = ProductosRecuperados[ObtenerIndexModificar];
             setProductoSeleccionadoForm(ProductoSeleccionado)
+            setProductoOriginal(ProductoSeleccionado)
             console.log(ProductoSeleccionado)
             if (!ProductoSeleccionado) {
                 alert("EL PRODUCTO SELECCIONADO NO FUE ENCONTRADO")
@@ -116,6 +120,29 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
     }
     /*--------------------------------------------------------------------------*/
 
+    const handleCallRegistrarMovimiento = () => {
+
+        const nuevo = ProductoSeleccionadoForm
+        const viejo = ProductoOriginal
+
+        if (viejo?.Precio !== nuevo.Precio) {
+            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Precio cambió de $${viejo?.Precio} a $${nuevo.Precio}`)).then(()=>{
+                console.log("MOVIMIENTO REGISTRADO")
+            }).catch(()=>{
+                alert("NO SE PUDO REGISTRAR LA ACCION")
+            })
+        }
+
+        if (viejo?.Stock !== nuevo.Stock) {
+            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Stock cambió de ${viejo?.Stock} unidades a ${nuevo.Stock} unidades`)).then(()=>{
+                console.log("MOVIMIENTO REGISTRADO")
+            }).catch(()=>{
+                alert("NO SE PUDO REGISTRAR LA ACCION")
+            })
+        }
+
+
+    }
 
     return (
 
@@ -182,6 +209,7 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
                             e.preventDefault();
                             handleCallPromiseModificarProducto();
                             setRefrescarProductos(true);
+                            handleCallRegistrarMovimiento();
                         }}>
                         <span>MODIFICAR PRODUCTO</span>
                     </button>

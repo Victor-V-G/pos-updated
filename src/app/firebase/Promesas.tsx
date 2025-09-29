@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot, serverTimestamp } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -59,10 +59,7 @@ export const eliminarProductoPromise = async (idGet : IDDocumentosInterface) => 
 }
 
 
-
-
-
-
+/*----------------------------------SEARCH COMPONENTS--------------------------------------*/
 
 export const obtenerIDProductoSearchModificarPromise = async (campo : string, valor : string) => {
     const idRecuperadaDocumentosGet : IDDocumentosInterface[] = []
@@ -117,3 +114,15 @@ export const ObtenerIDProductoSearchEliminarPromise = async (campo : string, val
     })
     return idRecuperadaDocumentosGet;
 }
+
+/*-------------------------------------------------------------------------------------------*/
+
+
+/*-------------------------------REGISTROS Y MOVIMIENTOS-------------------------------------*/
+export const registrarMovimientosPromise = async(accion : string , cambios : string) => {
+    await addDoc(collection(db, "Movimientos"), {
+        accion,
+        cambios,
+        fechaHora : serverTimestamp()
+    });
+};

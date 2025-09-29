@@ -1,7 +1,8 @@
 import { GestionModalsSetters } from "@/app/shared/interfaces/gestion/GestionModalsSetters";
 import { useEffect } from "react";
-import GestionProductosComponent from "../../components/gestion-productos-components/GestionarProductosMainComponent";
 import '../../assets/css/modals-close-style/modals-cerrar-button.css'
+import GestionProductosMainComponent from "../../components/gestion-productos-components/GestionarProductosMainComponent";
+
 
 
 export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => { 
@@ -20,7 +21,7 @@ export const GestionarProductosModals = ({OpenManager, setOpenManager, SetOpenMa
 
         <>  
 
-            <GestionProductosComponent/>
+            <GestionProductosMainComponent/>
 
             <div className="modals-cerrar-button">  
 
