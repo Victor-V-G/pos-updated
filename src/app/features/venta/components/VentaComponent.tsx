@@ -1,10 +1,19 @@
+import IngresarCBD from "./IngresarCDB";
+import MostrarProductosVenta from "./MostrarProductosVenta";
+import RealizarVenta from "./RealizarVenta";
 
 export const VentaComponent = () => {
 
     return (
 
-        <>
-            <h1>VENTA COMPONENT</h1>
+        <>  
+            <header><h1>REALIZAR VENTA</h1></header>
+
+            <IngresarCBD/>
+
+            <RealizarVenta/> 
+
+            <MostrarProductosVenta/>
         </>
 
     )

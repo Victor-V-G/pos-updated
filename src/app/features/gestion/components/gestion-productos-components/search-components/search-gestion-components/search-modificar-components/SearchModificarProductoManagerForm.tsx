@@ -1,4 +1,4 @@
-import { modificarProductoPromise, obtenerIDProductoSearchModificarPromise, searchObtenerProductoPorIdPromise } from "@/app/firebase/Promesas"
+import { modificarProductoPromise, obtenerIDProductoSearchModificarPromise, registrarMovimientosPromise, searchObtenerProductoPorIdPromise } from "@/app/firebase/Promesas"
 import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface"
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
 import { useEffect, useState } from "react"
@@ -33,6 +33,9 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
     const [ProductoSeleccionadoForm, setProductoSeleccionadoForm] = useState(InitialStateProductoSeleccionadoForm)
     /*----------------------------------------------------------------------------------------*/
 
+    /*---------------------ALMACENA EL DATO QUE SE REALIZA EL MOVIMIENTO----------------------*/
+    const [ProductoOriginal, setProductoOriginal] = useState<ProductoInterface | null>(null)
+    /*----------------------------------------------------------------------------------------*/
 
 
     /*--------------------HANDLE REESCRIBIR FORM------------------*/
@@ -83,6 +86,7 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
         }
 
         setProductoSeleccionadoForm(ProductoSeleccionado)
+        setProductoOriginal(ProductoSeleccionado)
     }
     
 
@@ -101,6 +105,30 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
     }
     /*--------------------------------------------------------------------------*/
 
+    const handleCallRegistrarMovimiento = () => {
+    
+        const nuevo = ProductoSeleccionadoForm
+        const viejo = ProductoOriginal
+
+        if (viejo?.Precio !== nuevo.Precio) {
+            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Precio cambió de $${viejo?.Precio} a $${nuevo.Precio}`)).then(()=>{
+                console.log("MOVIMIENTO REGISTRADO")
+            }).catch(()=>{
+                alert("NO SE PUDO REGISTRAR LA ACCION")
+            })
+        }
+
+        if (viejo?.Stock !== nuevo.Stock) {
+            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Stock cambió de ${viejo?.Stock} unidades a ${nuevo.Stock} unidades`)).then(()=>{
+                console.log("MOVIMIENTO REGISTRADO")
+            }).catch(()=>{
+                alert("NO SE PUDO REGISTRAR LA ACCION")
+            })
+        }
+
+
+    }
+    
 
     return (
 
@@ -168,6 +196,7 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
                             e.preventDefault();
                             setRefrescarProductos(true);
                             handleCallPromiseModificarProducto();
+                            handleCallRegistrarMovimiento();
                         }}>
                         <span>MODIFICAR PRODUCTO</span>
                     </button>   

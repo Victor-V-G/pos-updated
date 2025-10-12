@@ -1,7 +1,7 @@
 import { ProductoInterface } from '@/app/shared/interfaces/producto/ProductoInterface';
 import '../../../assets/css/gestion-productos-styles/agregar-productos-style/agregar-producto-style.css'
 import { useState } from 'react';
-import { registrarProductoPromise } from '@/app/firebase/Promesas';
+import { registrarMovimientosPromise, registrarProductoPromise } from '@/app/firebase/Promesas';
 
 
 const InitialStateProducto : ProductoInterface = {
@@ -29,6 +29,17 @@ export const AgregarProductoComponent = () => {
             alert("OCURRIO UN ERROR AL REGISTRAR")
             console.log(error)
         })
+    }
+
+    const handleCallRegistrarMovimiento = () => {
+    
+        const accion = Producto
+        registrarMovimientosPromise("REGISTRAR PRODUCTO", (`Se ha Registrado el producto con nombre: ${accion.NombreProducto}, codigo de barras: ${accion.CodigoDeBarras}, precio: ${accion.Precio}, stock: ${accion.Stock} `)).then(()=>{
+            console.log("MOVIMIENTO REGISTRADO")
+        }).catch(()=>{
+            alert("NO SE PUDO REGISTRAR LA ACCION")
+        })
+    
     }
 
     return (
@@ -94,6 +105,7 @@ export const AgregarProductoComponent = () => {
                         onClick={(e)=>{
                             e.preventDefault();
                             handleCallPromiseRegistrarProductos();
+                            handleCallRegistrarMovimiento();
                         }}>
                         <span>REGISTRAR</span>
                     </button>

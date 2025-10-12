@@ -2,6 +2,7 @@ import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, g
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
+import { RegistrosYMovimientosInterface } from "../shared/interfaces/registros-y-movimientos/RegistrosYMovimientosInterface";
 
 
 export const registrarProductoPromise = async(productoGet : ProductoInterface) => {
@@ -126,3 +127,19 @@ export const registrarMovimientosPromise = async(accion : string , cambios : str
         fechaHora : serverTimestamp()
     });
 };
+
+
+export const obtenerMovimientosPromise = async () => {
+    let listadoObtenidoMovimientosGet : RegistrosYMovimientosInterface[] = []
+        const querySnapshot = await getDocs(collection(db, "Movimientos"));
+        querySnapshot.forEach((doc) => {
+            let movimientosGet : RegistrosYMovimientosInterface = {
+                    accion : doc.data().accion,
+                    cambios : doc.data().cambios,
+                    fechaHora : doc.data().fechaHora ? doc.data().fechaHora.toDate().toLocaleString() : "Sin fecha"
+            }
+        listadoObtenidoMovimientosGet.push(movimientosGet);
+        console.log("MOVIMIENTOS RECUPERADOS");
+    });
+    return listadoObtenidoMovimientosGet;
+}

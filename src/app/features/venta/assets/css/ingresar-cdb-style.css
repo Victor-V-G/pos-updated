@@ -1,0 +1,53 @@
+.ingresar-cdb form {
+    margin-top: 40px;
+    width: 70%;
+    margin-left: 15%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 5%;
+    position: relative;
+}
+
+.input-box {
+    position: relative;
+    width: 100%;
+    margin-bottom: 20px; 
+}
+
+.ingresar-cdb input{
+    font-size: 16px;
+    outline: none;
+    padding: 10px 15px;
+    display: block;
+    width: 50%;
+    border: none;
+    border-radius: 7px;
+    border: 2px solid #1a202c;
+    background: transparent;
+    color: #2d3748;
+}
+
+.ingresar-cdb input:focus{
+    border: 2px solid #3679ff;
+}
+
+.ingresar-cdb label {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #2d3748;
+    font-size: 20px;
+    pointer-events: none;
+    transition: .3s;
+}
+
+.ingresar-cdb input:focus ~ label,
+.ingresar-cdb input:valid ~ label{
+    top: 0;
+    font-size: 16px;
+    padding: 0 10px;
+    background: #D1D5DB;
+}
