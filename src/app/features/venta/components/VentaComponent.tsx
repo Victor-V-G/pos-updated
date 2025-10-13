@@ -3,6 +3,7 @@ import IngresarCDB from "./IngresarCDB";
 import MostrarProductosVenta from "./MostrarProductosVenta";
 import RealizarVenta from "./RealizarVenta";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
+import ProductoEncontradoAgregar from "./ProductoEncontradoAgregar";
 
 export const VentaComponent = () => {
 
@@ -15,10 +16,12 @@ export const VentaComponent = () => {
             <header><h1>REALIZAR VENTA</h1></header>
 
             <IngresarCDB setProductoFindSetter={setProductoFindSetter}/>
-
-            <RealizarVenta/> 
+            
+            <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter}/>
 
             <MostrarProductosVenta/>
+
+            <RealizarVenta/> 
         </>
 
     )

@@ -34,6 +34,8 @@ export const IngresarCDB = ({setProductoFindSetter} : SetterProductoFind) => {
         const ProductoFind = ProductoObtenido.find(p => p.CodigoDeBarras === InputCDB.CodigoDeBarras);
         if (ProductoFind) {
             setProductoEncontrado([ProductoFind]);
+        } else {
+            setProductoEncontrado([])
         }
     }, [InputCDB.CodigoDeBarras, ProductoObtenido]);
 
