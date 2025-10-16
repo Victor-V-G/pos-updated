@@ -10,7 +10,7 @@ const InitialStateInputCDB : InterfaceIngresarCDB = {
     CodigoDeBarras: "",
 }
 
-export const IngresarCDB = ({setProductoFindSetter} : SetterProductoFind) => {
+export const IngresarCDB = ({setProductoFindSetter, LimpiarImput, setLimpiarInput} : SetterProductoFind) => {
     
     const [InputCDB, setInputCDB] = useState(InitialStateInputCDB)
     const [ProductoObtenido, setProductoObtenido] = useState<ProductoInterface[]>([])
@@ -21,8 +21,6 @@ export const IngresarCDB = ({setProductoFindSetter} : SetterProductoFind) => {
         setProductoObtenido(productoGet)
       })
     }, [])
-
-    /*aplicar .sort para buscar por codigo de barras el producto almacenado */
 
     const handleRecuperarInput = (name:string, value:string) => {
         setInputCDB(
@@ -43,7 +41,11 @@ export const IngresarCDB = ({setProductoFindSetter} : SetterProductoFind) => {
       setProductoFindSetter(ProductoEncontrado)
     }, [ProductoEncontrado])
     
-
+    useEffect(() => {
+      setInputCDB(InitialStateInputCDB)
+      setLimpiarInput(false)
+    }, [LimpiarImput == true])
+    
     return (
 
         <>

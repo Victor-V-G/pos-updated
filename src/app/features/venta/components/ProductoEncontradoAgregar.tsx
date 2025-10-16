@@ -1,6 +1,6 @@
 import { PropsProductoFind } from "@/app/shared/interfaces/ingresar-cdb/PropsProductoFind";
 
-export const ProductoEncontradoAgregar = ({ProductoFindSetter} : PropsProductoFind) => {
+export const ProductoEncontradoAgregar = ({ProductoFindSetter, setProductoAgregado, setLimpiarInput} : PropsProductoFind) => {
 
     return (
         <>
@@ -29,6 +29,8 @@ export const ProductoEncontradoAgregar = ({ProductoFindSetter} : PropsProductoFi
                                         <td>{productoMap.Stock}</td>
                                         <td>
                                             <button onClick={()=>{
+                                                setProductoAgregado(ProductoFindSetter);
+                                                setLimpiarInput(true);
                                             }}>
                                                 <h1>AGREGAR</h1>
                                             </button>

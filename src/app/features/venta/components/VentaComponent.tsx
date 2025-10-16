@@ -9,17 +9,20 @@ export const VentaComponent = () => {
 
     const [ProductoFindSetter, setProductoFindSetter] = useState<ProductoInterface[]>([])
 
-    console.log(ProductoFindSetter)
+    const [ProductoAgregado, setProductoAgregado] = useState<ProductoInterface[]>([])
+
+    const [LimpiarInput, setLimpiarInput] = useState(false)
+    console.log(ProductoAgregado)
     return (
 
         <>  
             <header><h1>REALIZAR VENTA</h1></header>
 
-            <IngresarCDB setProductoFindSetter={setProductoFindSetter}/>
+            <IngresarCDB setProductoFindSetter={setProductoFindSetter} LimpiarImput={LimpiarInput} setLimpiarInput={setLimpiarInput}/>
             
-            <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter}/>
+            <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter} setProductoAgregado={setProductoAgregado} setLimpiarInput={setLimpiarInput}/>
 
-            <MostrarProductosVenta/>
+            <MostrarProductosVenta ProductoAgregado={ProductoAgregado}/>
 
             <RealizarVenta/> 
         </>
