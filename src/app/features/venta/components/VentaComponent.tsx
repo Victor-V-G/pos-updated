@@ -3,7 +3,7 @@ import IngresarCDB from "./IngresarCDB";
 import MostrarProductosVenta from "./MostrarProductosVenta";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import ProductoEncontradoAgregar from "./ProductoEncontradoAgregar";
-
+import '../assets/css/venta-component-style.css'
 export const VentaComponent = () => {
 
     const [ProductoFindSetter, setProductoFindSetter] = useState<ProductoInterface[]>([])
@@ -12,16 +12,29 @@ export const VentaComponent = () => {
 
     return (
 
-        <>  
-            <header><h1>REALIZAR VENTA</h1></header>
+        <div className="venta-grid">  
 
-            <IngresarCDB setProductoFindSetter={setProductoFindSetter} LimpiarImput={LimpiarInput} setLimpiarInput={setLimpiarInput}/>
+            <div>
+                <header className="venta-header">
+                    <h1>REALIZAR VENTA</h1>
+                </header>
+            </div>
             
-            <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter} setProductoAgregado={setProductoAgregado} setLimpiarInput={setLimpiarInput}/>
+            <div className="venta-input">
+                <IngresarCDB setProductoFindSetter={setProductoFindSetter} LimpiarImput={LimpiarInput} setLimpiarInput={setLimpiarInput}/>
+            </div>
 
-            <MostrarProductosVenta ProductoAgregado={ProductoAgregado}/>
+            <div className="venta-producto-agregar">
+                <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter} setProductoAgregado={setProductoAgregado} setLimpiarInput={setLimpiarInput}/>
+            </div>
+            
+            <div className="venta-main">
+                <div className="venta-tabla">
+                    <MostrarProductosVenta ProductoAgregado={ProductoAgregado}/>
+                </div>
+            </div>
 
-        </>
+        </div>
 
     )
 

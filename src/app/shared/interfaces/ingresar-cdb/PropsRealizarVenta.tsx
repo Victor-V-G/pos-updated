@@ -1,4 +1,6 @@
+import { PropsProductosVenta } from "./PropsProductosVenta";
 
 export interface PropsRealizarVenta {
-    TotalGeneral: number;
+    TotalGeneral: number,
+    ProductosVenta: PropsProductosVenta[],
 }

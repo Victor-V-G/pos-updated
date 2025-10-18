@@ -3,6 +3,8 @@ import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
 import { RegistrosYMovimientosInterface } from "../shared/interfaces/registros-y-movimientos/RegistrosYMovimientosInterface";
+import { PropsProductosVenta } from "../shared/interfaces/ingresar-cdb/PropsProductosVenta";
+import { PropsRealizarVenta } from "../shared/interfaces/ingresar-cdb/PropsRealizarVenta";
 
 
 export const registrarProductoPromise = async(productoGet : ProductoInterface) => {
@@ -142,4 +144,12 @@ export const obtenerMovimientosPromise = async () => {
         console.log("MOVIMIENTOS RECUPERADOS");
     });
     return listadoObtenidoMovimientosGet;
+}
+/*-------------------------------------------------------------------------------------------*/
+
+
+/*-------------------------------VENTA Y HISTORIAL------------------------------------*/
+export const registrarVentaPromise = async({ProductosVenta, TotalGeneral} : PropsRealizarVenta) => {
+    const docRef = await  addDoc(collection(db, "Ventas"), {ProductosVenta, TotalGeneral});
+    console.log("Venta registrada con ID: ", docRef.id);
 }
