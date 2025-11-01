@@ -47,22 +47,22 @@ export const IngresarCDB = ({setProductoFindSetter, LimpiarImput, setLimpiarInpu
     }, [LimpiarImput == true])
     
     return (
-
-        <>
-            <form className='ingresar-cdb'>
-                <div className='input-box'>
-                    <input 
-                        type="number"
-                        required spellCheck="false"
-                        name='CodigoDeBarras'
-                        value={InputCDB.CodigoDeBarras}
-                        onChange={(e)=>{
-                            handleRecuperarInput(e.currentTarget.name, e.currentTarget.value);
-                        }}
-                    />
-                    <label>CODIGO DE BARRAS</label>
-                </div>
-            </form>
+        <>  <div className='center'>
+                <form className='ingresar-cdb'>
+                    <div className='input-box'>
+                        <input 
+                            type="number"
+                            required spellCheck="false"
+                            name='CodigoDeBarras'
+                            value={InputCDB.CodigoDeBarras}
+                            onChange={(e)=>{
+                                handleRecuperarInput(e.currentTarget.name, e.currentTarget.value);
+                            }}
+                        />
+                        <label>CODIGO DE BARRAS</label>
+                    </div>
+                </form>
+            </div>
         </>
 
     )

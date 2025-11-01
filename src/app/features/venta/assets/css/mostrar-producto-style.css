@@ -1,0 +1,141 @@
+/* ===================== */
+/* TABLA DE PRODUCTOS */
+/* ===================== */
+
+.table-mostrar-producto {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    font-family: Arial, sans-serif;
+}
+
+.table-mostrar-producto thead tr {
+    background-color: #4a5568;
+    color: white;
+    font-weight: bold;
+    height: 45px;
+}
+
+.table-mostrar-producto td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+/* ===================== */
+/* CONTENEDOR TABLA + PAGINACIÓN */
+/* ===================== */
+
+.tabla-y-paginacion {
+    width: 100%;
+    height: calc(45px + (56.6px * 7) + 66px); 
+    /* ✅ 45px = header, 52px x 7 = filas, 60px = paginación */
+
+    background: #f3f4f6;
+    padding-bottom: 20px;
+
+    border-bottom-left-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* ✅ Pagina abajo siempre */
+    overflow: hidden; /* ✅ Evita que se expanda */
+}
+
+
+/* ===================== */
+/* BOTONES DE CANTIDAD */
+/* ===================== */
+
+.button-cantidad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.button-cantidad button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: all 0.25s ease;
+}
+
+.button-suma {
+    background-color: #10b981;
+}
+.button-suma:hover {
+    background-color: #059669;
+}
+
+.button-resta {
+    background-color: #ef4444;
+}
+.button-resta:hover {
+    background-color: #dc2626;
+}
+
+.mas-img, .menos-img {
+    width: 14px;
+    height: 14px;
+}
+
+/* ===================== */
+/* PAGINACIÓN */
+/* ===================== */
+
+.paginacion {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+.paginacion button {
+    padding: 8px 15px;
+    border-radius: 8px;
+    background: #2d3748;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+
+.paginacion button:hover:not(:disabled) {
+    background: #4a5568;
+}
+
+.paginacion button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ===================== */
+/* ESQUELETO */
+/* ===================== */
+
+.esqueleto {
+  width: 100%;
+  min-height: 500px;
+  background-color: #ffffff;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  animation: parpadeo 1.5s infinite ease-in-out;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.esqueleto-linea {
+  width: 80%;
+  height: 18px;
+  background-color: #d1d5db;
+  border-radius: 6px;
+  margin: 10px 0;
+}

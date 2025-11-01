@@ -4,6 +4,8 @@ import MostrarProductosVenta from "./MostrarProductosVenta";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import ProductoEncontradoAgregar from "./ProductoEncontradoAgregar";
 import '../assets/css/venta-component-style.css'
+import '../assets/css/venta-header-style.css'
+
 export const VentaComponent = () => {
 
     const [ProductoFindSetter, setProductoFindSetter] = useState<ProductoInterface[]>([])
@@ -14,7 +16,7 @@ export const VentaComponent = () => {
 
         <div className="venta-grid">  
 
-            <div>
+            <div className="header-div">
                 <header className="venta-header">
                     <h1>REALIZAR VENTA</h1>
                 </header>

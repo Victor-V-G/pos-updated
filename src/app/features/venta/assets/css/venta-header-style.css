@@ -1,0 +1,20 @@
+
+.header-div {
+    width: 150%;
+    height: 60px;
+    background-color: #2d3748;
+    color: #EBECF2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    padding: 0 25px;
+    font-weight: bold;
+}
+
+.venta-header h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

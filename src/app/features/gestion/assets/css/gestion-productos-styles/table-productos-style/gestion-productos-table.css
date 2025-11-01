@@ -108,11 +108,11 @@
 
 /* BOTON DE MODIFICAR*/
 .tabla-gestion-style button:first-child {
-    background-color: #343f55;;
+    background-color: #343f55;
 }
 
 .tabla-gestion-style button:first-child:hover {
-    background-color: #2d3748
+    background-color: #2d3748;
 }
 /*------------------*/
 

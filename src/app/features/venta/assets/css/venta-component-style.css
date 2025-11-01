@@ -1,14 +1,16 @@
 .venta-grid {
   display: grid;
   grid-template-areas:
-    "header header"
-    "input input"
-    "agregar agregar"
-    "tabla factura";
+    "header header header"
+    "input input input"
+    "agregar agregar agregar"
+    "tabla tabla factura";
   grid-template-columns: 2fr 1fr; /* izquierda más ancha */
-  grid-template-rows: auto auto auto 1fr;
-  gap: 20px;
+  grid-template-rows: auto auto auto auto;
   padding: 20px;
+  margin-top: -80px;
+  height: auto; /* Asegura crecimiento */
+  overflow: hidden !important;
 }
 
 /* Asignamos las áreas */
@@ -34,24 +36,88 @@
 
 .mostrar-venta-container {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* tabla izquierda, factura derecha */
-  gap: 20px;
+  grid-template-columns: 68% 32%; /* ✅ proporción fija independientemente del zoom */
+  gap: 10px;
+  width: 100%;
   align-items: start;
-  margin-top: 20px;
 }
 
 /* Opcional: estilos visuales */
 .mostrar-venta-container table {
   background: #f8f8f8;
-  border-radius: 8px;
   padding: 10px;
   width: 100%;
+  
 }
 
 .realizar-venta {
-  background: #f0f0f0;
-  border-radius: 8px;
-  padding: 15px;
-  height: fit-content;
-  align-self: start;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #ffffff;
+  padding: 20px;
+  border-bottom-right-radius: 10px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.10);
+}
+
+.venta-producto-agregar {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.venta-main {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+/* Evita separación entre tablas directamente apiladas */
+.table-producto-encontrado {
+  margin-bottom: 0 !important;
+}
+
+.venta-tabla {
+  margin-top: 0 !important;
+}
+
+
+/* 1) Quita padding inferior del grid */
+.venta-grid{
+  /* antes: padding: 20px; */
+  padding: 20px 20px 0;  /* sin padding-bottom */
+}
+
+/* 2) Elimina márgenes inferiores que dejan hueco */
+.table-mostrar-producto{
+  margin: 0 !important;           /* por si el selector anterior no aplicaba */
+}
+.table-mostrar-producto table{
+  margin: 0 !important;           /* cobertura si usas el selector con "table" */
+}
+
+
+.realizar-venta header,
+.realizar-venta main{
+  margin: 0;
+  padding-bottom: 0;
+  overflow: hidden !important
+}
+
+/* 4) Asegura que el último hijo del grid no agregue margen extra */
+.venta-grid > *:last-child{
+  margin-bottom: 0 !important;
+}
+
+/* 5) (Opcional) Evita que el contenedor de la tabla agregue espacio */
+.mostrar-venta-container{
+  gap: 0;                 /* por si en algún momento usas gap */
+  overflow: hidden !important;
+}
+
+html, body {
+  height: auto;
+  min-height: 100vh;
+  overflow: hidden !important;
 }

@@ -1,36 +1,64 @@
-.ingresar-cdb form {
-    margin-top: 40px;
-    width: 70%;
-    margin-left: 15%;
+.venta-input {
+    background-color: #ffffff;
+}
+
+.center {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 5%;
-    position: relative;
+}
+
+.ingresar-cdb {
+    width: 50%;
+    height: 20vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative; /* Necesario para ubicar el pseudo-elemento */
+    padding-bottom: 20px; /* Espacio entre input y la línea */
+}
+
+/* 🔹 Línea divisoria inferior */
+.ingresar-cdb::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: -300px; /* para que cubra todo si el form está centrado */
+    width: calc(100% + 650px); /* ajusta a todo el ancho visible */
+    height: 2px;
+    background-color: #e2e8f0; /* gris claro */
+    opacity: 0.9;
+    border-radius: 2px;
+    
+}
+
+.ingresar-cdb form {
+    width: 50%; /* Ajusta según prefieras */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-box {
+    margin-top: 30px;
     position: relative;
     width: 100%;
-    margin-bottom: 20px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.ingresar-cdb input{
+.ingresar-cdb input {
     font-size: 16px;
     outline: none;
     padding: 10px 15px;
-    display: block;
-    width: 50%;
-    border: none;
-    border-radius: 7px;
+    width: 100%;
+    height: 55px;
     border: 2px solid #1a202c;
+    border-radius: 7px;
     background: transparent;
     color: #2d3748;
-}
-
-.ingresar-cdb input:focus{
-    border: 2px solid #3679ff;
+    
 }
 
 .ingresar-cdb label {
@@ -45,9 +73,9 @@
 }
 
 .ingresar-cdb input:focus ~ label,
-.ingresar-cdb input:valid ~ label{
+.ingresar-cdb input:valid ~ label {
     top: 0;
-    font-size: 16px;
+    font-size: 20px;
     padding: 0 10px;
-    background: #D1D5DB;
+    background-color: #ffffff
 }
