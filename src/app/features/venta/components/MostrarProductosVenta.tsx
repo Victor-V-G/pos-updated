@@ -12,7 +12,7 @@ import menos from "../assets/img/boton-menos.png";
 
 const PRODUCTOS_POR_PAGINA = 7;
 
-export const MostrarProductosVenta = ({ ProductoAgregado }: PropsMostrarProductosVenta) => {
+export const MostrarProductosVenta = ({ ProductoAgregado, recargarProductos }: PropsMostrarProductosVenta) => {
   const [AlmacenarProducto, setAlmacenarProducto] = useState<ProductoInterface[]>([]);
   const [CantidadPorProducto, setCantidadPorProducto] = useState<InterfaceCantidadPorProducto>({});
   const [PrecioTotal, setPrecioTotal] = useState<InterfacePrecioTotal>({});
@@ -165,7 +165,7 @@ export const MostrarProductosVenta = ({ ProductoAgregado }: PropsMostrarProducto
       {AlmacenarProducto.length === 0 ? (
         <div className="esqueleto">
           <div className="esqueleto-linea"></div>
-          <div className="esqueleto-linea"></div>
+          <div className="esqueleto-linea">Nota: puede presionar la tecla ENTER para agregar directamente un producto</div>
           <div className="esqueleto-linea"></div>
         </div>
       ) : (
@@ -267,6 +267,7 @@ export const MostrarProductosVenta = ({ ProductoAgregado }: PropsMostrarProducto
           setTotalGeneral(0);
           setProductosVenta([]);
           setPaginaActual(1);
+          recargarProductos(); // ✅ Se vuelve a obtener stock actualizado
         }}
         className="realizar-venta"
       />

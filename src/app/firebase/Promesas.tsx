@@ -3,7 +3,6 @@ import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
 import { RegistrosYMovimientosInterface } from "../shared/interfaces/registros-y-movimientos/RegistrosYMovimientosInterface";
-import { PropsProductosVenta } from "../shared/interfaces/ingresar-cdb/PropsProductosVenta";
 import { PropsRealizarVenta } from "../shared/interfaces/ingresar-cdb/PropsRealizarVenta";
 
 
@@ -149,7 +148,46 @@ export const obtenerMovimientosPromise = async () => {
 
 
 /*-------------------------------VENTA Y HISTORIAL------------------------------------*/
-export const registrarVentaPromise = async({ProductosVenta, TotalGeneral} : PropsRealizarVenta) => {
-    const docRef = await  addDoc(collection(db, "Ventas"), {ProductosVenta, TotalGeneral});
-    console.log("Venta registrada con ID: ", docRef.id);
-}
+export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, TotalGeneral }: PropsRealizarVenta) => {
+    try {
+        // ✅ Registrar venta
+        const ventaRef = await addDoc(collection(db, "Ventas"), {
+            ProductosVenta,
+            TotalGeneral,
+            fechaHora: serverTimestamp()
+        });
+        console.log("✅ Venta registrada con ID:", ventaRef.id);
+
+        // ✅ Actualizar stock de cada producto vendido
+        for (const item of ProductosVenta) {
+            const q = query(
+                collection(db, "Productos"),
+                where("CodigoDeBarras", "==", item.CodigoDeBarras)
+            );
+
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach(async (docSnap) => {
+                const stockActual = docSnap.data().Stock;
+                const stockNuevo = Number(stockActual) - Number(item.cantidad);
+
+                if (stockNuevo < 0) {
+                    console.warn(
+                        `⚠ Stock insuficiente para ${item.NombreProducto}. Se dejará en 0.`
+                    );
+                }
+
+                await updateDoc(doc(db, "Productos", docSnap.id), {
+                    Stock: stockNuevo < 0 ? 0 : stockNuevo,
+                });
+
+                console.log(`📉 Stock actualizado de ${item.NombreProducto}`);
+            });
+        }
+
+        return true;
+    } catch (error) {
+        console.error("❌ Error al registrar venta y actualizar stock:", error);
+        return false;
+    }
+};

@@ -11,6 +11,7 @@ export const VentaComponent = () => {
     const [ProductoFindSetter, setProductoFindSetter] = useState<ProductoInterface[]>([])
     const [ProductoAgregado, setProductoAgregado] = useState<ProductoInterface[]>([])
     const [LimpiarInput, setLimpiarInput] = useState(false)
+    const recargar = () => setLimpiarInput(true); // ✅ Force refresh desde IngresarCDB
 
     return (
 
@@ -32,7 +33,7 @@ export const VentaComponent = () => {
             
             <div className="venta-main">
                 <div className="venta-tabla">
-                    <MostrarProductosVenta ProductoAgregado={ProductoAgregado}/>
+                    <MostrarProductosVenta ProductoAgregado={ProductoAgregado} recargarProductos={recargar}/>
                 </div>
             </div>
 
