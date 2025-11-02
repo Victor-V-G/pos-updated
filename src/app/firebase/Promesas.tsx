@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot, serverTimestamp } from "firebase/firestore";
+import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot, serverTimestamp, orderBy } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -150,15 +150,14 @@ export const obtenerMovimientosPromise = async () => {
 /*-------------------------------VENTA Y HISTORIAL------------------------------------*/
 export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, TotalGeneral }: PropsRealizarVenta) => {
     try {
-        // ✅ Registrar venta
         const ventaRef = await addDoc(collection(db, "Ventas"), {
             ProductosVenta,
             TotalGeneral,
-            fechaHora: serverTimestamp()
+            fechaHora: serverTimestamp(), // ✅ Marca de tiempo única para ordenar
         });
-        console.log("✅ Venta registrada con ID:", ventaRef.id);
 
-        // ✅ Actualizar stock de cada producto vendido
+        console.log("✅ Venta ID:", ventaRef.id);
+
         for (const item of ProductosVenta) {
             const q = query(
                 collection(db, "Productos"),
@@ -171,23 +170,33 @@ export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, To
                 const stockActual = docSnap.data().Stock;
                 const stockNuevo = Number(stockActual) - Number(item.cantidad);
 
-                if (stockNuevo < 0) {
-                    console.warn(
-                        `⚠ Stock insuficiente para ${item.NombreProducto}. Se dejará en 0.`
-                    );
-                }
-
                 await updateDoc(doc(db, "Productos", docSnap.id), {
                     Stock: stockNuevo < 0 ? 0 : stockNuevo,
                 });
 
-                console.log(`📉 Stock actualizado de ${item.NombreProducto}`);
+                console.log(`📉 Stock actualizado: ${item.NombreProducto}`);
             });
         }
 
         return true;
     } catch (error) {
-        console.error("❌ Error al registrar venta y actualizar stock:", error);
+        console.error("❌ Error al registrar venta:", error);
         return false;
     }
+};
+
+
+export const obtenerVentasPromise = async () => {
+    const q = query(
+        collection(db, "Ventas"),
+        orderBy("fechaHora", "desc") // ✅ Siempre más reciente primero
+    );
+
+    const querySnapshot = await getDocs(q);
+
+    return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        fechaHora: doc.data().fechaHora?.toDate().toLocaleString("es-CL") ?? "Sin fecha",
+    }));
 };

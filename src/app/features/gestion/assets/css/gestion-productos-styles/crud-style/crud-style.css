@@ -1,0 +1,228 @@
+/* ===================== */
+/* GLOBAL */
+/* ===================== */
+html, body {
+  overflow-y: hidden !important;
+  overflow: hidden !important;
+  background: #e5e7eb;
+}
+
+/* ===================== */
+/* CONTENEDOR GENERAL */
+/* ===================== */
+.gestion-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: -45px;
+  overflow: hidden !important;
+  margin-bottom: 23px;
+}
+
+.gestion-panel {
+  width: 100%;
+  max-width: 1450px;
+  background: #f3f4f6;
+  padding: 20px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+/* ===================== */
+/* HEADER */
+/* ===================== */
+.gestion-title {
+  width: 100%;
+  text-align: center;
+  background: #2d3748;
+  color: white;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* ===================== */
+/* FILTROS */
+/* ===================== */
+.gestion-filtros {
+  width: 100%;
+  background: #e5e7eb;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.gestion-input,
+.gestion-filtros select {
+  padding: 7px 12px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  cursor: pointer;
+  background: white;
+  font-size: 14px;
+}
+
+.gestion-input {
+  width: 260px;
+}
+
+/* ===================== */
+/* TABLA */
+/* ===================== */
+.gestion-wrapper {
+  width: 100%;
+  padding: 8px;
+}
+
+.gestion-table {
+  width: 100%;
+  table-layout: fixed; /* ✅ Hace que todas las columnas usen bien el espacio */
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+.gestion-table thead tr {
+  background-color: #4a5568;
+  color: white;
+  height: 50px;
+}
+
+/* ✅ Columnas bien proporcionadas */
+.gestion-table th, .gestion-table td {
+  text-align: center;
+  padding: 10px 8px;
+  font-size: 15px;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* ✅ Columna de acciones más equilibrada */
+.gestion-table th:nth-child(6),
+.gestion-table td:nth-child(6) {
+  width: 200px;
+}
+
+/* ===================== */
+/* ESTADOS */
+/* ===================== */
+.gestion-estado {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* SIN STOCK */
+.gestion-row-sin {
+  background-color: #ff4d4d !important;
+  color: white !important;
+}
+.gestion-row-sin .gestion-estado {
+  color: white !important;
+  text-transform: uppercase;
+}
+
+/* CRÍTICO */
+.gestion-row-bajo {
+  background-color: #ff8f8f !important;
+  color: #8b0000 !important;
+}
+
+/* POCO STOCK */
+.gestion-row-medio {
+  background-color: #fff8a6 !important;
+  color: #7a6300 !important;
+}
+
+/* ===================== */
+/* ACCIONES */
+/* ===================== */
+.gestion-table td:nth-child(6) {
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.gestion-acciones {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Botón Modificar */
+.modificar-button {
+  background-color: #0077ff;
+  color: white;
+  padding: 10px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  width: 85px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.modificar-button:hover {
+  background-color: #005fcc;
+  transform: translateY(-2px);
+}
+
+/* Botón Eliminar */
+.button-eliminar {
+  background-color: #e63946;
+  color: white;
+  padding: 10px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  width: 85px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.button-eliminar:hover {
+  background-color: #c72c37;
+  transform: translateY(-2px);
+}
+
+/* ===================== */
+/* PAGINACIÓN */
+/* ===================== */
+.gestion-pagination {
+  width: 100%;
+  margin-top: 15px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  font-weight: bold;
+}
+
+.gestion-pagination button {
+  padding: 8px 20px;
+  border-radius: 8px;
+  background: #2d3748;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.gestion-pagination button:hover:not(:disabled) {
+  background: #4a5568;
+}
+
+.gestion-pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

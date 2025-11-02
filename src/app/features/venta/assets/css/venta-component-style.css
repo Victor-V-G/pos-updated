@@ -116,8 +116,3 @@
   overflow: hidden !important;
 }
 
-html, body {
-  height: auto;
-  min-height: 100vh;
-  overflow: hidden !important;
-}

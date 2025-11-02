@@ -143,3 +143,24 @@
   justify-content: center;
 }
 
+/* Stock crítico (<=1) */
+.fila-stock-bajo {
+  background-color: #ff8b8b !important;
+  font-weight: bold;
+}
+
+.fila-stock-bajo td {
+  background-color: transparent !important;
+  color: #000 !important;
+}
+
+/* Stock bajo (<=5) */
+.fila-stock-medio {
+  background-color: #fdfd71 !important;
+  font-weight: bold;
+}
+
+.fila-stock-medio td {
+  background-color: transparent !important;
+  color: #000 !important;
+}
