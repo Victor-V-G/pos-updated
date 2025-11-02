@@ -1,0 +1,91 @@
+@echo off
+title Iniciando Servidor Next.js y Abriendo Chrome...
+color 0F
+cls
+
+echo.
+echo =================================================================
+echo  INICIADOR AUTOMATICO PARA PROYECTO NEXT.JS
+echo =================================================================
+echo.
+
+rem --- PASO 1: Configuracion y limpieza ---
+echo [INFO] Preparando el entorno...
+
+rem Define una ubicacion para un archivo de registro temporal
+set "LOGFILE=%TEMP%\nextjs_startup.log"
+
+rem Si el archivo de registro existe de un uso anterior, lo borramos
+if exist "%LOGFILE%" del "%LOGFILE%"
+
+echo [INFO] Usando archivo de registro temporal en: %LOGFILE%
+echo.
+
+rem --- PASO 2: Navegar a la carpeta del proyecto ---
+echo [INFO] Navegando a D:\PROYECTOS REACT\pos-updated
+D:
+cd "PROYECTOS REACT\pos-updated"
+
+if /i "%CD%" NEQ "D:\PROYECTOS REACT\pos-updated" (
+    echo [ERROR] No se pudo cambiar a la carpeta del proyecto. Verifica la ruta.
+    pause
+    exit
+)
+echo [OK] Directorio cambiado correctamente.
+echo.
+
+rem --- PASO 3: Iniciar el servidor Next.js EN SEGUNDO PLANO ---
+echo [ACCION] Iniciando el servidor Next.js en segundo plano...
+echo [INFO] Esto puede tardar unos segundos. La salida del servidor se guardara en el log.
+echo.
+
+rem Esta es la linea clave:
+rem 'start "titulo" /B' inicia un proceso en segundo plano sin una nueva ventana.
+rem 'cmd /c "comando > log 2>&1"' ejecuta el comando y redirige toda su salida (normal y de error) al archivo LOGFILE.
+start "Servidor Next.js" /B cmd /c "npx next dev > "%LOGFILE%" 2>&1"
+
+
+rem --- PASO 4: Esperar y leer el archivo de registro hasta encontrar la URL ---
+echo [ACCION] Esperando a que el servidor genere la URL de localhost...
+echo [INFO] Comprobando el archivo de registro cada segundo.
+
+:bucle_de_espera
+rem Busca la cadena "Local:" en el archivo de registro. findstr es un buscador de texto.
+findstr /L "Local:" "%LOGFILE%" >nul
+
+rem El comando 'if errorlevel 1' significa "si el comando anterior (findstr) NO encontro el texto".
+if errorlevel 1 (
+    rem Imprime un punto para mostrar que esta funcionando, sin saltar de linea.
+    <nul set /p =.
+    rem Espera 1 segundo antes de volver a intentarlo.
+    timeout /t 1 /nobreak >nul
+    rem Vuelve al inicio del bucle.
+    goto :bucle_de_espera
+)
+
+echo.
+echo.
+echo [EXITO!] URL detectada en el archivo de registro!
+echo.
+
+rem --- PASO 5: Extraer la URL y abrir el navegador ---
+rem Una vez encontrada, usamos el 'for' para extraer la URL del archivo de registro.
+for /f "tokens=3" %%U in ('findstr "Local:" "%LOGFILE%"') do (
+    echo [INFO] La URL es: %%U
+    echo [ACCION] Abriendo %%U en Google Chrome...
+    start chrome "%%U"
+)
+
+rem --- PASO 6: Limpieza y mensaje final ---
+echo.
+echo [OK] El navegador ha sido lanzado.
+echo [INFO] El servidor de Next.js sigue corriendo en segundo plano.
+echo.
+echo [IMPORTANTE] Para detener el servidor, simplemente CIERRA ESTA VENTANA.
+echo.
+
+rem Borramos el archivo temporal que ya no necesitamos.
+del "%LOGFILE%"
+
+rem Mantiene la ventana abierta para que puedas ver los mensajes y cerrarla para detener el servidor.
+pause
