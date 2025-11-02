@@ -7,11 +7,11 @@ export const VentaModals = ({OpenManager} : ModalsInterfaceProps) => {
     if (OpenManager == false) {
         return null
     } else {
-        return (
-            <div>
-                <VentaComponent/>
+       return (
+            <div className="venta-scope">
+                <VentaComponent />
             </div>
-        )
+        );
     }
 
 }

@@ -1,45 +1,43 @@
-.venta-input {
+.venta-scope .venta-input {
     background-color: #ffffff;
 }
 
-.center {
+.venta-scope .center {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.ingresar-cdb {
+.venta-scope .ingresar-cdb {
     width: 50%;
     height: 20vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative; /* Necesario para ubicar el pseudo-elemento */
-    padding-bottom: 20px; /* Espacio entre input y la línea */
+    position: relative;
+    padding-bottom: 20px;
 }
 
-/* 🔹 Línea divisoria inferior */
-.ingresar-cdb::after {
+.venta-scope .ingresar-cdb::after {
     content: "";
     position: absolute;
     bottom: 0;
-    left: -300px; /* para que cubra todo si el form está centrado */
-    width: calc(100% + 650px); /* ajusta a todo el ancho visible */
+    left: -300px;
+    width: calc(100% + 650px);
     height: 2px;
-    background-color: #e2e8f0; /* gris claro */
+    background-color: #e2e8f0;
     opacity: 0.9;
     border-radius: 2px;
-    
 }
 
-.ingresar-cdb form {
-    width: 50%; /* Ajusta según prefieras */
+.venta-scope .ingresar-cdb form {
+    width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.input-box {
+.venta-scope .input-box {
     margin-top: 30px;
     position: relative;
     width: 100%;
@@ -48,7 +46,7 @@
     justify-content: center;
 }
 
-.ingresar-cdb input {
+.venta-scope .ingresar-cdb input {
     font-size: 16px;
     outline: none;
     padding: 10px 15px;
@@ -58,10 +56,9 @@
     border-radius: 7px;
     background: transparent;
     color: #2d3748;
-    
 }
 
-.ingresar-cdb label {
+.venta-scope .ingresar-cdb label {
     position: absolute;
     top: 50%;
     left: 15px;
@@ -72,10 +69,10 @@
     transition: .3s;
 }
 
-.ingresar-cdb input:focus ~ label,
-.ingresar-cdb input:valid ~ label {
+.venta-scope .ingresar-cdb input:focus ~ label,
+.venta-scope .ingresar-cdb input:valid ~ label {
     top: 0;
     font-size: 20px;
     padding: 0 10px;
-    background-color: #ffffff
+    background-color: #ffffff;
 }

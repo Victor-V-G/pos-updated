@@ -8,98 +8,120 @@ const MOVIMIENTOS_POR_PAGINA = 10;
 export const RegistrosYMovimientosComponent = () => {
     const [MovimientosRecuperados, setMovimientosRecuperados] = useState<RegistrosYMovimientosInterface[]>([]);
     const [paginaActual, setPaginaActual] = useState(1);
+    const [filtroAccion, setFiltroAccion] = useState("todos");
+
+    // ✅ Convertidor seguro de fecha (dd/mm/yyyy hh:mm:ss -> Date)
+    const parsearFecha = (fechaHora: string) => {
+        const [fecha, hora] = fechaHora.split(", ");
+        const [dia, mes, año] = fecha.split("/").map(Number);
+        return new Date(año, mes - 1, dia, ...hora.split(":").map(Number));
+    };
 
     useEffect(() => {
         obtenerMovimientosPromise()
             .then((movimientosGet) => {
-                const movimientosOrdenados = movimientosGet.sort((a, b) => {
-                    // Convertimos las fechas a objetos Date
-                    const fechaA = new Date(a.fechaHora);
-                    const fechaB = new Date(b.fechaHora);
-
-                    // Orden descendente: más reciente primero
-                    return fechaB.getTime() - fechaA.getTime();
-                });
-
-                setMovimientosRecuperados(movimientosOrdenados);
+                const ordenados = [...movimientosGet].sort((a, b) =>
+                    parsearFecha(b.fechaHora).getTime() - parsearFecha(a.fechaHora).getTime()
+                );
+                setMovimientosRecuperados(ordenados);
             })
-            .catch((error) => {
-                alert("NO SE PUDIERON RECUPERAR LOS MOVIMIENTOS");
-                console.log(error);
-            });
+            .catch((e) => console.log("Error al obtener movimientos:", e));
     }, []);
 
+    // ✅ Filtro de acción sin romper el orden
+    const Filtrados = MovimientosRecuperados.filter(mov => {
+        const accionLower = mov.accion.toLowerCase();
+        if (filtroAccion === "todos") return true;
+        return accionLower.includes(filtroAccion);
+    });
 
-    // Calcular cuántas páginas hay
-    const totalPaginas = Math.ceil(MovimientosRecuperados.length / MOVIMIENTOS_POR_PAGINA);
+    const totalPaginas = Math.ceil(Filtrados.length / MOVIMIENTOS_POR_PAGINA);
 
-    // Obtener los movimientos que deben mostrarse en la página actual
-    const movimientosPaginados = MovimientosRecuperados.slice(
+    const movimientosPaginados = Filtrados.slice(
         (paginaActual - 1) * MOVIMIENTOS_POR_PAGINA,
         paginaActual * MOVIMIENTOS_POR_PAGINA
     );
 
-    // Navegar a la página anterior
-    const irPaginaAnterior = () => {
-        if (paginaActual > 1) {
-            setPaginaActual(paginaActual - 1);
-        }
-    };
-
-    // Navegar a la página siguiente
-    const irPaginaSiguiente = () => {
-        if (paginaActual < totalPaginas) {
-            setPaginaActual(paginaActual + 1);
-        }
+    const iconoAccion = (accion: string) => {
+        const a = accion.toLowerCase();
+        if (a.includes("registrar")) return "📦";
+        if (a.includes("modificar")) return "✏️";
+        return "🗑️";
     };
 
     return (
         <div className="bloque-unificado">
-            <header className="header-title">
-                <h1>REGISTROS Y MOVIMIENTOS</h1>
-            </header>
 
-            <main>
-                <table className="tabla-acciones">
-                    <thead>
+            {/* ✅ Header */}
+            <h1 className="header-title">REGISTROS Y MOVIMIENTOS</h1>
+
+            {/* ✅ Filtro de acciones */}
+            <div className="filtro-movimientos">
+                <label>Filtrar por acción:</label>
+                <select
+                    value={filtroAccion}
+                    onChange={(e) => {
+                        setFiltroAccion(e.target.value);
+                        setPaginaActual(1);
+                    }}
+                >
+                    <option value="todos">Todos</option>
+                    <option value="registrar">Registrar</option>
+                    <option value="modificar">Modificar</option>
+                    <option value="eliminar">Eliminar</option>
+                </select>
+            </div>
+
+            <table className="tabla-acciones">
+                <thead>
+                    <tr>
+                        <td>ACCIÓN</td>
+                        <td className="col-cambios">MOVIMIENTO REGISTRADO</td>
+                        <td className="col-fecha">FECHA Y HORA</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {Filtrados.length === 0 ? (
                         <tr>
-                            <td>ACCION</td>
-                            <td>MOVIMIENTOS REGISTRADOS</td>
-                            <td>FECHA</td>
+                            <td colSpan={3} className="no-productos">
+                                ⚠ No hay movimientos con los filtros aplicados
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {MovimientosRecuperados.length === 0 ? (
-                            <tr>
-                                <td colSpan={3} className="no-productos">
-                                    SE DEBE REALIZAR UNA ACCION PREVIAMENTE
+                    ) : (
+                        movimientosPaginados.map((mov, idx) => (
+                            <tr key={idx}>
+                                <td className="accion-col">
+                                    {iconoAccion(mov.accion)} {mov.accion}
                                 </td>
+                                <td className="texto-cambios">{mov.cambios}</td>
+                                <td className="fecha-col">{mov.fechaHora}</td>
                             </tr>
-                        ) : (
-                            movimientosPaginados.map((movimientosMap, index) => (
-                                <tr key={index}>
-                                    <td>{movimientosMap.accion}</td>
-                                    <td>{movimientosMap.cambios}</td>
-                                    <td>{movimientosMap.fechaHora}</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                        ))
+                    )}
+                </tbody>
+            </table>
 
-                {/* Controles de paginación */}
-                {MovimientosRecuperados.length > 0 && (
-                    <div className="paginacion">
-                        <button onClick={irPaginaAnterior} disabled={paginaActual === 1}>
-                            ← Anterior
-                        </button>
-                        <span>Página {paginaActual} de {totalPaginas}</span>
-                        <button onClick={irPaginaSiguiente} disabled={paginaActual === totalPaginas}>
-                            Siguiente →
-                        </button>
-                    </div>
-                )}
-            </main>
+            {/* ✅ PAGINACIÓN */}
+            {Filtrados.length > 0 && (
+                <div className="paginacion">
+                    <button
+                        onClick={() => setPaginaActual(paginaActual - 1)}
+                        disabled={paginaActual === 1}
+                    >
+                        ← Anterior
+                    </button>
+
+                    <span>Página {paginaActual} de {totalPaginas}</span>
+
+                    <button
+                        onClick={() => setPaginaActual(paginaActual + 1)}
+                        disabled={paginaActual === totalPaginas}
+                    >
+                        Siguiente →
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

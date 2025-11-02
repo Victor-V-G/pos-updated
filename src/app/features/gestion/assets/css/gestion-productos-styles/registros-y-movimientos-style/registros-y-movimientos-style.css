@@ -1,106 +1,114 @@
-/* Contenedor general del header y la tabla */
 .bloque-unificado {
-    width: 90%;
-    margin: 0 auto;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-    background-color: white;
-    margin-bottom: 30px;
+  width: 100%;
+  max-width: 1500px;
+  background: #f8fafc;
+  padding: 25px;
+  margin: 20px auto;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
 }
 
-/* Header */
+/* HEADER */
 .header-title {
-    width: 100%;
-    color: white;
-    display: flex;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
+  width: 100%;
+  text-align: center;
+  background: #2d3748;
+  color: white;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 18px;
 }
 
-.header-title h1 {
-    background-color: #2d3748;
-    width: 100%;
-    padding: 20px 0;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.6rem;
-    font-weight: bold;
-    border-radius: 10px 10px 0 0;
+/* FILTROS */
+.filtro-movimientos {
+  width: 100%;
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: flex-start;
+  gap: 10px;
+  font-weight: bold;
+}
+.filtro-movimientos select {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #aaa;
+  cursor: pointer;
 }
 
-/* Tabla */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: white;
-    font-family: Arial, sans-serif;
-    margin-bottom: 20px;
+/* TABLA */
+.tabla-acciones {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-/* Cabecera de la tabla */
-thead tr {
-    background-color: #252f3f;
-    color: white;
-    font-weight: bold;
+.tabla-acciones thead {
+  background: #4a5568;
+  color: white;
+  font-weight: bold;
 }
 
-/* Celdas */
-td {
-    padding: 12px;
-    text-align: center;
-    border-bottom: 1px solid #ddd;
+.tabla-acciones td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-/* Colores alternos para filas */
-tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+/* ✅ Anchos */
+.col-cambios { width: 65%; text-align: left; }
+.col-fecha { width: 18%; text-align: right; }
+.texto-cambios { text-align: left; }
+.fecha-col { text-align: right; }
+
+/* Alternancia */
+.tabla-acciones tbody tr:nth-child(odd) {
+  background: #f8f9fa;
+}
+.tabla-acciones tbody tr:nth-child(even) {
+  background: #ffffff;
 }
 
-tbody tr:nth-child(odd) {
-    background-color: #e9ecef;
+/* Hover */
+.tabla-acciones tbody tr:hover {
+  background: #e0f2fe;
+  transition: 0.25s;
 }
 
-/* Hover en filas de datos */
-tbody tr:hover {
-    background-color: #dbeafe;
-    transition: background-color 0.3s ease;
-}
+/* ✅ Colores por acción */
+.accion-registrar { color: #2563eb; font-weight: bold; }
+.accion-modificar { color: #ca8a04; font-weight: bold; }
+.accion-eliminar { color: #dc2626; font-weight: bold; }
 
-/* Fila vacía con mensaje */
+/* Sin resultados */
 .no-productos {
-    padding: 20px;
-    color: #718096;
-    font-style: italic;
-    text-align: center;
-    background-color: #f1f5f9;
+  background: #ffe4e6;
+  color: #991b1b;
+  font-weight: bold;
 }
 
+/* PAGINACIÓN */
 .paginacion {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 1rem;
-    gap: 1rem;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  margin-top: 18px;
 }
 
 .paginacion button {
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    width: 10%;
-    height: 40px;
-    border: none;
-    border-radius: 10px;
-    background: #2d3748;
-    color: white;
-    cursor: pointer;
+  background: #2d3748;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
 }
-
+.paginacion button:hover:not(:disabled) {
+  background: #4a5568;
+}
 .paginacion button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+  opacity: 0.45;
+  cursor: not-allowed;
 }

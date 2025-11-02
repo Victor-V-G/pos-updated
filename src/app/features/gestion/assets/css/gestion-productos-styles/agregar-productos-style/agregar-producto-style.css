@@ -58,7 +58,7 @@
 
 /*----------PARTE INFERIOR-----------*/
 .agregar-producto-style form{
-    margin-top: 40px;
+    margin-top: 3rem;
     width: 70%;
     margin-left: 15%;
     display: flex;
@@ -72,7 +72,7 @@
 .input-box {
     position: relative;
     width: 100%;
-    margin-bottom: 20px; 
+    margin-bottom: 40px; 
 }
 
 .agregar-form input{
@@ -86,6 +86,9 @@
     border: 2px solid #1a202c;
     background: transparent;
     color: #2d3748;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .agregar-form input:focus{
@@ -101,6 +104,7 @@
     font-size: 20px;
     pointer-events: none;
     transition: .3s;
+    
 }
 
 .agregar-form input:focus ~ label,

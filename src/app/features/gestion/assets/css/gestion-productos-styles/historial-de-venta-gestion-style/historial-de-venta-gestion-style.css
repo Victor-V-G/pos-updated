@@ -6,6 +6,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  margin-bottom: -10px;
 }
 
 .ver-stock-panel {
@@ -226,6 +227,22 @@
 }
 
 
+.btn-salir {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #ff2002;
+  color: white;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.btn-salir:hover {
+  background-color: #561602;
+}
+
 .detalle-venta-row td {
   border: 2px solid #aaa;
 }
@@ -288,4 +305,44 @@
   padding: 6px;
   border-radius: 6px;
   border: 1px solid #cbd5e1;
+}
+
+/* ===================== */
+/* BOTÓN + TÍTULO CENTRADO */
+/* ===================== */
+.titulo-header-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-volver-atras {
+  position: absolute;
+  left: 20px; /* ⬅ Mueve el botón bien hacia la izquierda */
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.titulo-centrado {
+  text-align: center;
+  width: 100%;
+  font-weight: bold;
+}
+
+/* Mantener centrado el título aunque el botón no esté centrado */
+.espacio-boton {
+  width: 120px; /* mismo ancho aproximado que el botón */
+}
+
+@media(max-width: 768px) {
+  .btn-volver-atras {
+    left: 10px;
+    font-size: 12px;
+    padding: 5px 8px;
+  }
+  .espacio-boton {
+    width: 80px;
+  }
 }

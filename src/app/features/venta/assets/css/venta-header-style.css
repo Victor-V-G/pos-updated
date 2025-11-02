@@ -1,5 +1,4 @@
-
-.header-div {
+.venta-scope .header-div {
     width: 150%;
     height: 60px;
     background-color: #2d3748;
@@ -13,7 +12,7 @@
     font-weight: bold;
 }
 
-.venta-header h1 {
+.venta-scope .venta-header h1 {
     display: flex;
     align-items: center;
     justify-content: center;

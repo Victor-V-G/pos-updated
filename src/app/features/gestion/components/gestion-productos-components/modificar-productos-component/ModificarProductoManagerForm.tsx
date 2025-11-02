@@ -113,6 +113,7 @@ export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefresca
     const handleCallPromiseModificarProducto = () => {
         modificarProductoPromise(IDSeleccionadaModificar[0], ProductoSeleccionadoForm).then(() => {
             alert("PRODUCTO MODIFICADO CORRECTAMENTE")
+            setRefrescarProductos(true);
         }).catch((error) => {
             alert("OCURRIO UN ERROR AL MODIFICAR EL PRODUCTO")
             console.log(error)

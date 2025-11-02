@@ -3,6 +3,8 @@ import '../../assets/css/component-main-style/gestion-component-style.css'
 import GestionarProductosModals from "../../modals/gestion-main-modals/GestionarProductosAbrirMainComponentModals"
 import AgregarProductoModals from "../../modals/gestion-productos-modals/agregar-productos/AgregarProductoModals"
 import RegistrosYMovimientosModals from "../../modals/gestion-productos-modals/registros-y-movimientos/RegistrosYMovimientosModals"
+import HistorialDeVentasGestion from "../gestion-productos-components/historial-de-ventas-gestion/HistorialDeVentasGestion"
+import HistorialDeVentasGesitonModals from "../../modals/gestion-productos-modals/historial-de-ventas-gestion-modals/HistorialDeVentasGestionModals"
 
 
 export const GestionComponent = () => {
@@ -23,6 +25,9 @@ export const GestionComponent = () => {
     const [OpenManagerGestionarProductos, setOpenManagerGestionarProductos] = useState(false)
     /*-----------------------------------------------------------------------------------*/
 
+    /*------------------GESTOR DEL COMPONENTE HISTORIAL DE VENTAS------------------------*/
+    const [OpenManagerHistorialDeVentasGestion, setOpenManagerHistorialDeVentasGestion] = useState(false)
+    /*-----------------------------------------------------------------------------------*/
 
     if (OpenManagerGestionComponent == true){
         return (
@@ -44,6 +49,7 @@ export const GestionComponent = () => {
                                     setOpenManagerGestionComponent(false);
                                     setOpenManagerGestionarProductos(false);
                                     setOpenManagerRegistrosYMovimientos(false);
+                                    setOpenManagerHistorialDeVentasGestion(false);
                                 }}>
                                 <span>AGREGAR PRODUCTO</span>
                             </button>
@@ -54,6 +60,7 @@ export const GestionComponent = () => {
                                     setOpenManagerAgregarProducto(false);
                                     setOpenManagerGestionComponent(false);
                                     setOpenManagerGestionarProductos(false);
+                                    setOpenManagerHistorialDeVentasGestion(false);
                                 }}>
                                 <span>REGISTROS Y MOVIMIENTOS</span>
                             </button>
@@ -64,8 +71,20 @@ export const GestionComponent = () => {
                                     setOpenManagerGestionComponent(false);
                                     setOpenManagerAgregarProducto(false);
                                     setOpenManagerRegistrosYMovimientos(false);
+                                    setOpenManagerHistorialDeVentasGestion(false);
                                 }}>
                                 <span>GESTIONAR PRODUCTOS</span>
+                            </button>
+                            
+                            <button
+                                onClick={()=>{
+                                    setOpenManagerGestionarProductos(false);
+                                    setOpenManagerGestionComponent(false);
+                                    setOpenManagerAgregarProducto(false);
+                                    setOpenManagerRegistrosYMovimientos(false);
+                                    setOpenManagerHistorialDeVentasGestion(true);
+                                }}>
+                                <span>HISTORIAL Y GESTOR DE VENTAS</span>
                             </button>
 
                         </nav>
@@ -121,6 +140,23 @@ export const GestionComponent = () => {
                 <GestionarProductosModals
                     OpenManager={OpenManagerGestionarProductos}
                     setOpenManager={()=>setOpenManagerGestionarProductos(false)}
+                    OpenManagerSetter={OpenManagerGestionComponent}
+                    SetOpenManagerGestionComponentSetter={setOpenManagerGestionComponent}
+                />
+                
+            </>
+        
+        )
+    }
+
+    if (OpenManagerHistorialDeVentasGestion == true){
+        return(
+
+            <>
+
+                <HistorialDeVentasGesitonModals
+                    OpenManager={OpenManagerHistorialDeVentasGestion}
+                    setOpenManager={()=>setOpenManagerHistorialDeVentasGestion(false)}
                     OpenManagerSetter={OpenManagerGestionComponent}
                     SetOpenManagerGestionComponentSetter={setOpenManagerGestionComponent}
                 />

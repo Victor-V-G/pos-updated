@@ -14,33 +14,43 @@ export const VentaComponent = () => {
     const recargar = () => setLimpiarInput(true); // ✅ Force refresh desde IngresarCDB
 
     return (
+        <div className="venta-scope">
+            <div className="venta-grid">  
 
-        <div className="venta-grid">  
-
-            <div className="header-div">
-                <header className="venta-header">
-                    <h1>REALIZAR VENTA</h1>
-                </header>
-            </div>
-            
-            <div className="venta-input">
-                <IngresarCDB setProductoFindSetter={setProductoFindSetter} LimpiarImput={LimpiarInput} setLimpiarInput={setLimpiarInput}/>
-            </div>
-
-            <div className="venta-producto-agregar">
-                <ProductoEncontradoAgregar ProductoFindSetter={ProductoFindSetter} setProductoAgregado={setProductoAgregado} setLimpiarInput={setLimpiarInput}/>
-            </div>
-            
-            <div className="venta-main">
-                <div className="venta-tabla">
-                    <MostrarProductosVenta ProductoAgregado={ProductoAgregado} recargarProductos={recargar}/>
+                <div className="header-div">
+                    <header className="venta-header">
+                        <h1>REALIZAR VENTA</h1>
+                    </header>
                 </div>
+                
+                <div className="venta-input">
+                    <IngresarCDB 
+                        setProductoFindSetter={setProductoFindSetter}
+                        LimpiarImput={LimpiarInput}
+                        setLimpiarInput={setLimpiarInput}
+                    />
+                </div>
+
+                <div className="venta-producto-agregar">
+                    <ProductoEncontradoAgregar 
+                        ProductoFindSetter={ProductoFindSetter}
+                        setProductoAgregado={setProductoAgregado}
+                        setLimpiarInput={setLimpiarInput}
+                    />
+                </div>
+                
+                <div className="venta-main">
+                    <div className="venta-tabla">
+                        <MostrarProductosVenta 
+                            ProductoAgregado={ProductoAgregado}
+                            recargarProductos={recargar}
+                        />
+                    </div>
+                </div>
+
             </div>
-
         </div>
-
     )
-
 }
 
 export default VentaComponent;

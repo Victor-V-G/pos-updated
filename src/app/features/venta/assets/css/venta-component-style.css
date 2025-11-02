@@ -1,56 +1,56 @@
-.venta-grid {
+.venta-scope .venta-grid {
   display: grid;
   grid-template-areas:
     "header header header"
     "input input input"
     "agregar agregar agregar"
     "tabla tabla factura";
-  grid-template-columns: 2fr 1fr; /* izquierda más ancha */
+  grid-template-columns: 2fr 1fr;
   grid-template-rows: auto auto auto auto;
   padding: 20px;
   margin-top: -80px;
-  height: auto; /* Asegura crecimiento */
+  height: auto;
   overflow: hidden !important;
 }
 
 /* Asignamos las áreas */
-.venta-header {
+.venta-scope .venta-header {
   grid-area: header;
   text-align: center;
 }
 
-.venta-input {
+.venta-scope .venta-input {
   grid-area: input;
 }
 
-.venta-producto-agregar {
+.venta-scope .venta-producto-agregar {
   grid-area: agregar;
 }
 
-/* Aquí está el bloque inferior */
-.venta-main {
+/* Bloque inferior */
+.venta-scope .venta-main {
   grid-area: tabla;
   display: flex;
   flex-direction: column;
 }
 
-.mostrar-venta-container {
+/* Distribución de tabla y factura */
+.venta-scope .mostrar-venta-container {
   display: grid;
-  grid-template-columns: 68% 32%; /* ✅ proporción fija independientemente del zoom */
+  grid-template-columns: 68% 32%;
   gap: 10px;
   width: 100%;
   align-items: start;
 }
 
-/* Opcional: estilos visuales */
-.mostrar-venta-container table {
+/* Estilo visual */
+.venta-scope .mostrar-venta-container table {
   background: #f8f8f8;
   padding: 10px;
   width: 100%;
-  
 }
 
-.realizar-venta {
+.venta-scope .realizar-venta {
   width: 100%;
   min-height: 400px;
   display: flex;
@@ -63,56 +63,52 @@
   box-shadow: inset 0 0 6px rgba(0,0,0,0.10);
 }
 
-.venta-producto-agregar {
+.venta-scope .venta-producto-agregar {
   margin-bottom: 0;
   padding-bottom: 0;
 }
 
-.venta-main {
+.venta-scope .venta-main {
   margin-top: 0;
   padding-top: 0;
 }
 
-/* Evita separación entre tablas directamente apiladas */
-.table-producto-encontrado {
+/* Evita separación */
+.venta-scope .table-producto-encontrado {
   margin-bottom: 0 !important;
 }
 
-.venta-tabla {
+.venta-scope .venta-tabla {
   margin-top: 0 !important;
 }
 
-
-/* 1) Quita padding inferior del grid */
-.venta-grid{
-  /* antes: padding: 20px; */
-  padding: 20px 20px 0;  /* sin padding-bottom */
+/* Ajuste padding inferior grid */
+.venta-scope .venta-grid {
+  padding: 20px 20px 0;
 }
 
-/* 2) Elimina márgenes inferiores que dejan hueco */
-.table-mostrar-producto{
-  margin: 0 !important;           /* por si el selector anterior no aplicaba */
+/* Elimina márgenes inferiores */
+.venta-scope .table-mostrar-producto {
+  margin: 0 !important;
 }
-.table-mostrar-producto table{
-  margin: 0 !important;           /* cobertura si usas el selector con "table" */
+.venta-scope .table-mostrar-producto table {
+  margin: 0 !important;
 }
 
-
-.realizar-venta header,
-.realizar-venta main{
+.venta-scope .realizar-venta header,
+.venta-scope .realizar-venta main {
   margin: 0;
   padding-bottom: 0;
-  overflow: hidden !important
-}
-
-/* 4) Asegura que el último hijo del grid no agregue margen extra */
-.venta-grid > *:last-child{
-  margin-bottom: 0 !important;
-}
-
-/* 5) (Opcional) Evita que el contenedor de la tabla agregue espacio */
-.mostrar-venta-container{
-  gap: 0;                 /* por si en algún momento usas gap */
   overflow: hidden !important;
 }
 
+/* Último hijo sin margen */
+.venta-scope .venta-grid > *:last-child {
+  margin-bottom: 0 !important;
+}
+
+/* Evita espacios en contenedor */
+.venta-scope .mostrar-venta-container {
+  gap: 0;
+  overflow: hidden !important;
+}
