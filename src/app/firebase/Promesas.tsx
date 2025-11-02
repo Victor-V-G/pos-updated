@@ -1,4 +1,4 @@
-import { doc, collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot, serverTimestamp, orderBy } from "firebase/firestore";
+import { doc,collection, addDoc, getDocs, updateDoc, deleteDoc, query, where, getDoc, QuerySnapshot, serverTimestamp, orderBy, writeBatch, FieldValue, deleteField, } from "firebase/firestore";
 import { db } from "./Conexion"
 import { ProductoInterface } from "../shared/interfaces/producto/ProductoInterface";
 import { IDDocumentosInterface } from "../shared/interfaces/id-documentos/IDDocumentosInterface";
@@ -43,21 +43,45 @@ export const obtenerIDProductosPromise = async () => {
 }
 
 
-export const modificarProductoPromise = async (idGet : IDDocumentosInterface, productoModificadoGet : ProductoInterface) => {
-    const docRef = doc(db, "Productos", idGet.IDDocumento);
-        await updateDoc(docRef, {
-            NombreProducto : productoModificadoGet.NombreProducto,
-            CodigoDeBarras : productoModificadoGet.CodigoDeBarras,
-            Precio : productoModificadoGet.Precio,
-            Stock : productoModificadoGet.Stock
-        });
-    console.log("PRODUCTO MODIFICADO CON ID: ", idGet.IDDocumento);
+export interface ProductoConIDInterface {
+    id: string;
+    NombreProducto: string;
+    CodigoDeBarras: string;
+    Precio: string;
+    Stock: string;
 }
 
+export const obtenerProductosPromiseUpdate = async (): Promise<ProductoConIDInterface[]> => {
+    let listado: ProductoConIDInterface[] = [];
 
-export const eliminarProductoPromise = async (idGet : IDDocumentosInterface) => {
-    await deleteDoc(doc(db, "Productos", idGet.IDDocumento));
-    console.log("PRODUCTO ELIMINADO CON ID: ", idGet.IDDocumento);
+    const querySnapshot = await getDocs(collection(db, "Productos"));
+
+    querySnapshot.forEach((doc) => {
+        listado.push({
+            id: doc.id,
+            NombreProducto: doc.data().NombreProducto,
+            CodigoDeBarras: doc.data().CodigoDeBarras,
+            Precio: doc.data().Precio,
+            Stock: doc.data().Stock
+        });
+    });
+
+    return listado;
+};
+
+
+export const modificarProductoPromise = async (id: string, producto: ProductoConIDInterface) => {
+    const ref = doc(db, "Productos", id);
+    await updateDoc(ref, {
+        NombreProducto: producto.NombreProducto,
+        CodigoDeBarras: producto.CodigoDeBarras,
+        Precio: producto.Precio,
+        Stock: producto.Stock
+    });
+};
+
+export const eliminarProductoPromise = async (id: string) => {
+    await deleteDoc(doc(db, "Productos", id));
 }
 
 
@@ -200,3 +224,4 @@ export const obtenerVentasPromise = async () => {
         fechaHora: doc.data().fechaHora?.toDate().toLocaleString("es-CL") ?? "Sin fecha",
     }));
 };
+

@@ -1,5 +1,13 @@
 
+export interface ProductoConIDInterface {
+    id: string;
+    NombreProducto: string;
+    CodigoDeBarras: string;
+    Precio: string;
+    Stock: string;
+}
+
 export interface EliminarProductoInterface {
-    ObtenerIndexEliminar : number,
-    setRefrescarProductos : (value : boolean) => void;
+    producto: ProductoConIDInterface;  // ✅ Producto completo
+    setRefrescarProductos: (value: boolean) => void;
 }

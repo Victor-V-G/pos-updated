@@ -1,16 +1,23 @@
-import { obtenerProductosPromise } from "@/app/firebase/Promesas";
-import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
+import { obtenerProductosPromiseUpdate } from "@/app/firebase/Promesas";
 import { useEffect, useState } from "react";
 import '../../assets/css/gestion-productos-styles/crud-style/crud-style.css'
 import ModificarProductoComponent from "./modificar-productos-component/ModificarProductoMainComponent";
 import EliminarProductoComponent from "./eliminar-productos-component/EliminarProductoComponent";
 import React from "react";
 
+export interface ProductoConIDInterface {
+    id: string;
+    NombreProducto: string;
+    CodigoDeBarras: string;
+    Precio: string;
+    Stock: string;
+}
+
 const PRODUCTOS_POR_PAGINA = 10;
 
 export const GestionProductosMainComponent = () => {
 
-  const [Productos, setProductos] = useState<ProductoInterface[]>([]);
+  const [Productos, setProductos] = useState<ProductoConIDInterface[]>([]);
   const [paginaActual, setPaginaActual] = useState(1);
   const [RefrescarProductos, setRefrescarProductos] = useState(false);
 
@@ -20,10 +27,11 @@ export const GestionProductosMainComponent = () => {
   const [ordenStock, setOrdenStock] = useState("");
 
   useEffect(() => {
-    obtenerProductosPromise().then(setProductos);
+    obtenerProductosPromiseUpdate().then(setProductos);
     setRefrescarProductos(false);
   }, [RefrescarProductos]);
 
+  // ✅ Procesamiento + Filtros + Ordenamientos
   const productosProcesados = [...Productos]
     .filter((p) => {
       const txt = busqueda.toLowerCase();
@@ -48,6 +56,7 @@ export const GestionProductosMainComponent = () => {
       return 0;
     });
 
+  // 📌 Paginación
   const totalPaginas = Math.ceil(productosProcesados.length / PRODUCTOS_POR_PAGINA);
   const productosPagina = productosProcesados.slice(
     (paginaActual - 1) * PRODUCTOS_POR_PAGINA,
@@ -60,6 +69,7 @@ export const GestionProductosMainComponent = () => {
 
         <h2 className="gestion-title">🛠 GESTIÓN DE PRODUCTOS</h2>
 
+        {/* ✅ Filtros se mantienen */}
         <div className="gestion-filtros">
           <label>Búsqueda: </label>
           <input
@@ -108,6 +118,7 @@ export const GestionProductosMainComponent = () => {
           </select>
         </div>
 
+        {/* ✅ Tabla con advertencias y acciones */}
         <div className="gestion-wrapper">
           <table className="gestion-table">
             <thead>
@@ -122,39 +133,38 @@ export const GestionProductosMainComponent = () => {
             </thead>
 
             <tbody>
-              {productosPagina.map((producto, index) => {
+              {productosPagina.map((producto) => {
                 const stock = Number(producto.Stock);
 
                 const estado =
                   stock === 0 ? "🚫 SIN STOCK" :
-                  stock === 1 ? "⚠ Crítico" :
-                  stock <= 5 ? "⚠ Poco stock" :
-                  "✅ OK";
+                    stock === 1 ? "⚠ Crítico" :
+                      stock <= 5 ? "⚠ Poco stock" :
+                        "✅ En Stock";
 
                 const clase =
                   stock === 0 ? "gestion-row-sin" :
-                  stock === 1 ? "gestion-row-bajo" :
-                  stock <= 5 ? "gestion-row-medio" :
-                  "";
+                    stock === 1 ? "gestion-row-bajo" :
+                      stock <= 5 ? "gestion-row-medio" : "";
 
                 return (
-                  <tr key={index} className={clase}>
+                  <tr key={producto.id} className={clase}>
                     <td>{producto.NombreProducto}</td>
                     <td>{producto.CodigoDeBarras}</td>
                     <td>${producto.Precio}</td>
                     <td>{stock}</td>
                     <td className="gestion-estado">{estado}</td>
                     <td>
-                        <div className="gestion-acciones">
-                            <ModificarProductoComponent
-                                ObtenerIndexModificar={index}
-                                setRefrescarProductos={setRefrescarProductos}
-                            />
-                            <EliminarProductoComponent
-                                ObtenerIndexEliminar={index}
-                                setRefrescarProductos={setRefrescarProductos}
-                            />
-                        </div>
+                      <div className="gestion-acciones">
+                        <ModificarProductoComponent
+                          producto={producto}
+                          setRefrescarProductos={setRefrescarProductos}
+                        />
+                        <EliminarProductoComponent
+                          producto={producto}
+                          setRefrescarProductos={setRefrescarProductos}
+                        />
+                      </div>
                     </td>
                   </tr>
                 );
@@ -162,6 +172,7 @@ export const GestionProductosMainComponent = () => {
             </tbody>
           </table>
 
+          {/* ✅ Controles de paginación */}
           <div className="gestion-pagination">
             <button disabled={paginaActual === 1}
               onClick={() => setPaginaActual(paginaActual - 1)}>

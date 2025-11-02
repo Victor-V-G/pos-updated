@@ -1,5 +1,14 @@
 
+export interface ProductoConIDInterface {
+    id: string;
+    NombreProducto: string;
+    CodigoDeBarras: string;
+    Precio: string;
+    Stock: string;
+}
+
+
 export interface ModificarProductoInterface {
-    ObtenerIndexModificar : number,
-    setRefrescarProductos : (value : boolean) => void;
+    producto: ProductoConIDInterface;  // ✅ Se recibe el producto completo con ID
+    setRefrescarProductos: (value: boolean) => void;
 }

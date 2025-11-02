@@ -1,228 +1,110 @@
-import { modificarProductoPromise, obtenerIDProductosPromise, obtenerProductosPromise, registrarMovimientosPromise } from "@/app/firebase/Promesas"
-import { IDDocumentosInterface } from "@/app/shared/interfaces/id-documentos/IDDocumentosInterface"
-import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface"
-import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface"
-import { useEffect, useState } from "react"
-import '../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css'
+import { modificarProductoPromise, registrarMovimientosPromise } from "@/app/firebase/Promesas";
+import { ModificarProductoInterface } from "@/app/shared/interfaces/modificar-producto/ModificarProductoInterface";
 
-const InitialStateProductoSeleccionadoForm : ProductoInterface = {
-    NombreProducto : "",
-    CodigoDeBarras : "",
-    Precio : "",
-    Stock : ""
-}
+import { useState } from "react";
+import '../../../assets/css/gestion-productos-styles/modificar-productos-style/modificar-producto-manager-form.css';
 
+export interface ProductoConIDInterface { id: string; NombreProducto: string; CodigoDeBarras: string; Precio: string; Stock: string; }
+export const ModificarProductoManagerFrom = ({ producto, setRefrescarProductos }: ModificarProductoInterface) => {
 
-export const ModificarProductoManagerFrom = ({ObtenerIndexModificar, setRefrescarProductos} : ModificarProductoInterface) => {
+    const [form, setForm] = useState<ProductoConIDInterface>(producto);
+    const [original] = useState<ProductoConIDInterface>(producto);
 
-    /*-----------------------ALMACENAR DATOS RECUPERADOS DE LAS PROMISES----------------------*/
-    const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
-    
-    const [IDSRecuperados, setIDSRecuperados] = useState<IDDocumentosInterface[]>([])
-    /*----------------------------------------------------------------------------------------*/
+    const handleChange = (name: string, value: string) => {
+        setForm(prev => ({ ...prev, [name]: value }));
+    };
 
+    const registrarMovimientos = async () => {
+        if (form.Precio !== original.Precio) {
+            await registrarMovimientosPromise(
+                "MODIFICAR PRODUCTO",
+                `Precio de ${original.NombreProducto} (${original.CodigoDeBarras}) cambió: $${original.Precio} → $${form.Precio}`
+            );
+        }
+        if (form.Stock !== original.Stock) {
+            await registrarMovimientosPromise(
+                "MODIFICAR PRODUCTO",
+                `Stock de ${original.NombreProducto} (${original.CodigoDeBarras}) cambió: ${original.Stock} → ${form.Stock}`
+            );
+        }
+    };
 
-    /*-------------------VERIFICAR QUE LOS DATOS SE OBTUVIERON DE LAS PROMISES-----------------*/
-    const [SeObtuvoProducto, setSeObtuvoProducto] = useState(false)
-    
-    const [SeObtuvoIDS, setSeObtuvoIDS] = useState(false)
-    /*----------------------------------------------------------------------------------------*/
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
 
-    /*-------------------------ALMACENA EL DATO SELECCIONADO A MODIFICAR----------------------*/
-    const [IDSeleccionadaModificar, setIDSeleccionadaModificar] = useState<IDDocumentosInterface[]>([])
+        try {
+            await modificarProductoPromise(producto.id, form);
+            await registrarMovimientos();
 
-    const [ProductoSeleccionadoForm, setProductoSeleccionadoForm] = useState(InitialStateProductoSeleccionadoForm)
-    /*----------------------------------------------------------------------------------------*/
-
-    /*---------------------ALMACENA EL DATO QUE SE REALIZA EL MOVIMIENTO----------------------*/
-    const [ProductoOriginal, setProductoOriginal] = useState<ProductoInterface | null>(null)
-    /*----------------------------------------------------------------------------------------*/
-
-
-    useEffect(() => {
-        obtenerProductosPromise().then((productoGet) => {
-            setProductosRecuperados(productoGet)
-            console.log("PRODUCTO RECUPERADO CORRECTAMENTE")
-            setSeObtuvoProducto(true)
-        }).catch((error) => {
-            alert("OCURRIO UN ERROR AL RECUPERAR LOS PRODUCTOS")
-            console.log(error)
-        })
-    }, [])
-    
-
-    useEffect(() => {
-      obtenerIDProductosPromise().then((idsDocumentosGet) => {
-        setIDSRecuperados(idsDocumentosGet);
-        console.log("IDS RECUPERADAS CORRECTAMENTE")
-        setSeObtuvoIDS(true)
-      }).catch((error) => {
-        alert("OCURRIO UN ERROR AL RECUPERAR LAS IDS")
-        console.log(error)
-      })
-    }, [])
-    
-
-    /*---------------------------HANDLE CARGAR FUNCIONES----------------------------*/
-    const handleCargarFunciones = () => {
-
-        /*-------------------------HANDLE RECUPERAR ID------------------------------*/
-        const IdSeleccionada = IDSRecuperados[ObtenerIndexModificar];
-            setIDSeleccionadaModificar([IdSeleccionada])
-            console.log(IdSeleccionada);
-            if (!IdSeleccionada) {
-                alert("LA ID SELECCIONADA NO FUE ENCONTRADA")
-                return
-            }
-        /*--------------------------------------------------------------------------*/
-
-        /*----------------------HANDLE SELECCIONAR PRODUCTO-------------------------*/
-        const ProductoSeleccionado = ProductosRecuperados[ObtenerIndexModificar];
-            setProductoSeleccionadoForm(ProductoSeleccionado)
-            setProductoOriginal(ProductoSeleccionado)
-            console.log(ProductoSeleccionado)
-            if (!ProductoSeleccionado) {
-                alert("EL PRODUCTO SELECCIONADO NO FUE ENCONTRADO")
-                return
-            }
-        /*--------------------------------------------------------------------------*/
-        
-    }
-    /*------------------------------------------------------------------------------*/
-
-
-    /*----AQUI SE EJECUTA EL HANDLE UNA VEZ SE RECUPEREN TODOS LOS DATOS DE LAS PROMISE---*/
-    useEffect(() => {
-      if (SeObtuvoProducto == true && SeObtuvoIDS == true) {
-        handleCargarFunciones();
-      }
-    }, [ProductosRecuperados, IDSRecuperados])
-    /*------------------------------------------------------------------------------------*/
-
-
-    /*--------------------HANDLE REESCRIBIR FORM------------------*/
-    const handleModificarInput = (name:string, value:string) => {
-        setProductoSeleccionadoForm(
-            {...ProductoSeleccionadoForm,[name]:value}
-        )
-    }
-    /*-----------------------------------------------------------*/
-
-
-    /*-------------------HANDLE LLAMAR A LA PROMESA DE MODIFICAR----------------*/
-    const handleCallPromiseModificarProducto = () => {
-        modificarProductoPromise(IDSeleccionadaModificar[0], ProductoSeleccionadoForm).then(() => {
-            alert("PRODUCTO MODIFICADO CORRECTAMENTE")
+            alert("✅ Producto modificado correctamente");
             setRefrescarProductos(true);
-        }).catch((error) => {
-            alert("OCURRIO UN ERROR AL MODIFICAR EL PRODUCTO")
-            console.log(error)
-        })
-    }
-    /*--------------------------------------------------------------------------*/
-
-    const handleCallRegistrarMovimiento = () => {
-
-        const nuevo = ProductoSeleccionadoForm
-        const viejo = ProductoOriginal
-
-        if (viejo?.Precio !== nuevo.Precio) {
-            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Precio cambió de $${viejo?.Precio} a $${nuevo.Precio}`)).then(()=>{
-                console.log("MOVIMIENTO REGISTRADO")
-            }).catch(()=>{
-                alert("NO SE PUDO REGISTRAR LA ACCION")
-            })
+        } catch (error) {
+            console.error("❌ Error al modificar producto:", error);
+            alert("Ocurrió un error al modificar producto");
         }
-
-        if (viejo?.Stock !== nuevo.Stock) {
-            registrarMovimientosPromise("MODIFICAR PRODUCTO", (`El producto: ${viejo?.NombreProducto}, con Codigo de barras: ${viejo?.CodigoDeBarras}, su Stock cambió de ${viejo?.Stock} unidades a ${nuevo.Stock} unidades`)).then(()=>{
-                console.log("MOVIMIENTO REGISTRADO")
-            }).catch(()=>{
-                alert("NO SE PUDO REGISTRAR LA ACCION")
-            })
-        }
-
-
-    }
+    };
 
     return (
-
         <>
             <header className='header-title-style'>
-                        
-                <div>
-                    <h1>MODIFICAR PRODUCTO</h1> <br />
-                </div>
-                        
+                <h1>MODIFICAR PRODUCTO</h1>
             </header>
 
             <main>
-
-                <form className='modificar-form'>
+                <form className='modificar-form' onSubmit={handleSubmit}>
 
                     <div className='input-box'>
-                        <input 
+                        <input
                             type="text"
                             name="NombreProducto"
-                            required spellCheck="false"
-                            value={ProductoSeleccionadoForm.NombreProducto}
-                            onChange={(e)=>handleModificarInput(e.currentTarget.name, e.currentTarget.value)}
+                            required
+                            value={form.NombreProducto}
+                            onChange={(e) => handleChange(e.target.name, e.target.value)}
                         />
-                        <label>NOMBRE DEL PRODUCTO</label> <br />
-                    </div>
-                    
-                    <div className='input-box'>
-                        <input 
-                            type="number" 
-                            name="CodigoDeBarras"
-                            required spellCheck="false"
-                            value={ProductoSeleccionadoForm.CodigoDeBarras}
-                            onChange={(e)=>handleModificarInput(e.currentTarget.name, e.currentTarget.value)}
-                        /> 
-                        <label>CODIGO DE BARRAS</label><br />
-                    </div>
-                    
-                    <div className='input-box'>
-                        <input 
-                            type="number" 
-                            name="Precio"
-                            required spellCheck="false"
-                            value={ProductoSeleccionadoForm.Precio}
-                            onChange={(e)=>handleModificarInput(e.currentTarget.name, e.currentTarget.value)}
-                        />
-                        <label>PRECIO</label> <br />
-                    </div>
-                    
-                    <div className='input-box'>
-                        <input 
-                            type="number" 
-                            name="Stock"
-                            required spellCheck="false"
-                            value={ProductoSeleccionadoForm.Stock}
-                            onChange={(e)=>handleModificarInput(e.currentTarget.name, e.currentTarget.value)}
-                        /> 
-                        <label>STOCK</label><br />
+                        <label>NOMBRE DEL PRODUCTO</label>
                     </div>
 
-                    <button
-                        className="modificar-form"
-                        onClick={(e)=>{
-                            e.preventDefault();
-                            handleCallPromiseModificarProducto();
-                            setRefrescarProductos(true);
-                            handleCallRegistrarMovimiento();
-                        }}>
+                    <div className='input-box'>
+                        <input
+                            type="text"
+                            name="CodigoDeBarras"
+                            required
+                            value={form.CodigoDeBarras}
+                            onChange={(e) => handleChange(e.target.name, e.target.value)}
+                        />
+                        <label>CODIGO DE BARRAS</label>
+                    </div>
+
+                    <div className='input-box'>
+                        <input
+                            type="number"
+                            name="Precio"
+                            required
+                            value={form.Precio}
+                            onChange={(e) => handleChange(e.target.name, e.target.value)}
+                        />
+                        <label>PRECIO</label>
+                    </div>
+
+                    <div className='input-box'>
+                        <input
+                            type="number"
+                            name="Stock"
+                            required
+                            value={form.Stock}
+                            onChange={(e) => handleChange(e.target.name, e.target.value)}
+                        />
+                        <label>STOCK</label>
+                    </div>
+
+                    <button className="btn-confirmar" type="submit">
                         <span>MODIFICAR PRODUCTO</span>
                     </button>
 
                 </form>
-
-            </main>    
-
+            </main>
         </>
-
-    )
-
-}
+    );
+};
 
 export default ModificarProductoManagerFrom;
