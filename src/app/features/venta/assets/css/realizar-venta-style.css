@@ -128,3 +128,51 @@
   50% { opacity: 0.4; }
   100% { opacity: 0.8; }
 }
+
+/* ✅ INPUT DE PAGO */
+.venta-scope .factura-input {
+  width: 80%;
+  font-size: 18px;
+  padding: 10px;
+  margin-top: 14px;
+  border-radius: 8px;
+  border: 2px solid #cbd5e1;
+  outline: none;
+  text-align: center;
+  font-weight: 600;
+}
+
+.venta-scope .factura-input:focus {
+  border-color: #2563eb;
+}
+
+/* ✅ RESULTADO DEL VUELTO */
+.venta-scope .factura-vuelto {
+  margin-top: 10px;
+  font-size: 22px;
+  font-weight: 700;
+  color: #16a34a; /* Verde si hay vuelto */
+}
+
+.venta-scope .vuelto-negativo {
+  color: #dc2626; /* Rojo si falta dinero */
+}
+
+/* Contenedor botones */
+.venta-scope .factura-btns {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+/* Estilo botón débito */
+.venta-scope .debito-btn {
+  background: #16a34a;
+  box-shadow: 0 3px 10px rgba(22,163,74,0.4);
+}
+
+.venta-scope .debito-btn:hover {
+  background: #15803d;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 14px rgba(22,163,74,0.5);
+}

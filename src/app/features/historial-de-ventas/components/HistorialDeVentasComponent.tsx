@@ -15,14 +15,13 @@ export const HistorialDeVentaComponent = () => {
     });
   }, []);
 
-  // ✅ Fecha actual en formato dd-mm-yyyy (igual al que usas en Firebase)
+  // ✅ Fecha de hoy en formato dd-mm-yyyy
   const hoy = new Date();
   const dia = String(hoy.getDate()).padStart(2, "0");
   const mes = String(hoy.getMonth() + 1).padStart(2, "0");
   const año = hoy.getFullYear();
   const fechaActual = `${dia}-${mes}-${año}`;
 
-  // ✅ Filtrar ventas solo del día actual
   const ventasDelDia = ventas.filter(
     (venta) => venta.fechaHora?.split(",")[0] === fechaActual
   );
@@ -38,7 +37,6 @@ export const HistorialDeVentaComponent = () => {
     <div className="ver-stock-container">
       <div className="ver-stock-panel">
 
-        {/* ✅ Header */}
         <h2 className="ver-stock-title">📋 HISTORIAL DE VENTAS</h2>
 
         {ventasDelDia.length === 0 ? (
@@ -53,6 +51,9 @@ export const HistorialDeVentaComponent = () => {
                   <td>FECHA</td>
                   <td>HORA</td>
                   <td>TOTAL</td>
+                  <td>METODO</td>
+                  <td>PAGO</td>
+                  <td>VUELTO</td>
                   <td>PRODUCTOS</td>
                 </tr>
               </thead>
@@ -60,11 +61,22 @@ export const HistorialDeVentaComponent = () => {
               <tbody>
                 {ventasPaginadas.map((venta) => (
                   <React.Fragment key={venta.id}>
-                    {/* ✅ Fila principal */}
                     <tr>
                       <td>{venta.fechaHora?.split(",")[0]}</td>
                       <td>{venta.fechaHora?.split(",")[1]}</td>
+
                       <td><b>${Number(venta.TotalGeneral).toLocaleString("es-CL")}</b></td>
+
+                      {/* ✅ Metodo de pago */}
+                      <td style={{ fontWeight: "bold", color: venta.metodoPago === "DEBITO" ? "#2563eb" : "#16a34a" }}>
+                        {venta.metodoPago === "DEBITO" ? "💳 Débito" : "💵 Efectivo"}
+                      </td>
+
+                      {/* ✅ Pago del cliente */}
+                      <td>{venta.pagoCliente !== null ? `$${Number(venta.pagoCliente).toLocaleString("es-CL")}` : "-"}</td>
+
+                      {/* ✅ Vuelto entregado */}
+                      <td>{venta.vueltoEntregado !== null ? `$${Number(venta.vueltoEntregado).toLocaleString("es-CL")}` : "-"}</td>
 
                       <td style={{ display: "flex", justifyContent: "center", gap: "10px" }}>
                         {venta.ProductosVenta.reduce(
@@ -80,21 +92,21 @@ export const HistorialDeVentaComponent = () => {
                             )
                           }
                         >
-                          {ventaSeleccionada === venta.id ? "▲ Ocultar" : "▼ Ver detalles"}
+                          {ventaSeleccionada === venta.id ? "▲ Ocultar" : "▼ Ver"}
                         </button>
                       </td>
                     </tr>
 
-                    {/* ✅ Detalle productos */}
+                    {/* ✅ Detalles venta expandible */}
                     {ventaSeleccionada === venta.id && (
                       <tr className="detalle-venta-row">
-                        <td colSpan={4}>
+                        <td colSpan={7}>
                           <div className="detalle-venta-scroll">
                             <table className="detalle-venta-table">
                               <thead>
                                 <tr>
                                   <td>PRODUCTO</td>
-                                  <td>CÓDIGO DE BARRAS</td>
+                                  <td>CÓDIGO</td>
                                   <td>CANTIDAD</td>
                                   <td>PRECIO U.</td>
                                 </tr>
@@ -122,25 +134,19 @@ export const HistorialDeVentaComponent = () => {
 
             {/* ✅ Paginación */}
             <div className="ver-stock-pagination">
-              <button
-                disabled={paginaActual === 1}
-                onClick={() => setPaginaActual(paginaActual - 1)}
-              >
+              <button disabled={paginaActual === 1} onClick={() => setPaginaActual(paginaActual - 1)}>
                 ← Anterior
               </button>
 
               <span>Página {paginaActual} de {totalPaginas}</span>
 
-              <button
-                disabled={paginaActual === totalPaginas}
-                onClick={() => setPaginaActual(paginaActual + 1)}
-              >
+              <button disabled={paginaActual === totalPaginas} onClick={() => setPaginaActual(paginaActual + 1)}>
                 Siguiente →
               </button>
             </div>
-
           </div>
         )}
+
       </div>
     </div>
   );

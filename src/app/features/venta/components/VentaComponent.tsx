@@ -12,7 +12,8 @@ export const VentaComponent = () => {
     const [ProductoAgregado, setProductoAgregado] = useState<ProductoInterface[]>([])
     const [LimpiarInput, setLimpiarInput] = useState(false)
     const recargar = () => setLimpiarInput(true); // ✅ Force refresh desde IngresarCDB
-
+    const [modoAutomatico, setModoAutomatico] = useState(true);
+    
     return (
         <div className="venta-scope">
             <div className="venta-grid">  
@@ -28,6 +29,8 @@ export const VentaComponent = () => {
                         setProductoFindSetter={setProductoFindSetter}
                         LimpiarImput={LimpiarInput}
                         setLimpiarInput={setLimpiarInput}
+                        modoAutomatico={modoAutomatico}          // ✅ NUEVO
+                        setModoAutomatico={setModoAutomatico}    // ✅ NUEVO
                     />
                 </div>
 
@@ -36,6 +39,7 @@ export const VentaComponent = () => {
                         ProductoFindSetter={ProductoFindSetter}
                         setProductoAgregado={setProductoAgregado}
                         setLimpiarInput={setLimpiarInput}
+                        modoAutomatico={modoAutomatico}
                     />
                 </div>
                 

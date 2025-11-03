@@ -2,43 +2,46 @@
     background-color: #ffffff;
 }
 
-.venta-scope .center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
 .venta-scope .ingresar-cdb {
-    width: 50%;
-    height: 20vh;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 20px;
+    flex-direction: column;
+    position: relative;
+    margin-top: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-    padding-bottom: 20px;
 }
 
 .venta-scope .ingresar-cdb::after {
     content: "";
     position: absolute;
     bottom: 0;
-    left: -300px;
-    width: calc(100% + 650px);
+    left: 0;
+    width: 95%;
     height: 2px;
     background-color: #e2e8f0;
     opacity: 0.9;
     border-radius: 2px;
-}
-
-.venta-scope .ingresar-cdb form {
-    width: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+/* ✅ Contenedor centrado del input + botón */
+.venta-scope .input-with-button {
+    width: 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+}
+
+/* ✅ Caja del input */
 .venta-scope .input-box {
-    margin-top: 30px;
     position: relative;
     width: 100%;
     display: flex;
@@ -47,32 +50,73 @@
 }
 
 .venta-scope .ingresar-cdb input {
-    font-size: 16px;
+    font-size: 18px;
     outline: none;
-    padding: 10px 15px;
-    width: 100%;
-    height: 55px;
+    padding: 12px 15px;
+    width: 80%;
+    height: 60px;
     border: 2px solid #1a202c;
     border-radius: 7px;
     background: transparent;
     color: #2d3748;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 80px;
 }
 
 .venta-scope .ingresar-cdb label {
     position: absolute;
     top: 50%;
-    left: 15px;
+    left: 150px;
     transform: translateY(-50%);
     color: #2d3748;
-    font-size: 20px;
+    font-size: 18px;
     pointer-events: none;
     transition: .3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .venta-scope .ingresar-cdb input:focus ~ label,
 .venta-scope .ingresar-cdb input:valid ~ label {
     top: 0;
-    font-size: 20px;
-    padding: 0 10px;
+    font-size: 16px;
+    padding: 0 8px;
     background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+/* ✅ Botón cambio de modo */
+.venta-scope .modo-btn {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s ease-in-out;
+  font-size: 20px;
+  margin-bottom: 40px;
+}
+
+/* MODO AUTOMÁTICO */
+.venta-scope .modo-btn.auto {
+  background-color: #2563eb;
+  color: white;
+}
+.venta-scope .modo-btn.auto:hover {
+  background-color: #1d4ed8;
+}
+
+/* MODO MANUAL */
+.venta-scope .modo-btn.manual {
+  background-color: #eab308;
+  color: black;
+}
+.venta-scope .modo-btn.manual:hover {
+  background-color: #cf9d0a;
 }

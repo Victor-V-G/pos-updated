@@ -1,93 +1,94 @@
-import { useEffect, useRef, useState } from 'react'
-import '../assets/css/ingresar-cdb-style.css'
-import { obtenerProductosPromise } from '@/app/firebase/Promesas'
-import { ProductoInterface } from '@/app/shared/interfaces/producto/ProductoInterface'
-import { InterfaceIngresarCDB } from '@/app/shared/interfaces/ingresar-cdb/InterfaceIngresarCDB'
-import { SetterProductoFind } from '@/app/shared/interfaces/ingresar-cdb/SetterProductoFind'
+import { useEffect, useRef, useState } from "react";
+import "../assets/css/ingresar-cdb-style.css";
+import { obtenerProductosPromise } from "@/app/firebase/Promesas";
+import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
+import { InterfaceIngresarCDB } from "@/app/shared/interfaces/ingresar-cdb/InterfaceIngresarCDB";
+import { SetterProductoFind } from "@/app/shared/interfaces/ingresar-cdb/SetterProductoFind";
 
 const InitialStateInputCDB: InterfaceIngresarCDB = {
   CodigoDeBarras: "",
-}
+};
 
-export const IngresarCDB = ({ setProductoFindSetter, LimpiarImput, setLimpiarInput }: SetterProductoFind) => {
+export const IngresarCDB = ({
+  setProductoFindSetter,
+  LimpiarImput,
+  setLimpiarInput,
+  setModoAutomatico,
+  modoAutomatico,
+}: any) => {
 
-  const [InputCDB, setInputCDB] = useState(InitialStateInputCDB)
-  const [ProductoObtenido, setProductoObtenido] = useState<ProductoInterface[]>([])
-  const [ProductoEncontrado, setProductoEncontrado] = useState<ProductoInterface[]>([])
-  
-  const inputRef = useRef<HTMLInputElement>(null); // ✅ referencia al input
+  const [InputCDB, setInputCDB] = useState(InitialStateInputCDB);
+  const [ProductoObtenido, setProductoObtenido] = useState<ProductoInterface[]>([]);
+  const [ProductoEncontrado, setProductoEncontrado] = useState<ProductoInterface[]>([]);
 
-  useEffect(() => {
-    obtenerProductosPromise().then((productoGet) => {
-      setProductoObtenido(productoGet)
-    })
-  }, [])
-
-  const handleRecuperarInput = (name: string, value: string) => {
-    setInputCDB({ ...InputCDB, [name]: value })
-  }
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const ProductoFind = ProductoObtenido.find(p => p.CodigoDeBarras === InputCDB.CodigoDeBarras);
-    setProductoEncontrado(ProductoFind ? [ProductoFind] : [])
-  }, [InputCDB.CodigoDeBarras, ProductoObtenido]);
-
-  useEffect(() => {
-    setProductoFindSetter(ProductoEncontrado)
-  }, [ProductoEncontrado])
-
-  // ✅ Cuando se limpia: reset y focus
-  useEffect(() => {
-    if (LimpiarImput) {
-      setInputCDB(InitialStateInputCDB)
-      setLimpiarInput(false)
-
-      // ✅ Focus automático cuando se limpia
-      inputRef.current?.focus()
-    }
-  }, [LimpiarImput])
-
-  // ✅ Focus cuando el componente monta
-  useEffect(() => {
-    inputRef.current?.focus()
-  }, [])
-
-  const recargarProductos = () => {
     obtenerProductosPromise().then((productoGet) => {
       setProductoObtenido(productoGet);
     });
+  }, []);
+
+  const handleRecuperarInput = (name: string, value: string) => {
+    setInputCDB({ ...InputCDB, [name]: value });
   };
 
-    // ⬇ Nuevo prop a retornar
+  useEffect(() => {
+    const ProductoFind = ProductoObtenido.find(
+      (p) => p.CodigoDeBarras === InputCDB.CodigoDeBarras
+    );
+    setProductoEncontrado(ProductoFind ? [ProductoFind] : []);
+  }, [InputCDB.CodigoDeBarras, ProductoObtenido]);
+
+  useEffect(() => {
+    setProductoFindSetter(ProductoEncontrado);
+  }, [ProductoEncontrado]);
+
   useEffect(() => {
     if (LimpiarImput) {
       setInputCDB(InitialStateInputCDB);
       setLimpiarInput(false);
       inputRef.current?.focus();
-      recargarProductos(); // ✅ Refrescamos los productos después de venta
     }
   }, [LimpiarImput]);
 
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
   return (
-    <div className='center'>
-      <form
-        className='ingresar-cdb'
-        onSubmit={(e) => e.preventDefault()}>
-        <div className='input-box'>
+    <div className="ingresar-cdb">
+
+      {/* ✅ INPUT y BOTÓN centrados */}
+      <div className="input-with-button">
+
+        <div className="input-box">
           <input
-            ref={inputRef} // ✅ Enlazamos el ref
+            ref={inputRef}
             type="number"
             required
             spellCheck="false"
-            name='CodigoDeBarras'
+            name="CodigoDeBarras"
             value={InputCDB.CodigoDeBarras}
-            onChange={(e) => handleRecuperarInput(e.currentTarget.name, e.currentTarget.value)}
+            onChange={(e) =>
+              handleRecuperarInput(e.currentTarget.name, e.currentTarget.value)
+            }
           />
           <label>CODIGO DE BARRAS</label>
         </div>
-      </form>
+
+        {/* ✅ Botón cambio de modo */}
+        <button
+          type="button"
+          className={`modo-btn ${modoAutomatico ? "auto" : "manual"}`}
+          onClick={() => setModoAutomatico((prev: boolean) => !prev)}
+        >
+          {modoAutomatico ? "AUTOMÁTICO" : "MANUAL"}
+        </button>
+      </div>
     </div>
-  )
-}
+  );
+};
 
 export default IngresarCDB;
+

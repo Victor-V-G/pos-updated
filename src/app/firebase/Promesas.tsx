@@ -172,16 +172,21 @@ export const obtenerMovimientosPromise = async () => {
 
 
 /*-------------------------------VENTA Y HISTORIAL------------------------------------*/
-export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, TotalGeneral }: PropsRealizarVenta) => {
+/*-------------------------------VENTA Y HISTORIAL------------------------------------*/
+export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, TotalGeneral, metodoPago, pagoCliente, vueltoEntregado }: any) => {
     try {
         const ventaRef = await addDoc(collection(db, "Ventas"), {
             ProductosVenta,
             TotalGeneral,
-            fechaHora: serverTimestamp(), // ✅ Marca de tiempo única para ordenar
+            metodoPago,
+            pagoCliente: pagoCliente ?? null,
+            vueltoEntregado: vueltoEntregado ?? null,
+            fechaHora: serverTimestamp(),
         });
 
-        console.log("✅ Venta ID:", ventaRef.id);
+        console.log("✅ Venta registrada -> ID:", ventaRef.id);
 
+        // 🔄 Actualizar stock producto por producto
         for (const item of ProductosVenta) {
             const q = query(
                 collection(db, "Productos"),
@@ -191,8 +196,8 @@ export const registrarVentaYActualizarStockPromise = async ({ ProductosVenta, To
             const querySnapshot = await getDocs(q);
 
             querySnapshot.forEach(async (docSnap) => {
-                const stockActual = docSnap.data().Stock;
-                const stockNuevo = Number(stockActual) - Number(item.cantidad);
+                const stockActual = Number(docSnap.data().Stock);
+                const stockNuevo = stockActual - Number(item.cantidad);
 
                 await updateDoc(doc(db, "Productos", docSnap.id), {
                     Stock: stockNuevo < 0 ? 0 : stockNuevo,
@@ -225,3 +230,15 @@ export const obtenerVentasPromise = async () => {
     }));
 };
 
+
+/*-------------------------------- ELIMINAR VENTA (SIN RESTAURAR STOCK) --------------------------------*/
+export const eliminarVentaPromise = async (ventaId: string) => {
+    try {
+        await deleteDoc(doc(db, "Ventas", ventaId));
+        console.log("🗑 Venta eliminada correctamente (sin modificar stock)");
+        return true;
+    } catch (error) {
+        console.error("❌ Error al eliminar venta:", error);
+        return false;
+    }
+};

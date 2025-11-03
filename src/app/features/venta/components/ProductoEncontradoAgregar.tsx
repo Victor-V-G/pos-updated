@@ -6,13 +6,21 @@ export const ProductoEncontradoAgregar = ({
   ProductoFindSetter,
   setProductoAgregado,
   setLimpiarInput,
-}: PropsProductoFind) => {
+  modoAutomatico,   // ✅ RECIBIMOS EL MODO
+}: PropsProductoFind & { modoAutomatico: boolean }) => {
 
   const [mostrarTabla, setMostrarTabla] = useState(false);
 
   useEffect(() => {
-    setMostrarTabla(ProductoFindSetter.length > 0);
-  }, [ProductoFindSetter]);
+    const hayProducto = ProductoFindSetter.length > 0;
+    setMostrarTabla(hayProducto);
+
+    // ✅ Si hay producto y es modo automático → agregar sin mostrar tabla
+    if (hayProducto && modoAutomatico) {
+      handleAgregarProducto();
+    }
+
+  }, [ProductoFindSetter, modoAutomatico]);
 
   const handleAgregarProducto = () => {
     setProductoAgregado(ProductoFindSetter);
@@ -23,33 +31,36 @@ export const ProductoEncontradoAgregar = ({
   const hayStockCritico = ProductoFindSetter.some(p => Number(p.Stock) <= 1);
   const hayStockBajo = ProductoFindSetter.some(p => Number(p.Stock) <= 5);
 
-  // ✅ Detectar ENTER y agregar producto automáticamente
+  // ✅ SOLO si es MANUAL se usa el Enter para agregar
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === "Enter" && mostrarTabla) {
-        e.preventDefault();
-        handleAgregarProducto();
-      }
-    };
+    if (!modoAutomatico) {
+      const handleKeyPress = (e: KeyboardEvent) => {
+        if (e.key === "Enter" && mostrarTabla) {
+          e.preventDefault();
+          handleAgregarProducto();
+        }
+      };
 
-    window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [mostrarTabla, ProductoFindSetter]);
+      window.addEventListener("keydown", handleKeyPress);
+      return () => window.removeEventListener("keydown", handleKeyPress);
+    }
+  }, [mostrarTabla, modoAutomatico]);
 
   return (
     <>
-      {/* Placeholder visible cuando no hay resultados */}
       {!mostrarTabla && (
         <div className="placeholder-busqueda">
           <div className="placeholder-icono">🔍</div>
-          <p>Escanee o ingrese el código para buscar un producto</p>
+          <p>
+            {modoAutomatico
+              ? "Escanee para agregar automáticamente"
+              : "Escanee y presione ENTER o AGREGAR"}
+          </p>
         </div>
       )}
 
-      {mostrarTabla && (
+      {/* ✅ Tabla solo si es MANUAL */}
+      {mostrarTabla && !modoAutomatico && (
         <>
           <table className="table-producto-encontrado">
             <thead>
@@ -88,6 +99,7 @@ export const ProductoEncontradoAgregar = ({
             </tbody>
           </table>
 
+          {/* ✅ NO TOCADO */}
           {hayStockCritico ? (
             <div className="advertencia advertencia-minima">
               ⚠️ Stock crítico: solo queda 1 unidad
