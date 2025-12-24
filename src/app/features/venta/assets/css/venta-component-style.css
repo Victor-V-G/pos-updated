@@ -1,114 +1,198 @@
-.venta-scope .venta-grid {
-  display: grid;
-  grid-template-areas:
-    "header header header"
-    "input input input"
-    "agregar agregar agregar"
-    "tabla tabla factura";
-  grid-template-columns: 2fr 1fr;
-  grid-template-rows: auto auto auto auto;
-  padding: 20px;
-  margin-top: -60px;
-  height: auto;
-  overflow: hidden !important;
+/* ===========================
+   CONTENEDOR GENERAL
+=========================== */
+.venta-scope {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
 }
 
-/* Asignamos las áreas */
-.venta-scope .venta-header {
-  grid-area: header;
+/* Tarjeta principal */
+.venta-grid {
+  width: 100%;
+  max-width: 900px; /* <<< tamaño perfecto para no crecer */
+  margin: 40px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* ===========================
+   HEADER
+=========================== */
+.venta-header h1 {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+/* ===========================
+   INPUT DE CÓDIGO
+=========================== */
+.buscar-cdb-container input {
+  width: 100%;
+  height: 45px;
+  border-radius: 8px;
+  border: 1px solid #ced4da;
+  padding-left: 15px;
+  margin-bottom: 15px;
+  transition: 0.2s;
+}
+
+.buscar-cdb-container input:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 6px rgba(13,110,253,0.4);
+}
+
+/* ===========================
+   PRODUCTO ENCONTRADO
+=========================== */
+.producto-encontrado-card {
+  background: #f8f9fa;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.producto-encontrado-card h3 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.producto-encontrado-card button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+/* ===========================
+   TABLA DE PRODUCTOS
+=========================== */
+.tabla-venta-container table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.tabla-venta-container thead tr {
+  background: #e3ecff;
+}
+
+.tabla-venta-container td {
+  padding: 10px;
   text-align: center;
 }
 
-.venta-scope .venta-input {
-  grid-area: input;
-}
-
-.venta-scope .venta-producto-agregar {
-  grid-area: agregar;
-}
-
-/* Bloque inferior */
-.venta-scope .venta-main {
-  grid-area: tabla;
+.cantidad-controles {
   display: flex;
-  flex-direction: column;
-}
-
-/* Distribución de tabla y factura */
-.venta-scope .mostrar-venta-container {
-  display: grid;
-  grid-template-columns: 68% 32%;
-  gap: 10px;
-  width: 100%;
-  align-items: start;
-}
-
-/* Estilo visual */
-.venta-scope .mostrar-venta-container table {
-  background: #f8f8f8;
-  padding: 10px;
-  width: 100%;
-}
-
-.venta-scope .realizar-venta {
-  width: 100%;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  justify-content: flex-start;
-  background: #ffffff;
+  gap: 6px;
+}
+
+.cantidad-controles button {
+  padding: 5px 10px;
+}
+
+/* ===========================
+   TOTAL
+=========================== */
+.total-general {
+  text-align: right;
+  font-size: 24px;
+  margin-top: 10px;
+  font-weight: 700;
+}
+
+/* ===========================
+   BOTONES DE PAGO
+=========================== */
+.botones-pago {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-debito {
+  width: 45%;
+}
+
+.btn-efectivo {
+  width: 45%;
+}
+
+/* ===========================
+   PAGO EN EFECTIVO
+=========================== */
+.panel-efectivo {
+  margin-top: 20px;
+  background: #fdfdfd;
   padding: 20px;
-  border-bottom-right-radius: 10px;
-  box-shadow: inset 0 0 6px rgba(0,0,0,0.10);
+  border-radius: 12px;
+  border: 1px solid #ddd;
 }
 
-.venta-scope .venta-producto-agregar {
-  margin-bottom: 0;
-  padding-bottom: 0;
+.panel-efectivo input {
+  width: 100%;
+  height: 45px;
+  margin-top: 5px;
+  margin-bottom: 10px;
 }
 
-.venta-scope .venta-main {
-  margin-top: 0;
-  padding-top: 0;
+/* Label profesional */
+label {
+  font-weight: 600;
 }
 
-/* Evita separación */
-.venta-scope .table-producto-encontrado {
-  margin-bottom: 0 !important;
+.falta-monto {
+  color: #b02a37;
+  font-weight: bold;
 }
 
-.venta-scope .venta-tabla {
-  margin-top: 0 !important;
+.vuelto-ok {
+  color: #157347;
+  font-weight: bold;
 }
 
-/* Ajuste padding inferior grid */
-.venta-scope .venta-grid {
-  padding: 20px 20px 0;
+.btn-finalizar-venta {
+  width: 100%;
+  height: 50px;
+  font-size: 16px;
+  margin-top: 10px;
 }
 
-/* Elimina márgenes inferiores */
-.venta-scope .table-mostrar-producto {
-  margin: 0 !important;
-}
-.venta-scope .table-mostrar-producto table {
-  margin: 0 !important;
-}
+@media (max-width: 768px) {
+  .venta-grid {
+    max-width: 100%;
+    margin: 10px;
+    padding: 15px;
+  }
 
-.venta-scope .realizar-venta header,
-.venta-scope .realizar-venta main {
-  margin: 0;
-  padding-bottom: 0;
-  overflow: hidden !important;
-}
+  .botones-pago {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-/* Último hijo sin margen */
-.venta-scope .venta-grid > *:last-child {
-  margin-bottom: 0 !important;
-}
+  .btn-debito,
+  .btn-efectivo {
+    width: 100%;
+  }
 
-/* Evita espacios en contenedor */
-.venta-scope .mostrar-venta-container {
-  gap: 0;
-  overflow: hidden !important;
+  .total-general {
+    text-align: center;
+  }
+
+  table td {
+    padding: 6px;
+    font-size: 14px;
+  }
 }

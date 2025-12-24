@@ -1,276 +1,149 @@
-import { InterfaceCantidadPorProducto } from "@/app/shared/interfaces/ingresar-cdb/InterfaceCantidadPorProducto";
-import { InterfacePrecioTotal } from "@/app/shared/interfaces/ingresar-cdb/InterfacePrecioTotal";
-import { PropsMostrarProductosVenta } from "@/app/shared/interfaces/ingresar-cdb/PropsMostrarProductosVenta";
-import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import { useEffect, useState } from "react";
-import RealizarVenta from "./RealizarVenta";
-import { PropsProductosVenta } from "@/app/shared/interfaces/ingresar-cdb/PropsProductosVenta";
-import "../assets/css/mostrar-producto-style.css";
-import Image from "next/image";
-import mas from "../assets/img/anadir.png";
-import menos from "../assets/img/boton-menos.png";
+import { ProductoVenta } from "@/app/shared/interfaces/ingresar-cdb/ProductoVenta";
 
-const PRODUCTOS_POR_PAGINA = 7;
+export const MostrarProductosVenta = ({
+  ProductoAgregado,
+  setDatosVenta,
+  pagarDebito,
+  pagarEfectivo,
+}: any) => {
+  const [productosVenta, setProductosVenta] = useState<
+    Record<string, ProductoVenta>
+  >({});
 
-export const MostrarProductosVenta = ({ ProductoAgregado, recargarProductos }: PropsMostrarProductosVenta) => {
-  const [AlmacenarProducto, setAlmacenarProducto] = useState<ProductoInterface[]>([]);
-  const [CantidadPorProducto, setCantidadPorProducto] = useState<InterfaceCantidadPorProducto>({});
-  const [PrecioTotal, setPrecioTotal] = useState<InterfacePrecioTotal>({});
-  const [TotalGeneral, setTotalGeneral] = useState(0);
-  const [ProductosVenta, setProductosVenta] = useState<PropsProductosVenta[]>([]);
-  const [paginaActual, setPaginaActual] = useState(1);
-
-  /* --- Agregar productos a la tabla --- */
   useEffect(() => {
-    const producto = ProductoAgregado?.[0];
-    if (!producto) return;
+    if (ProductoAgregado.length === 0) return;
 
-    const YaExiste = AlmacenarProducto.find(
-      (p) => p.CodigoDeBarras === producto.CodigoDeBarras
-    );
+    const p = ProductoAgregado[0];
 
-    if (YaExiste) {
-      setCantidadPorProducto((prev) => ({
-        ...prev,
-        [producto.CodigoDeBarras]: {
-          ...prev[producto.CodigoDeBarras],
-          cantidad: (prev[producto.CodigoDeBarras]?.cantidad || 1) + 1,
-        },
-      }));
-
-      setPrecioTotal((prev) => ({
-        ...prev,
-        [producto.CodigoDeBarras]: {
-          total:
-            (prev[producto.CodigoDeBarras]?.total || Number(producto.Precio)) +
-            Number(producto.Precio),
-        },
-      }));
-    } else {
-      setAlmacenarProducto((prev) => [...prev, ...ProductoAgregado]);
-
-      setCantidadPorProducto((prev) => ({
-        ...prev,
-        [producto.CodigoDeBarras]: {
-          NombreProducto: producto.NombreProducto,
-          CodigoDeBarras: producto.CodigoDeBarras,
-          Precio: producto.Precio,
-          cantidad: 1,
-        },
-      }));
-
-      setPrecioTotal((prev) => ({
-        ...prev,
-        [producto.CodigoDeBarras]: { total: Number(producto.Precio) },
-      }));
-
-      const totalPaginas = Math.ceil(
-        (AlmacenarProducto.length + 1) / PRODUCTOS_POR_PAGINA
-      );
-      setPaginaActual(totalPaginas);
-    }
+    setProductosVenta((prev) => ({
+      ...prev,
+      [p.CodigoDeBarras]: {
+        NombreProducto: p.NombreProducto,
+        CodigoDeBarras: p.CodigoDeBarras,
+        TipoProducto: p.TipoProducto,
+        PrecioUnitario: Number(p.Precio),
+        cantidad: Number(p.cantidad),
+        subtotal: Number(p.Precio) * Number(p.cantidad),
+      },
+    }));
   }, [ProductoAgregado]);
 
-  /* --- Sumar cantidad --- */
-  const handleAñadirProducto = (NombreProducto: string, CodigoDeBarras: string, Precio: string) => {
-    setCantidadPorProducto((prev) => ({
-      ...prev,
-      [CodigoDeBarras]: {
-        ...prev[CodigoDeBarras],
-        cantidad: prev[CodigoDeBarras].cantidad + 1,
-      },
-    }));
-
-    setPrecioTotal((prev) => ({
-      ...prev,
-      [CodigoDeBarras]: {
-        total: prev[CodigoDeBarras].total + Number(Precio),
-      },
-    }));
-  };
-
-  /* --- Restar cantidad --- */
-  const handleDescartarProducto = (NombreProducto: string, CodigoDeBarras: string, Precio: string) => {
-    const nuevaCantidad = (CantidadPorProducto[CodigoDeBarras]?.cantidad || 1) - 1;
-
-    if (nuevaCantidad < 1) {
-      setAlmacenarProducto((prev) =>
-        prev.filter((p) => p.CodigoDeBarras !== CodigoDeBarras)
-      );
-
-      setCantidadPorProducto((prev) => {
-        const nuevo = { ...prev };
-        delete nuevo[CodigoDeBarras];
-        return nuevo;
-      });
-
-      setPrecioTotal((prev) => {
-        const nuevo = { ...prev };
-        delete nuevo[CodigoDeBarras];
-        return nuevo;
-      });
-    } else {
-      setCantidadPorProducto((prev) => ({
-        ...prev,
-        [CodigoDeBarras]: {
-          ...prev[CodigoDeBarras],
-          cantidad: nuevaCantidad,
-        },
-      }));
-
-      setPrecioTotal((prev) => ({
-        ...prev,
-        [CodigoDeBarras]: {
-          total:
-            (prev[CodigoDeBarras]?.total || Number(Precio)) -
-            Number(Precio),
-        },
-      }));
-    }
-  };
-
-  /* ✅ Reajuste inteligente de paginación */
   useEffect(() => {
-    const total = Object.values(PrecioTotal).reduce(
-      (acc, item) => acc + (item.total || 0),
-      0
-    );
-    setTotalGeneral(total);
-    setProductosVenta(Object.values(CantidadPorProducto));
+    const lista = Object.values(productosVenta);
+    const total = lista.reduce((t, p) => t + p.subtotal, 0);
 
-    const totalPaginasRecalculadas = Math.ceil(
-      AlmacenarProducto.length / PRODUCTOS_POR_PAGINA
-    );
+    setDatosVenta({
+      ProductosVenta: lista,
+      TotalGeneral: total,
+    });
+  }, [productosVenta]);
 
-    if (paginaActual > totalPaginasRecalculadas && totalPaginasRecalculadas > 0) {
-      setPaginaActual(1);
-    }
+  const aumentar = (codigo: string) => {
+    setProductosVenta((prev) => {
+      const p = prev[codigo];
+      if (!p || p.TipoProducto === "peso") return prev;
 
-    if (totalPaginasRecalculadas === 0) {
-      setPaginaActual(1);
-    }
-  }, [PrecioTotal, AlmacenarProducto]);
+      const nuevaCantidad = p.cantidad + 1;
 
-  const totalPaginas = Math.ceil(
-    AlmacenarProducto.length / PRODUCTOS_POR_PAGINA
-  );
+      return {
+        ...prev,
+        [codigo]: {
+          ...p,
+          cantidad: nuevaCantidad,
+          subtotal: nuevaCantidad * p.PrecioUnitario,
+        },
+      };
+    });
+  };
 
-  const productosPaginados = AlmacenarProducto.slice(
-    (paginaActual - 1) * PRODUCTOS_POR_PAGINA,
-    paginaActual * PRODUCTOS_POR_PAGINA
+  const disminuir = (codigo: string) => {
+    setProductosVenta((prev) => {
+      const p = prev[codigo];
+      if (!p || p.TipoProducto === "peso") return prev;
+      if (p.cantidad === 1) return prev;
+
+      const nuevaCantidad = p.cantidad - 1;
+
+      return {
+        ...prev,
+        [codigo]: {
+          ...p,
+          cantidad: nuevaCantidad,
+          subtotal: nuevaCantidad * p.PrecioUnitario,
+        },
+      };
+    });
+  };
+
+  const total = Object.values(productosVenta).reduce(
+    (t, p) => t + p.subtotal,
+    0
   );
 
   return (
-    <div className="mostrar-venta-container">
-      {AlmacenarProducto.length === 0 ? (
-        <div className="esqueleto">
-          <div className="esqueleto-linea"></div>
-          <div className="esqueleto-linea">Nota: puede presionar la tecla ENTER para agregar directamente un producto</div>
-          <div className="esqueleto-linea"></div>
-        </div>
-      ) : (
-        <>
-          <div className="tabla-y-paginacion">
+    <div className="container mt-4">
 
-            <table className="table-mostrar-producto">
-              <thead>
-                <tr>
-                  <td>NOMBRE DEL PRODUCTO</td>
-                  <td>CODIGO DE BARRAS</td>
-                  <td>PRECIO</td>
-                  <td>STOCK</td>
-                  <td>CANTIDAD</td>
-                </tr>
-              </thead>
+      <table className="table table-striped table-hover shadow-sm">
+        <thead className="table-primary text-center">
+          <tr>
+            <th>Producto</th>
+            <th>Tipo</th>
+            <th>Cant/Kg</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
 
-              <tbody>
-                {productosPaginados.map((productoMap, index) => (
-                  <tr
-                    key={index}
-                    className={
-                      Number(productoMap.Stock) <= 1
-                        ? "fila-stock-bajo"
-                        : Number(productoMap.Stock) <= 5
-                        ? "fila-stock-medio"
-                        : ""
-                    }
-                  >
-                    <td>{productoMap.NombreProducto}</td>
-                    <td>{productoMap.CodigoDeBarras}</td>
-                    <td>{productoMap.Precio}</td>
-                    <td className="td-stock">{productoMap.Stock}</td>
-                    <td className="button-cantidad">
-                      {CantidadPorProducto[productoMap.CodigoDeBarras]?.cantidad || 1}
+        <tbody>
+          {Object.values(productosVenta).map((p) => (
+            <tr key={p.CodigoDeBarras} className="text-center">
+              <td>{p.NombreProducto}</td>
+              <td>{p.TipoProducto}</td>
 
-                      <button
-                        className="button-suma"
-                        onClick={() =>
-                          handleAñadirProducto(
-                            productoMap.NombreProducto,
-                            productoMap.CodigoDeBarras,
-                            productoMap.Precio
-                          )
-                        }
-                      >
-                        <Image src={mas} alt="+" className="mas-img" />
-                      </button>
+              <td>
+                {p.TipoProducto === "unidad" ? (
+                  <div className="d-flex justify-content-center gap-2">
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => disminuir(p.CodigoDeBarras)}
+                    >
+                      -
+                    </button>
 
-                      <button
-                        className="button-resta"
-                        onClick={() =>
-                          handleDescartarProducto(
-                            productoMap.NombreProducto,
-                            productoMap.CodigoDeBarras,
-                            productoMap.Precio
-                          )
-                        }
-                      >
-                        <Image src={menos} alt="-" className="menos-img" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    <span className="fw-bold">{p.cantidad}</span>
 
-            <div className="paginacion">
-              <button
-                onClick={() => setPaginaActual(paginaActual - 1)}
-                disabled={paginaActual === 1 || totalPaginas <= 1}
-              >
-                ← Anterior
-              </button>
+                    <button
+                      className="btn btn-sm btn-outline-secondary"
+                      onClick={() => aumentar(p.CodigoDeBarras)}
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <b>{p.cantidad} kg</b>
+                )}
+              </td>
 
-              <span>
-                Página {totalPaginas === 0 ? 1 : paginaActual} de{" "}
-                {totalPaginas === 0 ? 1 : totalPaginas}
-              </span>
+              <td>${p.PrecioUnitario}</td>
+              <td className="fw-bold">${p.subtotal}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-              <button
-                onClick={() => setPaginaActual(paginaActual + 1)}
-                disabled={paginaActual === totalPaginas || totalPaginas <= 1}
-              >
-                Siguiente →
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+      <h2 className="text-end fw-bold mt-3">TOTAL: ${total}</h2>
 
-      <RealizarVenta
-        TotalGeneral={TotalGeneral}
-        ProductosVenta={ProductosVenta}
-        VentaCompletada={() => {
-          setAlmacenarProducto([]);
-          setCantidadPorProducto({});
-          setPrecioTotal({});
-          setTotalGeneral(0);
-          setProductosVenta([]);
-          setPaginaActual(1);
-          recargarProductos(); // ✅ Se vuelve a obtener stock actualizado
-        }}
-        className="realizar-venta"
-      />
+      <div className="d-flex gap-3 justify-content-center mt-4">
+        <button className="btn btn-primary btn-lg" onClick={pagarDebito}>
+          💳 Pagar con Débito
+        </button>
+
+        <button className="btn btn-success btn-lg" onClick={pagarEfectivo}>
+          💵 Pagar en Efectivo
+        </button>
+      </div>
+
     </div>
   );
 };

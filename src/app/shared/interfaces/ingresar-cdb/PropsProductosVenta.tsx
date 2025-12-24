@@ -1,7 +1,5 @@
+// shared/interfaces/ingresar-cdb/PropsProductosVenta.ts
 
-export interface PropsProductosVenta {
-    NombreProducto: string,
-    CodigoDeBarras: string,
-    Precio: string,
-    cantidad: number
-}
+import { ProductoVenta } from "./InterfaceCantidadPorProducto";
+
+export type PropsProductosVenta = ProductoVenta;

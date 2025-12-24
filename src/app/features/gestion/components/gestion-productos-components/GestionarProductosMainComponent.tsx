@@ -1,22 +1,16 @@
-import { obtenerProductosPromiseUpdate } from "@/app/firebase/Promesas";
+// GestionProductosMainComponent.tsx
+
 import { useEffect, useState } from "react";
-import '../../assets/css/gestion-productos-styles/crud-style/crud-style.css'
+import { obtenerProductosPromiseUpdate } from "@/app/firebase/Promesas";
+import '../../assets/css/gestion-productos-styles/crud-style/crud-style.css';
 import ModificarProductoComponent from "./modificar-productos-component/ModificarProductoMainComponent";
 import EliminarProductoComponent from "./eliminar-productos-component/EliminarProductoComponent";
 import React from "react";
-
-export interface ProductoConIDInterface {
-    id: string;
-    NombreProducto: string;
-    CodigoDeBarras: string;
-    Precio: string;
-    Stock: string;
-}
+import { ProductoConIDInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 
 const PRODUCTOS_POR_PAGINA = 10;
 
 export const GestionProductosMainComponent = () => {
-
   const [Productos, setProductos] = useState<ProductoConIDInterface[]>([]);
   const [paginaActual, setPaginaActual] = useState(1);
   const [RefrescarProductos, setRefrescarProductos] = useState(false);
@@ -31,7 +25,6 @@ export const GestionProductosMainComponent = () => {
     setRefrescarProductos(false);
   }, [RefrescarProductos]);
 
-  // ✅ Procesamiento + Filtros + Ordenamientos
   const productosProcesados = [...Productos]
     .filter((p) => {
       const txt = busqueda.toLowerCase();
@@ -56,7 +49,6 @@ export const GestionProductosMainComponent = () => {
       return 0;
     });
 
-  // 📌 Paginación
   const totalPaginas = Math.ceil(productosProcesados.length / PRODUCTOS_POR_PAGINA);
   const productosPagina = productosProcesados.slice(
     (paginaActual - 1) * PRODUCTOS_POR_PAGINA,
@@ -66,10 +58,8 @@ export const GestionProductosMainComponent = () => {
   return (
     <div className="gestion-container">
       <div className="gestion-panel">
-
         <h2 className="gestion-title">🛠 GESTIÓN DE PRODUCTOS</h2>
 
-        {/* ✅ Filtros se mantienen */}
         <div className="gestion-filtros">
           <label>Búsqueda: </label>
           <input
@@ -84,10 +74,13 @@ export const GestionProductosMainComponent = () => {
           />
 
           <label>Estado: </label>
-          <select value={filtroEstado} onChange={(e) => {
-            setFiltroEstado(e.target.value);
-            setPaginaActual(1);
-          }}>
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setPaginaActual(1);
+            }}
+          >
             <option value="todos">Todos</option>
             <option value="sin">Sin stock</option>
             <option value="bajo">Crítico</option>
@@ -96,35 +89,41 @@ export const GestionProductosMainComponent = () => {
           </select>
 
           <label>Precio:</label>
-          <select value={ordenPrecio} onChange={(e) => {
-            setOrdenPrecio(e.target.value);
-            setOrdenStock("");
-            setPaginaActual(1);
-          }}>
+          <select
+            value={ordenPrecio}
+            onChange={(e) => {
+              setOrdenPrecio(e.target.value);
+              setOrdenStock("");
+              setPaginaActual(1);
+            }}
+          >
             <option value="">Ninguno</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
           </select>
 
           <label>Stock:</label>
-          <select value={ordenStock} onChange={(e) => {
-            setOrdenStock(e.target.value);
-            setOrdenPrecio("");
-            setPaginaActual(1);
-          }}>
+          <select
+            value={ordenStock}
+            onChange={(e) => {
+              setOrdenStock(e.target.value);
+              setOrdenPrecio("");
+              setPaginaActual(1);
+            }}
+          >
             <option value="">Ninguno</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
           </select>
         </div>
 
-        {/* ✅ Tabla con advertencias y acciones */}
         <div className="gestion-wrapper">
           <table className="gestion-table">
             <thead>
               <tr>
                 <td>NOMBRE</td>
                 <td>CÓDIGO</td>
+                <td>TIPO</td>
                 <td>PRECIO</td>
                 <td>STOCK</td>
                 <td>ESTADO</td>
@@ -137,22 +136,37 @@ export const GestionProductosMainComponent = () => {
                 const stock = Number(producto.Stock);
 
                 const estado =
-                  stock === 0 ? "🚫 SIN STOCK" :
-                    stock === 1 ? "⚠ Crítico" :
-                      stock <= 5 ? "⚠ Poco stock" :
-                        "✅ En Stock";
+                  stock === 0
+                    ? "🚫 SIN STOCK"
+                    : stock === 1
+                    ? "⚠ Crítico"
+                    : stock <= 5
+                    ? "⚠ Poco stock"
+                    : "✅ En Stock";
 
                 const clase =
-                  stock === 0 ? "gestion-row-sin" :
-                    stock === 1 ? "gestion-row-bajo" :
-                      stock <= 5 ? "gestion-row-medio" : "";
+                  stock === 0
+                    ? "gestion-row-sin"
+                    : stock === 1
+                    ? "gestion-row-bajo"
+                    : stock <= 5
+                    ? "gestion-row-medio"
+                    : "";
 
                 return (
                   <tr key={producto.id} className={clase}>
                     <td>{producto.NombreProducto}</td>
                     <td>{producto.CodigoDeBarras}</td>
-                    <td>${producto.Precio}</td>
-                    <td>{stock}</td>
+                    <td>{producto.TipoProducto === "peso" ? "Por peso (kg)" : "Unidad"}</td>
+                    <td>
+                      $
+                      {Number(producto.Precio).toLocaleString("es-CL")}{" "}
+                      {producto.TipoProducto === "peso" ? "/kg" : ""}
+                    </td>
+                    <td>
+                      {Number(producto.Stock)}{" "}
+                      {producto.TipoProducto === "peso" ? "kg" : "unid."}
+                    </td>
                     <td className="gestion-estado">{estado}</td>
                     <td>
                       <div className="gestion-acciones">
@@ -172,25 +186,30 @@ export const GestionProductosMainComponent = () => {
             </tbody>
           </table>
 
-          {/* ✅ Controles de paginación */}
           <div className="gestion-pagination">
-            <button disabled={paginaActual === 1}
-              onClick={() => setPaginaActual(paginaActual - 1)}>
+            <button
+              disabled={paginaActual === 1}
+              onClick={() => setPaginaActual(paginaActual - 1)}
+            >
               ← Anterior
             </button>
 
-            <span>Página {paginaActual} de {totalPaginas}</span>
+            <span>
+              Página {paginaActual} de {totalPaginas}
+            </span>
 
-            <button disabled={paginaActual === totalPaginas}
-              onClick={() => setPaginaActual(paginaActual + 1)}>
+            <button
+              disabled={paginaActual === totalPaginas}
+              onClick={() => setPaginaActual(paginaActual + 1)}
+            >
               Siguiente →
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
 };
 
 export default GestionProductosMainComponent;
+

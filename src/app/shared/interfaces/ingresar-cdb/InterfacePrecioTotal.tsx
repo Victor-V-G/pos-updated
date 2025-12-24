@@ -1,5 +1,7 @@
+// shared/interfaces/ingresar-cdb/InterfacePrecioTotal.ts
 
 export interface InterfacePrecioTotal {
-    /*CLAVE VALOR, DENTRO DE CLAVE VALOR*/
-    [CodigoDeBarras: string] : {total: number}
+  [codigo: string]: {
+    total: number;
+  };
 }

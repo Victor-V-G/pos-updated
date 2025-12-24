@@ -1,3 +1,6 @@
+
+// VerStockComponent.tsx
+
 import { useEffect, useState } from "react";
 import { ProductoInterface } from "@/app/shared/interfaces/producto/ProductoInterface";
 import { obtenerProductosPromise } from "@/app/firebase/Promesas";
@@ -58,13 +61,9 @@ export const VerStockComponent = () => {
   return (
     <div className="ver-stock-container">
       <div className="ver-stock-panel">
-
-        {/* ✅ Header */}
         <h2 className="ver-stock-title">📦 VER STOCK Y BÚSQUEDA</h2>
 
-        {/* ✅ Sección de filtros */}
         <div className="filtros-stock">
-
           <label>Busqueda:</label>
           <input
             type="text"
@@ -78,10 +77,13 @@ export const VerStockComponent = () => {
           />
 
           <label>Estado:</label>
-          <select value={filtroEstado} onChange={(e) => {
-            setFiltroEstado(e.target.value);
-            setPaginaActual(1);
-          }}>
+          <select
+            value={filtroEstado}
+            onChange={(e) => {
+              setFiltroEstado(e.target.value);
+              setPaginaActual(1);
+            }}
+          >
             <option value="todos">Todos</option>
             <option value="sin">Sin stock</option>
             <option value="bajo">Crítico</option>
@@ -90,22 +92,28 @@ export const VerStockComponent = () => {
           </select>
 
           <label>Precio:</label>
-          <select value={ordenPrecio} onChange={(e) => {
-            setOrdenPrecio(e.target.value);
-            setOrdenStock("");
-            setPaginaActual(1);
-          }}>
+          <select
+            value={ordenPrecio}
+            onChange={(e) => {
+              setOrdenPrecio(e.target.value);
+              setOrdenStock("");
+              setPaginaActual(1);
+            }}
+          >
             <option value="">Ninguno</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
           </select>
 
           <label>Stock:</label>
-          <select value={ordenStock} onChange={(e) => {
-            setOrdenStock(e.target.value);
-            setOrdenPrecio("");
-            setPaginaActual(1);
-          }}>
+          <select
+            value={ordenStock}
+            onChange={(e) => {
+              setOrdenStock(e.target.value);
+              setOrdenPrecio("");
+              setPaginaActual(1);
+            }}
+          >
             <option value="">Ninguno</option>
             <option value="asc">Menor a mayor</option>
             <option value="desc">Mayor a menor</option>
@@ -123,6 +131,7 @@ export const VerStockComponent = () => {
                 <tr>
                   <td>NOMBRE DEL PRODUCTO</td>
                   <td>CODIGO DE BARRAS</td>
+                  <td>TIPO</td>
                   <td>PRECIO</td>
                   <td>STOCK</td>
                   <td>ESTADO</td>
@@ -138,10 +147,13 @@ export const VerStockComponent = () => {
                   const esMedio = stockN > 1 && stockN <= 5;
 
                   const advertencia =
-                    esSinStock ? "🚫 SIN STOCK" :
-                    esBajo ? "⚠ Stock crítico" :
-                    esMedio ? "⚠ Poco stock disponible" :
-                    "✓ En stock";
+                    esSinStock
+                      ? "🚫 SIN STOCK"
+                      : esBajo
+                      ? "⚠ Stock crítico"
+                      : esMedio
+                      ? "⚠ Poco stock disponible"
+                      : "✓ En stock";
 
                   return (
                     <tr
@@ -158,8 +170,15 @@ export const VerStockComponent = () => {
                     >
                       <td>{producto.NombreProducto}</td>
                       <td>{producto.CodigoDeBarras}</td>
-                      <td>${producto.Precio}</td>
-                      <td>{stockN}</td>
+                      <td>{producto.TipoProducto === "peso" ? "Por peso (kg)" : "Unidad"}</td>
+                      <td>
+                        $
+                        {Number(producto.Precio).toLocaleString("es-CL")}{" "}
+                        {producto.TipoProducto === "peso" ? "/kg" : ""}
+                      </td>
+                      <td>
+                        {stockN} {producto.TipoProducto === "peso" ? "kg" : "unid."}
+                      </td>
                       <td className="ver-stock-estado">{advertencia}</td>
                     </tr>
                   );
@@ -167,19 +186,25 @@ export const VerStockComponent = () => {
               </tbody>
             </table>
 
-            {/* ✅ Paginación */}
             <div className="ver-stock-pagination">
-              <button disabled={paginaActual === 1} onClick={() => setPaginaActual(paginaActual - 1)}>
+              <button
+                disabled={paginaActual === 1}
+                onClick={() => setPaginaActual(paginaActual - 1)}
+              >
                 ← Anterior
               </button>
 
-              <span>Página {paginaActual} de {totalPaginas}</span>
+              <span>
+                Página {paginaActual} de {totalPaginas}
+              </span>
 
-              <button disabled={paginaActual === totalPaginas} onClick={() => setPaginaActual(paginaActual + 1)}>
+              <button
+                disabled={paginaActual === totalPaginas}
+                onClick={() => setPaginaActual(paginaActual + 1)}
+              >
                 Siguiente →
               </button>
             </div>
-
           </div>
         )}
       </div>
