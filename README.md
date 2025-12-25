@@ -1,22 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎉 Sistema POS - Point of Sale
 
-## Getting Started
+Sistema de Punto de Venta desarrollado con Next.js 14+, TypeScript y Firebase, organizado siguiendo **Screaming Architecture**.
 
-First, run the development server:
+## 🚀 Quick Start
 
 ```bash
+# Instalar dependencias
+npm install
+
+# Iniciar en desarrollo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compilar para producción
+npm run build
+
+# Iniciar en producción
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) para ver la aplicación.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📚 Documentación
+
+- **[QUICK-START.md](./QUICK-START.md)** - Guía rápida de inicio
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Documentación completa de la arquitectura
+- **[MIGRATION-SUMMARY.md](./MIGRATION-SUMMARY.md)** - Resumen de la migración a Screaming Architecture
+- **[CHECKLIST.md](./CHECKLIST.md)** - Checklist de verificación y próximos pasos
+
+## 🏗️ Estructura del Proyecto
+
+```
+src/
+├── app/              → Next.js routing
+├── core/             → Lógica de negocio
+│   ├── domain/      → Entidades
+│   └── infrastructure/ → Firebase
+├── features/         → Características (Screaming Architecture)
+│   ├── sales/       → 💰 Ventas
+│   ├── product-management/ → 📦 Gestión de Productos
+│   ├── inventory/   → 📊 Inventario
+│   ├── sales-history/ → 📋 Historial
+│   ├── dashboard/   → 🏠 Dashboard
+│   └── auth/        → 🔐 Autenticación
+├── shared/           → Código compartido
+│   ├── components/
+│   └── types/
+└── assets/           → Imágenes y estilos
+```
+
+## ✨ Características
+
+- ✅ **Ventas**: Registro de ventas con código de barras
+- ✅ **Gestión de Productos**: CRUD completo de productos
+- ✅ **Inventario**: Control de stock y alertas
+- ✅ **Historial**: Registro completo de ventas
+- ✅ **Dashboard**: Acceso rápido a todas las funcionalidades
+- ✅ **Autenticación**: Control de acceso
+
+## 🛠️ Tecnologías
+
+- **Next.js 14+** - Framework React
+- **TypeScript** - Tipado estático
+- **Firebase** - Base de datos y autenticación
+- **CSS Modules** - Estilos
+
+## 📖 Más Información
+
+Para más detalles sobre la arquitectura y cómo contribuir, consulta la [documentación completa](./ARCHITECTURE.md).
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

@@ -1,11 +1,11 @@
 'use client'
 import { useState } from "react";
-import InicioModals from "./features/inicio/modals/InicioModals";
-import Sidebar from "./shared/sidebar/components/Sidebar";
-import VentaModals from "./features/venta/modals/VentaModals";
-import VerStockModals from "./features/ver-stock/modals/VerStockModals";
-import GestionModals from "./features/gestion/modals/main-modals/GestionModals";
-import HistorialDeVentaModals from "./features/historial-de-ventas/modals/HistorialDeVentasModals";
+import { InicioModals } from "@/features/dashboard/components";
+import { Sidebar } from "@/shared/components";
+import { VentaModals } from "@/features/sales/components";
+import { VerStockModals } from "@/features/inventory/components";
+import GestionModals from "@/features/product-management/components/main-modals/GestionModals";
+import { HistorialDeVentaModals } from "@/features/sales-history/components";
 
 
 export default function Home() {
