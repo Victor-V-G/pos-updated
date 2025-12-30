@@ -1,24 +1,32 @@
-
-/*Page.tsx*/
-
+/* 1. Los imports externos van SIEMPRE al principio */
 @import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,700&display=swap');
 
-*{
-    box-sizing: border-box;
-    padding: 0;
-    margin: 0;
+/* 2. Importamos Tailwind */
+@import "tailwindcss";
+
+/* 3. Configuración del tema en v4 (Opcional, pero recomendado para fuentes) */
+@theme {
+  --font-sans: 'General Sans', sans-serif;
 }
 
-html{
-    font-family: 'General Sans', sans-serif;
+/* ELIMINADO: * { box-sizing, margin, padding } 
+   Razón: Tailwind ya hace esto automáticamente. 
+   Hacerlo manual puede causar conflictos de especificidad.
+*/
+
+html {
+    font-family: var(--font-sans); /* Usamos la variable del tema */
     height: 100%;
 }
 
-body{
+body {
     min-height: 100%;
+    /* Asegúrate de que el body tenga el color de fondo si es global */
+    background-color: #EBECF2; 
 }
 
-.grid-container{
+/* Tus estilos personalizados de Grid */
+.grid-container {
     display: grid;
     height: 100vh;
     grid-template-areas: 
@@ -29,32 +37,32 @@ body{
     grid-template-rows: 80px auto 80px;
 }
 
-.aside{
+.aside {
     display: grid;
     grid-area: aside;
     background-color: #fff;
 }
 
-.header{
+.header {
     display: grid;
     grid-area: header;
     background-color: #EBECF2;
 }
 
-.main{
+.main {
     display: grid;
     grid-area: main;
     background-color: #EBECF2;
 }
 
-.footer{
+.footer {
     display: grid;
     grid-area: footer;
     background-color: #EBECF2;
 }
 
-@media (min-width: 120px){
-    .grid-container{
+@media (min-width: 120px) {
+    .grid-container {
         grid-template-areas: 
             "aside header header"
             "aside main main"
@@ -62,4 +70,3 @@ body{
         grid-template-rows: 80px auto 80px;
     }
 }
-

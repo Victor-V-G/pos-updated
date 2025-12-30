@@ -1,48 +1,9 @@
 
-.gestion-component-style header{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    margin-top: 50px;
+/* Minimal styles for the gestion component. Layout and spacing are handled with Tailwind classes in the component. */
+.gestion-component-style {
+  padding-top: 1rem;
 }
-
-.gestion-component-style main{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-}
-
-.gestion-component-style nav{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: 50px;
-    gap: 3rem;
-}
-
-.gestion-component-style button{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 35px;
-    background-color: white;
-    border: 1px solid #EBECF2;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-    width: 250px;
-    height: 180px;
-    font-size: 16px;
-    font-weight: bold;
-    flex-direction: column;
-    gap: 1.3rem;
-}
-
-.gestion-component-style button:hover{
-    border: #EBECF2;
-    background-color: #c8c8c8;
+.gestion-component-style header {
+  text-align: left;
 }
 

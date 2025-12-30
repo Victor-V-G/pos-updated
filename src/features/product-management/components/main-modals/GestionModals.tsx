@@ -35,8 +35,9 @@ export const GestionModals = ({OpenManager} : ModalsInterfaceProps) => {
     if (OpenManagerLogin === false){
         return (
             <>
-
-                <GestionComponent/>
+                
+                  <GestionComponent/>
+                
 
             </>
         )

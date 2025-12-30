@@ -1,45 +1,41 @@
 import { GestionModalsSetters } from '@/shared/types';
-import '@/assets/styles/gestion-productos-styles/agregar-productos-style/agregar-producto-style.css'
 import { useEffect } from 'react';
-import AgregarProductoComponent from '../../agregar-productos-component/AgregarProductoComponent';
+import { ProductForm } from '../../agregar-productos-component/AgregarProductoComponent';
 
+export const AgregarProductoModals = ({ 
+    OpenManager, 
+    setOpenManager, 
+    SetOpenManagerGestionComponentSetter 
+}: GestionModalsSetters) => {
 
-export const AgregarProductoModals = ({OpenManager, setOpenManager, SetOpenManagerGestionComponentSetter} : GestionModalsSetters) => {
-
-    if (OpenManager == false) {
-        return null
-    }
-
-    if (OpenManager == true){
-        useEffect(() => {
+    useEffect(() => {
+        if (OpenManager) {
             SetOpenManagerGestionComponentSetter(false);
-        }, [])
-    }
+        }
+    }, [OpenManager, SetOpenManagerGestionComponentSetter]);
 
+    const handleClose = () => {
+        setOpenManager(false);
+        SetOpenManagerGestionComponentSetter(true);
+    };
+
+    if (!OpenManager) {
+        return null;
+    }
     
     return (
-        <>
-        
-            <div className='agregar-producto-style'>
-
-                <AgregarProductoComponent/>
-                
-                <div className='div-modals-cerrar'>
-
-                    <button 
-                        className='modals-cerrar'
-                        onClick={()=>{
-                            setOpenManager(false);
-                            SetOpenManagerGestionComponentSetter(true);
-                        }}>
-                        <span>VOLVER ATRAS</span>
-                    </button>
-
-                </div>
-                
+        <div 
+            className='fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50'
+            onClick={handleClose}
+        >
+            {/* max-w-lg mantiene el ancho elegante. p-4 en el padre evita que toque bordes */}
+            <div 
+                className='w-full max-w-lg' 
+                onClick={(e) => e.stopPropagation()}
+            >
+                <ProductForm onClose={handleClose} />
             </div>
-
-        </>
+        </div>
     )
 }
 
