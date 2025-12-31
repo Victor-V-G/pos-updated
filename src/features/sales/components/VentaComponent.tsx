@@ -15,6 +15,7 @@ interface ProductoCarrito {
   precioUnitario: number;
   cantidad: number;
   subtotal: number;
+  cantidadTemporal?: string; // Para manejar la edición temporal
 }
 
 export const VentaComponent = () => {
@@ -58,13 +59,6 @@ export const VentaComponent = () => {
       return;
     }
 
-    // Verificar stock
-    if (Number(producto.Stock) <= 0) {
-      setMensaje("Producto sin stock disponible");
-      setTimeout(() => setMensaje(""), 3000);
-      return;
-    }
-
     // Verificar si el producto ya está en el carrito
     const productoExistente = carrito.find((p) => p.codigoBarras === codigoBarras);
 
@@ -92,24 +86,126 @@ export const VentaComponent = () => {
     inputRef.current?.focus();
   };
 
-  const actualizarCantidad = (codigoBarras: string, nuevaCantidad: number) => {
-    if (nuevaCantidad <= 0) {
-      eliminarProducto(codigoBarras);
-      return;
-    }
+  const redondearCantidad = (cantidad: number): number => {
+    // Redondear a 3 decimales para evitar problemas de precisión
+    return Math.round(cantidad * 1000) / 1000;
+  };
 
+  const actualizarCantidad = (codigoBarras: string, nuevaCantidad: number) => {
     setCarrito(
       carrito.map((item) => {
         if (item.codigoBarras === codigoBarras) {
+          // Redondear la cantidad para evitar valores como 0.9999999
+          const cantidadRedondeada = redondearCantidad(nuevaCantidad);
+          const cantidadFinal = cantidadRedondeada > 0 ? cantidadRedondeada : item.cantidad;
           return {
             ...item,
-            cantidad: nuevaCantidad,
-            subtotal: item.precioUnitario * nuevaCantidad,
+            cantidad: cantidadFinal,
+            subtotal: item.precioUnitario * cantidadFinal,
+            cantidadTemporal: undefined,
           };
         }
         return item;
       })
     );
+  };
+
+  const manejarCambioInputCantidad = (codigoBarras: string, valorTexto: string, tipoPeso: boolean) => {
+    // Intentar parsear el valor en tiempo real
+    let cantidadParseada = 0;
+    
+    if (valorTexto.trim()) {
+      if (tipoPeso) {
+        let valorLimpio = valorTexto.replace(/\s/g, '').replace(',', '.');
+        
+        if (!valorTexto.includes('.') && !valorTexto.includes(',')) {
+          const valorNumerico = parseFloat(valorLimpio);
+          if (!isNaN(valorNumerico)) {
+            cantidadParseada = valorNumerico / 1000;
+          }
+        } else {
+          cantidadParseada = parseFloat(valorLimpio);
+        }
+      } else {
+        cantidadParseada = parseFloat(valorTexto);
+      }
+    }
+
+    setCarrito(
+      carrito.map((item) => {
+        if (item.codigoBarras === codigoBarras) {
+          // Si el valor parseado es válido, actualizar cantidad y subtotal en tiempo real
+          if (!isNaN(cantidadParseada) && cantidadParseada > 0) {
+            return {
+              ...item,
+              cantidad: cantidadParseada,
+              subtotal: item.precioUnitario * cantidadParseada,
+              cantidadTemporal: valorTexto,
+            };
+          }
+          // Si no es válido, solo guardar el texto temporal
+          return {
+            ...item,
+            cantidadTemporal: valorTexto,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const procesarCantidadFinal = (codigoBarras: string, valorTexto: string, tipoPeso: boolean) => {
+    if (!valorTexto.trim()) {
+      // Si está vacío, restaurar la cantidad original
+      setCarrito(
+        carrito.map((item) => {
+          if (item.codigoBarras === codigoBarras) {
+            return {
+              ...item,
+              cantidadTemporal: undefined,
+            };
+          }
+          return item;
+        })
+      );
+      return;
+    }
+
+    let cantidadFinal = 0;
+
+    if (tipoPeso) {
+      // Eliminar espacios y reemplazar coma por punto
+      let valorLimpio = valorTexto.replace(/\s/g, '').replace(',', '.');
+      
+      // Si no contiene punto o coma, interpretar como gramos y convertir a kg
+      if (!valorTexto.includes('.') && !valorTexto.includes(',')) {
+        const valorNumerico = parseFloat(valorLimpio);
+        if (!isNaN(valorNumerico)) {
+          cantidadFinal = valorNumerico / 1000; // Convertir gramos a kg
+        }
+      } else {
+        cantidadFinal = parseFloat(valorLimpio);
+      }
+    } else {
+      cantidadFinal = parseFloat(valorTexto);
+    }
+
+    if (!isNaN(cantidadFinal) && cantidadFinal > 0) {
+      actualizarCantidad(codigoBarras, cantidadFinal);
+    } else {
+      // Si el valor no es válido, restaurar
+      setCarrito(
+        carrito.map((item) => {
+          if (item.codigoBarras === codigoBarras) {
+            return {
+              ...item,
+              cantidadTemporal: undefined,
+            };
+          }
+          return item;
+        })
+      );
+    }
   };
 
   const eliminarProducto = (codigoBarras: string) => {
@@ -296,6 +392,9 @@ export const VentaComponent = () => {
                             ${item.precioUnitario.toLocaleString("es-CL")} por{" "}
                             {item.tipo === "peso" ? "kg" : "unidad"}
                           </p>
+                          <p className="text-xs text-gray-400">
+                            Código: {item.codigoBarras}
+                          </p>
                         </div>
                         <button
                           onClick={() => eliminarProducto(item.codigoBarras)}
@@ -308,29 +407,36 @@ export const VentaComponent = () => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() =>
-                              actualizarCantidad(
-                                item.codigoBarras,
-                                item.cantidad - (item.tipo === "unidad" ? 1 : 0.1)
-                              )
-                            }
+                            onClick={() => {
+                              const nuevaCantidad = item.cantidad - (item.tipo === "unidad" ? 1 : 0.1);
+                              if (nuevaCantidad <= 0) {
+                                eliminarProducto(item.codigoBarras);
+                              } else {
+                                actualizarCantidad(item.codigoBarras, nuevaCantidad);
+                              }
+                            }}
                             className="p-1 bg-gray-100 hover:bg-gray-200 rounded transition"
                           >
                             <Minus className="w-4 h-4" />
                           </button>
 
                           <input
-                            type="number"
-                            value={item.cantidad}
+                            type="text"
+                            value={item.cantidadTemporal !== undefined ? item.cantidadTemporal : item.cantidad}
                             onChange={(e) => {
-                              const valor = parseFloat(e.target.value);
-                              if (!isNaN(valor) && valor >= 0) {
-                                actualizarCantidad(item.codigoBarras, valor);
+                              manejarCambioInputCantidad(item.codigoBarras, e.target.value, item.tipo === "peso");
+                            }}
+                            onBlur={(e) => {
+                              procesarCantidadFinal(item.codigoBarras, e.target.value, item.tipo === "peso");
+                            }}
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                procesarCantidadFinal(item.codigoBarras, e.currentTarget.value, item.tipo === "peso");
+                                e.currentTarget.blur();
                               }
                             }}
-                            step={item.tipo === "peso" ? "0.1" : "1"}
-                            min="0"
                             className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm"
+                            placeholder={item.tipo === "peso" ? "0.5" : "1"}
                           />
 
                           <span className="text-sm text-gray-600">
