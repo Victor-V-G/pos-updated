@@ -25,11 +25,79 @@ export const VentaComponent = () => {
   const [montoPagado, setMontoPagado] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
+  const [focusTrigger, setFocusTrigger] = useState(0); // Para forzar el focus cuando sea necesario
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputMontoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Reactivar focus cuando se necesite
+  useEffect(() => {
+    if (focusTrigger > 0) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [focusTrigger]);
+
+  // Agregar producto automáticamente después de escribir/escanear
+  useEffect(() => {
+    if (!codigoBarras.trim()) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleEscanear();
+    }, 500); // Esperar 500ms después de que se deje de escribir
+
+    return () => clearTimeout(timer);
+  }, [codigoBarras]);
+
+  // Activar focus en el input de monto cuando se selecciona pago en efectivo
+  useEffect(() => {
+    if (mostrarPago) {
+      inputMontoRef.current?.focus();
+    }
+  }, [mostrarPago]);
+
+  // Atajos de teclado para métodos de pago
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Verificar si estamos en el input de código de barras
+      const isCodigoBarrasInput = target === inputRef.current;
+      
+      // Si estamos en el input de código de barras pero tiene contenido, no interferir
+      if (isCodigoBarrasInput && codigoBarras.trim()) {
+        return;
+      }
+      
+      // Si estamos en otro input (como el de monto), no interferir
+      if (target.tagName === 'INPUT' && !isCodigoBarrasInput) {
+        return;
+      }
+
+      // Solo activar si hay productos en el carrito
+      if (carrito.length === 0) {
+        return;
+      }
+
+      // E = Efectivo, T = Tarjeta
+      if (e.key.toLowerCase() === 'e' && !mostrarPago) {
+        e.preventDefault();
+        setMostrarPago(true);
+      } else if (e.key.toLowerCase() === 't' && !mostrarPago) {
+        e.preventDefault();
+        handlePagarTarjeta();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [carrito, mostrarPago, codigoBarras]);
 
   const buscarProducto = async (codigo: string): Promise<ProductoInterface | null> => {
     try {
@@ -54,8 +122,9 @@ export const VentaComponent = () => {
     setCargando(false);
 
     if (!producto) {
-      setMensaje("Producto no encontrado");
-      setTimeout(() => setMensaje(""), 3000);
+      setMensaje("Producto no encontrado, verifique que este registrado");
+      setCodigoBarras("");
+      setFocusTrigger(prev => prev + 1);
       return;
     }
 
@@ -66,6 +135,13 @@ export const VentaComponent = () => {
       // Si ya existe, incrementar cantidad
       const incremento = producto.TipoProducto === "unidad" ? 1 : 0.5;
       actualizarCantidad(codigoBarras, productoExistente.cantidad + incremento);
+      
+      // Mostrar mensaje según el tipo de producto
+      if (producto.TipoProducto === "unidad") {
+        setMensaje(`${producto.NombreProducto} - Unidad añadida correctamente`);
+      } else {
+        setMensaje(`${producto.NombreProducto} - ${incremento}kg añadidos correctamente`);
+      }
     } else {
       // Agregar nuevo producto al carrito
       const cantidadInicial = producto.TipoProducto === "unidad" ? 1 : 0.5;
@@ -79,11 +155,10 @@ export const VentaComponent = () => {
       };
       setCarrito([...carrito, nuevoProducto]);
       setMensaje(`${producto.NombreProducto} agregado al carrito`);
-      setTimeout(() => setMensaje(""), 3000);
     }
 
     setCodigoBarras("");
-    inputRef.current?.focus();
+    setFocusTrigger(prev => prev + 1);
   };
 
   const redondearCantidad = (cantidad: number): number => {
@@ -247,8 +322,14 @@ export const VentaComponent = () => {
     setCargando(false);
 
     if (ok) {
-      alert(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito`);
-      resetearVenta();
+      const confirmar = confirm(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
+      if (confirmar) {
+        resetearVenta();
+      } else {
+        setMensaje("Pago cancelado - Carrito mantenido");
+        setTimeout(() => setMensaje(""), 3000);
+        setFocusTrigger(prev => prev + 1);
+      }
     } else {
       setMensaje("Error al procesar la venta");
       setTimeout(() => setMensaje(""), 3000);
@@ -300,8 +381,17 @@ export const VentaComponent = () => {
     setCargando(false);
 
     if (ok) {
-      alert(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}`);
-      resetearVenta();
+      const confirmar = confirm(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
+      if (confirmar) {
+        resetearVenta();
+      } else {
+        // Si cancela, volver a mostrar el input de código de barras
+        setMostrarPago(false);
+        setMontoPagado("");
+        setMensaje("Pago cancelado - Carrito mantenido");
+        setTimeout(() => setMensaje(""), 3000);
+        setFocusTrigger(prev => prev + 1);
+      }
     } else {
       setMensaje("Error al procesar la venta");
       setTimeout(() => setMensaje(""), 3000);
@@ -314,7 +404,7 @@ export const VentaComponent = () => {
     setMostrarPago(false);
     setMontoPagado("");
     setMensaje("");
-    inputRef.current?.focus();
+    setFocusTrigger(prev => prev + 1);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -326,8 +416,24 @@ export const VentaComponent = () => {
   const total = calcularTotal();
 
   return (
-    <div className="w-full h-full flex items-center px-6">
-      <div className="w-full max-w-6xl h-[85vh] bg-white rounded-lg shadow-lg p-6 flex flex-col mx-auto">
+    <div 
+      className="w-full h-full flex items-center px-6"
+      onMouseDown={(e) => {
+        // Si se hace clic fuera de inputs y botones interactivos, mantener focus en el escáner
+        const target = e.target as HTMLElement;
+        const isInteractiveElement = 
+          target.tagName === 'INPUT' || 
+          target.tagName === 'BUTTON' || 
+          target.closest('button') ||
+          target.closest('input');
+        
+        if (!isInteractiveElement) {
+          e.preventDefault();
+          inputRef.current?.focus();
+        }
+      }}
+    >
+      <div className="w-full max-w-[95%] h-[85vh] bg-white rounded-lg shadow-lg p-6 flex flex-col mx-auto">
         {/* Header */}
         <div className="mb-4 shrink-0">
           <h1 className="text-2xl text-gray-900 mb-1 font-bold">Realizar Venta</h1>
@@ -347,7 +453,13 @@ export const VentaComponent = () => {
                     ref={inputRef}
                     type="text"
                     value={codigoBarras}
-                    onChange={(e) => setCodigoBarras(e.target.value)}
+                    onChange={(e) => {
+                      setCodigoBarras(e.target.value);
+                      // Limpiar el mensaje cuando se comienza a escribir un nuevo código
+                      if (mensaje) {
+                        setMensaje("");
+                      }
+                    }}
                     onKeyPress={handleKeyPress}
                     placeholder="Escanea o ingresa el código"
                     disabled={cargando}
@@ -366,8 +478,8 @@ export const VentaComponent = () => {
 
             {/* Mensaje */}
             {mensaje && (
-              <div className={`${mensaje.includes("Error") || mensaje.includes("insuficiente") || mensaje.includes("sin stock") ? "bg-red-50 border-red-200 text-red-800" : "bg-blue-50 border-blue-200 text-blue-800"} border rounded-lg p-2 shrink-0`}>
-                <p className="text-xs">{mensaje}</p>
+              <div className={`${mensaje.includes("Error") || mensaje.includes("insuficiente") || mensaje.includes("sin stock") ? "bg-red-50 border-red-200 text-red-800" : "bg-blue-50 border-blue-200 text-blue-800"} border rounded-lg p-4 shrink-0`}>
+                <p className="text-sm font-medium">{mensaje}</p>
               </div>
             )}
 
@@ -435,7 +547,7 @@ export const VentaComponent = () => {
                                 e.currentTarget.blur();
                               }
                             }}
-                            className="w-16 px-2 py-1 border border-gray-300 rounded text-center text-sm"
+                            className="w-24 px-2 py-1 border border-gray-300 rounded text-center text-sm"
                             placeholder={item.tipo === "peso" ? "0.5" : "1"}
                           />
 
@@ -457,7 +569,7 @@ export const VentaComponent = () => {
                         </div>
 
                         <div className="text-right">
-                          <p className="text-sm text-gray-900 font-semibold">
+                          <p className="text-lg text-gray-900 font-bold">
                             ${item.subtotal.toLocaleString("es-CL")}
                           </p>
                         </div>
@@ -477,18 +589,18 @@ export const VentaComponent = () => {
               <div className="space-y-1.5 mb-3">
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Productos:</span>
-                  <span className="text-sm text-gray-900 font-medium">{carrito.length}</span>
+                  <span className="text-base text-gray-900 font-semibold">{carrito.length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-600">Subtotal:</span>
-                  <span className="text-sm text-gray-900 font-medium">
+                  <span className="text-base text-gray-900 font-semibold">
                     ${total.toLocaleString("es-CL")}
                   </span>
                 </div>
                 <div className="border-t pt-2 mt-2">
                   <div className="flex justify-between">
-                    <span className="text-lg text-gray-900 font-semibold">Total:</span>
-                    <span className="text-xl text-blue-600 font-bold">
+                    <span className="text-xl text-gray-900 font-bold">Total:</span>
+                    <span className="text-2xl text-blue-600 font-bold">
                       ${total.toLocaleString("es-CL")}
                     </span>
                   </div>
@@ -538,7 +650,7 @@ export const VentaComponent = () => {
                         setMostrarPago(false);
                         setMontoPagado("");
                       }}
-                      className="text-xs text-gray-600 hover:text-gray-900"
+                      className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition text-sm font-medium"
                     >
                       Cancelar
                     </button>
@@ -553,9 +665,15 @@ export const VentaComponent = () => {
                         $
                       </span>
                       <input
+                        ref={inputMontoRef}
                         type="number"
                         value={montoPagado}
                         onChange={(e) => setMontoPagado(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") {
+                            handlePagarEfectivo();
+                          }
+                        }}
                         placeholder="0"
                         step="100"
                         min="0"
@@ -586,7 +704,12 @@ export const VentaComponent = () => {
               {/* Botón para limpiar carrito */}
               {carrito.length > 0 && (
                 <button
-                  onClick={resetearVenta}
+                  onClick={() => {
+                    const confirmar = confirm("¿Está seguro que desea cancelar la venta?\n\nPresione Enter para cancelar o Escape para continuar con la venta");
+                    if (confirmar) {
+                      resetearVenta();
+                    }
+                  }}
                   disabled={cargando}
                   className="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 disabled:bg-gray-200 text-red-700 py-2 rounded-lg transition shrink-0 mt-auto font-medium text-sm"
                 >
