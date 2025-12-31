@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote } from "lucide-react";
+import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote, HelpCircle, X } from "lucide-react";
 
 import { 
   obtenerProductosPromise, 
@@ -26,6 +26,7 @@ export const VentaComponent = () => {
   const [mensaje, setMensaje] = useState("");
   const [cargando, setCargando] = useState(false);
   const [focusTrigger, setFocusTrigger] = useState(0); // Para forzar el focus cuando sea necesario
+  const [mostrarAyuda, setMostrarAyuda] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const inputMontoRef = useRef<HTMLInputElement>(null);
 
@@ -436,8 +437,19 @@ export const VentaComponent = () => {
       <div className="w-full max-w-[95%] h-[85vh] bg-white rounded-lg shadow-lg p-6 flex flex-col mx-auto">
         {/* Header */}
         <div className="mb-4 shrink-0">
-          <h1 className="text-2xl text-gray-900 mb-1 font-bold">Realizar Venta</h1>
-          <p className="text-sm text-gray-600">Escanea o ingresa el código de barras de los productos</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl text-gray-900 mb-1 font-bold">Realizar Venta</h1>
+              <p className="text-sm text-gray-600">Escanea o ingresa el código de barras de los productos</p>
+            </div>
+            <button
+              onClick={() => setMostrarAyuda(true)}
+              className="p-2 hover:bg-gray-100 rounded-full transition"
+              title="Atajos de teclado"
+            >
+              <HelpCircle className="w-6 h-6 text-gray-600" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1 overflow-hidden">
@@ -721,6 +733,86 @@ export const VentaComponent = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Ayuda */}
+      {mostrarAyuda && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Atajos de Teclado</h2>
+              <button
+                onClick={() => setMostrarAyuda(false)}
+                className="p-1 hover:bg-gray-100 rounded transition"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-b pb-3">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Métodos de Pago</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Pagar con Efectivo</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">E</kbd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Pagar con Tarjeta</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">T</kbd>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b pb-3">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Acciones Generales</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Agregar Producto</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">Enter</kbd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Finalizar Pago Efectivo</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">Enter</kbd>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Confirmaciones</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Aceptar / Continuar</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">Enter</kbd>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600">Cancelar / Rechazar</span>
+                    <kbd className="px-2 py-1 bg-gray-100 border border-gray-300 rounded text-xs font-semibold">Escape</kbd>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+                <p className="text-xs text-blue-800">
+                  <strong>Tip:</strong> El escáner de código de barras agrega productos automáticamente después de 0.5 segundos.
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                <p className="text-xs text-yellow-900">
+                  <strong>⚠️ Producto no encontrado:</strong> Si un producto no está registrado, fotografíelo y avise al propietario del local para agregarlo al sistema.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setMostrarAyuda(false)}
+              className="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition font-medium"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
