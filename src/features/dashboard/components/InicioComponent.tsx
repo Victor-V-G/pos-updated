@@ -124,12 +124,17 @@ export const InicioComponent = ({
   ];
 
   return (
-    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="w-full max-w-6xl px-6">
+    <div className="relative w-full min-h-screen flex items-center justify-center">
+      <div className="fixed inset-0 bg-linear-to-br from-gray-50 to-gray-100 -z-10" />
+
+      <div className="w-full max-w-6xl px-6 py-6 md:py-10 flex flex-col items-center justify-center gap-10 mt-[-150px]">
         {/* Header de bienvenida */}
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h1 className="text-5xl text-gray-900 mb-3">
             Bienvenido al Sistema de Gestión
+          </h1>
+          <h1 className="text-5xl text-gray-900 mb-3">
+            Los Hermanos Hortiz
           </h1>
           <p className="text-xl text-gray-600 mb-4">
             Panel de Control de Inventario y Ventas
@@ -142,11 +147,9 @@ export const InicioComponent = ({
         </div>
 
         {/* Accesos Rápidos */}
-        <div>
-          <h2 className="text-2xl text-gray-900 mb-6 text-center">
-            Accesos Rápidos
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="w-full flex flex-col items-center gap-6">
+          <h2 className="text-2xl text-gray-900 text-center">Accesos Rápidos</h2>
+          <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
             {accesosRapidos.map((acceso) => {
               const Icono = acceso.icono;
               return (
@@ -175,7 +178,7 @@ export const InicioComponent = ({
         </div>
 
         {/* Estadísticas rápidas */}
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-white rounded-lg shadow p-6 text-center border border-gray-200">
             <p className="text-gray-600 mb-2">Ventas Realizadas Hoy</p>
             <p className="text-3xl text-blue-600 font-bold">{ventasHoy}</p>
