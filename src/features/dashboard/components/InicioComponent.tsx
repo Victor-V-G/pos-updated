@@ -1,81 +1,193 @@
-import '@/assets/styles/inicio-style.css'
+import { ShoppingCart, Package, History, LayoutGrid } from 'lucide-react';
 import { SidebarInterfaceProps } from "@/shared/types";
-import Image from 'next/image';
-import VentaImg from '@/assets/images/shopping-cart-inicio.png'
-import VerStockImg from '@/assets/images/paquete-o-empaquetar.png'
-import HistorialVenta from '@/assets/images/reporte.png'
+import { useEffect, useState } from 'react';
+import { obtenerVentasPromise, obtenerProductosPromise } from '@/core/infrastructure/firebase';
 
+export const InicioComponent = ({
+  setOpenManagerInicio,
+  setOpenManagerVenta,
+  setOpenManagerVerStock,
+  setOpenManagerHistorialDeVenta,
+  setOpenManagerGestion
+}: SidebarInterfaceProps) => {
+  const [ventasHoy, setVentasHoy] = useState(0);
+  const [totalProductos, setTotalProductos] = useState(0);
+  
+  const currentDate = new Date().toLocaleDateString('es-ES', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 
-export const InicioComponent = ({setOpenManagerInicio, setOpenManagerVenta, setOpenManagerVerStock, setOpenManagerHistorialDeVenta, setOpenManagerGestion} : SidebarInterfaceProps) => {
-    return (
-        <>
-            <div className='inicio-div-style'>
+  const currentTime = new Date().toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
-                <header>
+  useEffect(() => {
+    // Obtener ventas de hoy
+    const cargarEstadisticas = async () => {
+      try {
+        // Obtener ventas
+        const ventas = await obtenerVentasPromise();
+        
+        // Fecha actual en formato dd-mm-yyyy
+        const hoy = new Date();
+        const fechaActual = `${String(hoy.getDate()).padStart(2, '0')}-${String(hoy.getMonth() + 1).padStart(2, '0')}-${hoy.getFullYear()}`;
+        
+        // Filtrar ventas del día
+        const ventasDelDia = ventas.filter((venta: any) => {
+          const fechaVenta = venta.fechaHora?.split(',')[0];
+          return fechaVenta === fechaActual;
+        });
+        
+        setVentasHoy(ventasDelDia.length);
+        
+        // Obtener productos
+        const productos = await obtenerProductosPromise();
+        const productosConStock = productos.filter((prod: any) => (prod.Stock || 0) >= 1).length;
+        setTotalProductos(productosConStock);
+      } catch (error) {
+        console.error('Error al cargar estadísticas:', error);
+      }
+    };
+    
+    cargarEstadisticas();
+  }, []);
 
-                    <h1>BIENVENIDO. ELIJA UNA OPCION.</h1>
+  const accesosRapidos = [
+    {
+      id: 'realizar-venta',
+      titulo: 'Realizar Venta',
+      descripcion: 'Iniciar una nueva venta',
+      icono: ShoppingCart,
+      color: 'bg-blue-600 hover:bg-blue-700',
+      colorIcono: 'bg-blue-100',
+      colorTextoIcono: 'text-blue-600',
+      onClick: () => {
+        setOpenManagerInicio(false);
+        setOpenManagerVenta(true);
+        setOpenManagerVerStock(false);
+        setOpenManagerHistorialDeVenta(false);
+        setOpenManagerGestion(false);
+      }
+    },
+    {
+      id: 'ver-stock',
+      titulo: 'Ver Stock',
+      descripcion: 'Consultar inventario disponible',
+      icono: Package,
+      color: 'bg-green-600 hover:bg-green-700',
+      colorIcono: 'bg-green-100',
+      colorTextoIcono: 'text-green-600',
+      onClick: () => {
+        setOpenManagerInicio(false);
+        setOpenManagerVenta(false);
+        setOpenManagerVerStock(true);
+        setOpenManagerHistorialDeVenta(false);
+        setOpenManagerGestion(false);
+      }
+    },
+    {
+      id: 'historial-ventas',
+      titulo: 'Historial de Ventas',
+      descripcion: 'Ver registro de transacciones',
+      icono: History,
+      color: 'bg-purple-600 hover:bg-purple-700',
+      colorIcono: 'bg-purple-100',
+      colorTextoIcono: 'text-purple-600',
+      onClick: () => {
+        setOpenManagerInicio(false);
+        setOpenManagerVenta(false);
+        setOpenManagerVerStock(false);
+        setOpenManagerHistorialDeVenta(true);
+        setOpenManagerGestion(false);
+      }
+    },
+    {
+      id: 'menu-gestion',
+      titulo: 'Menú de Gestión',
+      descripcion: 'Acceso a todas las opciones',
+      icono: LayoutGrid,
+      color: 'bg-gray-600 hover:bg-gray-700',
+      colorIcono: 'bg-gray-100',
+      colorTextoIcono: 'text-gray-600',
+      onClick: () => {
+        setOpenManagerInicio(false);
+        setOpenManagerVenta(false);
+        setOpenManagerVerStock(false);
+        setOpenManagerHistorialDeVenta(false);
+        setOpenManagerGestion(true);
+      }
+    }
+  ];
 
-                </header>
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="w-full max-w-6xl px-6">
+        {/* Header de bienvenida */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl text-gray-900 mb-3">
+            Bienvenido al Sistema de Gestión
+          </h1>
+          <p className="text-xl text-gray-600 mb-4">
+            Panel de Control de Inventario y Ventas
+          </p>
+          <div className="flex items-center justify-center gap-4 text-gray-500">
+            <span className="capitalize">{currentDate}</span>
+            <span>•</span>
+            <span>{currentTime}</span>
+          </div>
+        </div>
 
-                <main>
+        {/* Accesos Rápidos */}
+        <div>
+          <h2 className="text-2xl text-gray-900 mb-6 text-center">
+            Accesos Rápidos
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {accesosRapidos.map((acceso) => {
+              const Icono = acceso.icono;
+              return (
+                <button
+                  key={acceso.id}
+                  onClick={acceso.onClick}
+                  className="group bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 text-left border border-gray-200 hover:border-gray-300"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className={`${acceso.colorIcono} p-4 rounded-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <Icono className={`w-8 h-8 ${acceso.colorTextoIcono}`} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl text-gray-900 mb-2">
+                        {acceso.titulo}
+                      </h3>
+                      <p className="text-gray-600">
+                        {acceso.descripcion}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-                    <nav>
-
-                        <button
-                            onClick={()=>{
-                                setOpenManagerInicio(false);
-                                setOpenManagerVenta(true);
-                                setOpenManagerVerStock(false);
-                                setOpenManagerHistorialDeVenta(false);
-                                setOpenManagerGestion(false);
-                            }}>
-                            <Image
-                                className='inicio-style-img'
-                                src={VentaImg}
-                                alt='REALIZAR VENTA'
-                            />
-                            <span>REALIZAR VENTA</span>
-                        </button>
-
-                        <button
-                            onClick={()=>{
-                                setOpenManagerInicio(false);
-                                setOpenManagerVenta(false);
-                                setOpenManagerVerStock(true);
-                                setOpenManagerHistorialDeVenta(false);
-                                setOpenManagerGestion(false);
-                            }}>
-                            <Image
-                                className='inicio-style-img'
-                                src={VerStockImg}
-                                alt='REALIZAR VENTA'
-                            />
-                            <span>VER STOCK</span>
-                        </button>
-
-                        <button
-                            onClick={()=>{
-                                setOpenManagerInicio(false);
-                                setOpenManagerVenta(false);
-                                setOpenManagerVerStock(false);
-                                setOpenManagerHistorialDeVenta(true);
-                                setOpenManagerGestion(false);
-                            }}>
-                            <Image
-                                className='inicio-style-img'
-                                src={HistorialVenta}
-                                alt='REALIZAR VENTA'
-                            />
-                            <span>HISTORIAL DE VENTAS</span>
-                        </button>
-
-                    </nav>
-
-                </main>
-
-            </div>
-        </>
-    )
+        {/* Estadísticas rápidas */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow p-6 text-center border border-gray-200">
+            <p className="text-gray-600 mb-2">Ventas Realizadas Hoy</p>
+            <p className="text-3xl text-blue-600 font-bold">{ventasHoy}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 text-center border border-gray-200">
+            <p className="text-gray-600 mb-2">Productos en Stock</p>
+            <p className="text-3xl text-green-600 font-bold">{totalProductos}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default InicioComponent;

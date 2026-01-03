@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote, HelpCircle, X } from "lucide-react";
+import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote, HelpCircle, X, Scale } from "lucide-react";
 
 import { 
   obtenerProductosPromise, 
@@ -27,11 +27,28 @@ export const VentaComponent = () => {
   const [cargando, setCargando] = useState(false);
   const [focusTrigger, setFocusTrigger] = useState(0); // Para forzar el focus cuando sea necesario
   const [mostrarAyuda, setMostrarAyuda] = useState(false);
+  const [mostrarProductosPeso, setMostrarProductosPeso] = useState(false);
+  const [productosPeso, setProductosPeso] = useState<ProductoInterface[]>([]);
+  const [busquedaProductoPeso, setBusquedaProductoPeso] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const inputMontoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
+  }, []);
+
+  // Cargar productos por peso al montar el componente
+  useEffect(() => {
+    const cargarProductosPeso = async () => {
+      try {
+        const productos = await obtenerProductosPromise();
+        const productosPorPeso = productos.filter((p: ProductoInterface) => p.TipoProducto === "peso");
+        setProductosPeso(productosPorPeso);
+      } catch (error) {
+        console.error("Error cargando productos por peso:", error);
+      }
+    };
+    cargarProductosPeso();
   }, []);
 
   // Reactivar focus cuando se necesite
@@ -442,13 +459,22 @@ export const VentaComponent = () => {
               <h1 className="text-2xl text-gray-900 mb-1 font-bold">Realizar Venta</h1>
               <p className="text-sm text-gray-600">Escanea o ingresa el código de barras de los productos</p>
             </div>
-            <button
-              onClick={() => setMostrarAyuda(true)}
-              className="p-2 hover:bg-gray-100 rounded-full transition"
-              title="Atajos de teclado"
-            >
-              <HelpCircle className="w-6 h-6 text-gray-600" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMostrarProductosPeso(true)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+                title="Productos por Kg"
+              >
+                <Scale className="w-6 h-6 text-gray-600" />
+              </button>
+              <button
+                onClick={() => setMostrarAyuda(true)}
+                className="p-2 hover:bg-gray-100 rounded-full transition"
+                title="Atajos de teclado"
+              >
+                <HelpCircle className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -750,6 +776,21 @@ export const VentaComponent = () => {
 
             <div className="space-y-4">
               <div className="border-b pb-3">
+                <h3 className="text-sm font-semibold text-gray-700 mb-2">Acceso Rápido</h3>
+                <div className="space-y-2">
+                  <div className="flex items-start gap-2">
+                    <Scale className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900 font-medium">Productos por Kilogramo</p>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        Muestra una lista de todos los productos que se venden por peso (kg) con sus códigos de barras para consulta rápida.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b pb-3">
                 <h3 className="text-sm font-semibold text-gray-700 mb-2">Métodos de Pago</h3>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
@@ -791,12 +832,6 @@ export const VentaComponent = () => {
                 </div>
               </div>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-                <p className="text-xs text-blue-800">
-                  <strong>Tip:</strong> El escáner de código de barras agrega productos automáticamente después de 0.5 segundos.
-                </p>
-              </div>
-
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p className="text-xs text-yellow-900">
                   <strong>⚠️ Producto no encontrado:</strong> Si un producto no está registrado, fotografíelo y avise al propietario del local para agregarlo al sistema.
@@ -810,6 +845,111 @@ export const VentaComponent = () => {
             >
               Entendido
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Productos por Peso */}
+      {mostrarProductosPeso && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between p-6 border-b shrink-0">
+              <div className="flex items-center gap-2">
+                <Scale className="w-6 h-6 text-blue-600" />
+                <h2 className="text-xl font-bold text-gray-900">Productos por Kilogramo</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMostrarProductosPeso(false);
+                  setBusquedaProductoPeso("");
+                }}
+                className="p-1 hover:bg-gray-100 rounded transition"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Campo de búsqueda */}
+            <div className="p-4 border-b shrink-0">
+              <div className="relative">
+                <ScanBarcode className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={busquedaProductoPeso}
+                  onChange={(e) => setBusquedaProductoPeso(e.target.value)}
+                  placeholder="Buscar por nombre de producto..."
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition"
+                />
+              </div>
+            </div>
+
+            {/* Lista de productos */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {productosPeso.length === 0 ? (
+                <div className="flex items-center justify-center h-full text-gray-400">
+                  <p>No hay productos por peso registrados</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {productosPeso
+                    .filter((producto) =>
+                      producto.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                    )
+                    .map((producto) => (
+                      <div
+                        key={producto.CodigoDeBarras}
+                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <h3 className="text-base font-semibold text-gray-900 mb-1">
+                              {producto.NombreProducto}
+                            </h3>
+                            <div className="flex items-center gap-4 mt-2">
+                              <div className="flex flex-col gap-1">
+                                <span className="text-sm text-gray-800 font-semibold">Código de Barras:</span>
+                                <span className="font-mono text-xl text-blue-600 font-bold bg-blue-50 px-3 py-1 rounded border border-blue-200">
+                                  {producto.CodigoDeBarras}
+                                </span>
+                              </div>
+                              <div className="flex flex-col gap-1">
+                                <span className="text-xs text-gray-500">Precio por kg:</span>
+                                <span className="text-lg text-green-600 font-bold">
+                                  ${Number(producto.Precio).toLocaleString("es-CL")}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  {productosPeso.filter((producto) =>
+                    producto.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                  ).length === 0 && busquedaProductoPeso && (
+                    <div className="flex items-center justify-center py-8 text-gray-400">
+                      <p>No se encontraron productos con ese nombre</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Footer con información */}
+            <div className="p-4 border-t shrink-0 bg-gray-50">
+              <p className="text-sm text-gray-600">
+                Total de productos por peso: <span className="font-semibold">{productosPeso.length}</span>
+                {busquedaProductoPeso && (
+                  <span>
+                    {" "}| Mostrando:{" "}
+                    <span className="font-semibold">
+                      {productosPeso.filter((p) =>
+                        p.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                      ).length}
+                    </span>
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
       )}

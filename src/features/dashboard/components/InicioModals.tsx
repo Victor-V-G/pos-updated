@@ -1,8 +1,15 @@
 
-import InicioComponent from "./InicioComponent";
+import { InicioComponent } from "./InicioComponent";
 import { ExtendsModalsSidebar } from "@/shared/types";
 
-export const InicioModals = ({OpenManager, setOpenManagerInicio, setOpenManagerVenta, setOpenManagerVerStock, setOpenManagerHistorialDeVenta, setOpenManagerGestion} : ExtendsModalsSidebar) => {
+export const InicioModals = ({
+    OpenManager,
+    setOpenManagerInicio,
+    setOpenManagerVenta,
+    setOpenManagerVerStock,
+    setOpenManagerHistorialDeVenta,
+    setOpenManagerGestion
+}: ExtendsModalsSidebar) => {
     
     if (OpenManager == false) {
         return null
