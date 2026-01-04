@@ -30,8 +30,12 @@ export const VentaComponent = () => {
   const [mostrarProductosPeso, setMostrarProductosPeso] = useState(false);
   const [productosPeso, setProductosPeso] = useState<ProductoInterface[]>([]);
   const [busquedaProductoPeso, setBusquedaProductoPeso] = useState("");
+  const [mostrarModalPeso, setMostrarModalPeso] = useState(false);
+  const [productoPesoTemporal, setProductoPesoTemporal] = useState<ProductoInterface | null>(null);
+  const [pesoBruto, setPesoBruto] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const inputMontoRef = useRef<HTMLInputElement>(null);
+  const inputPesoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -146,6 +150,15 @@ export const VentaComponent = () => {
       return;
     }
 
+    // Si es un producto de peso, abrir modal para ingresar el peso
+    if (producto.TipoProducto === "peso") {
+      setProductoPesoTemporal(producto);
+      setPesoBruto("");
+      setMostrarModalPeso(true);
+      setCodigoBarras("");
+      return;
+    }
+
     // Verificar si el producto ya está en el carrito
     const productoExistente = carrito.find((p) => p.codigoBarras === codigoBarras);
 
@@ -176,6 +189,59 @@ export const VentaComponent = () => {
     }
 
     setCodigoBarras("");
+    setFocusTrigger(prev => prev + 1);
+  };
+
+  const handleAgregarConPeso = () => {
+    if (!productoPesoTemporal || !pesoBruto.trim()) {
+      setMensaje("Por favor ingresa el peso del producto");
+      setTimeout(() => setMensaje(""), 3000);
+      return;
+    }
+
+    // Parsear el peso ingresado
+    let pesoFinal = 0;
+    let valorLimpio = pesoBruto.replace(/\s/g, '').replace(',', '.');
+    
+    // Si comienza con 0 y no tiene punto o coma, insertar punto después del 0
+    if (valorLimpio.startsWith('0') && !pesoBruto.includes('.') && !pesoBruto.includes(',')) {
+      valorLimpio = '0.' + valorLimpio.substring(1);
+    }
+    
+    // Convertir a número
+    pesoFinal = parseFloat(valorLimpio);
+
+    if (isNaN(pesoFinal) || pesoFinal <= 0) {
+      setMensaje("Ingresa un peso válido");
+      setTimeout(() => setMensaje(""), 3000);
+      return;
+    }
+
+    // Verificar si el producto ya está en el carrito
+    const productoExistente = carrito.find((p) => p.codigoBarras === productoPesoTemporal.CodigoDeBarras);
+
+    if (productoExistente) {
+      // Si ya existe, sumar el peso
+      actualizarCantidad(productoPesoTemporal.CodigoDeBarras, productoExistente.cantidad + pesoFinal);
+      setMensaje(`${productoPesoTemporal.NombreProducto} - ${pesoFinal.toFixed(3)}kg añadidos correctamente`);
+    } else {
+      // Agregar nuevo producto al carrito con el peso ingresado
+      const nuevoProducto: ProductoCarrito = {
+        codigoBarras: productoPesoTemporal.CodigoDeBarras,
+        nombre: productoPesoTemporal.NombreProducto,
+        tipo: "peso",
+        precioUnitario: Number(productoPesoTemporal.Precio),
+        cantidad: pesoFinal,
+        subtotal: Number(productoPesoTemporal.Precio) * pesoFinal,
+      };
+      setCarrito([...carrito, nuevoProducto]);
+      setMensaje(`${productoPesoTemporal.NombreProducto} - ${pesoFinal.toFixed(3)}kg agregado al carrito`);
+    }
+
+    // Cerrar modal y limpiar
+    setMostrarModalPeso(false);
+    setProductoPesoTemporal(null);
+    setPesoBruto("");
     setFocusTrigger(prev => prev + 1);
   };
 
@@ -949,6 +1015,119 @@ export const VentaComponent = () => {
                   </span>
                 )}
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Ingreso de Peso */}
+      {mostrarModalPeso && productoPesoTemporal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Scale className="w-6 h-6 text-blue-600" />
+                <h2 className="text-2xl font-bold text-gray-900">Ingresa el Peso</h2>
+              </div>
+              <button
+                onClick={() => {
+                  setMostrarModalPeso(false);
+                  setProductoPesoTemporal(null);
+                  setPesoBruto("");
+                  setFocusTrigger(prev => prev + 1);
+                }}
+                className="p-1 hover:bg-gray-100 rounded transition"
+              >
+                <X className="w-5 h-5 text-gray-600" />
+              </button>
+            </div>
+
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-gray-600 mb-1">Producto:</p>
+              <p className="text-lg font-semibold text-gray-900">{productoPesoTemporal.NombreProducto}</p>
+              <p className="text-sm text-green-600 font-medium mt-2">
+                Precio: ${Number(productoPesoTemporal.Precio).toLocaleString("es-CL")} / kg
+              </p>
+            </div>
+
+            <div className="mb-6">
+              <label className="block mb-2 text-sm text-gray-700 font-medium">
+                Peso del Producto
+              </label>
+              <div className="relative">
+                <input
+                  ref={inputPesoRef}
+                  type="text"
+                  value={pesoBruto}
+                  onChange={(e) => {
+                    setPesoBruto(e.target.value);
+                    if (mensaje) {
+                      setMensaje("");
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleAgregarConPeso();
+                    }
+                  }}
+                  placeholder="Ej: 0.5, 1, 1.25 o 2"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-lg"
+                  autoFocus
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+                  kg
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 mt-2">
+                Ingresa el peso en kilogramos (ej: 1 = 1kg, 0.5 = 0.5kg)
+              </p>
+            </div>
+
+            {pesoBruto && (
+              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <p className="text-sm text-gray-600 mb-2">Subtotal:</p>
+                <p className="text-3xl font-bold text-green-600">
+                  ${(() => {
+                    let valor = pesoBruto.replace(/\s/g, '').replace(',', '.');
+                    
+                    // Si comienza con 0 y no tiene punto o coma, insertar punto después del 0
+                    if (valor.startsWith('0') && !pesoBruto.includes('.') && !pesoBruto.includes(',')) {
+                      valor = '0.' + valor.substring(1);
+                    }
+                    
+                    let peso = parseFloat(valor);
+                    const subtotal = !isNaN(peso) && peso > 0 ? peso * Number(productoPesoTemporal.Precio) : 0;
+                    return subtotal.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+                  })()}
+                </p>
+              </div>
+            )}
+
+            {mensaje && (
+              <div className={`${mensaje.includes("Error") || mensaje.includes("válido") ? "bg-red-50 border-red-200 text-red-800" : "bg-blue-50 border-blue-200 text-blue-800"} border rounded-lg p-3 mb-6`}>
+                <p className="text-sm font-medium">{mensaje}</p>
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setMostrarModalPeso(false);
+                  setProductoPesoTemporal(null);
+                  setPesoBruto("");
+                  setFocusTrigger(prev => prev + 1);
+                }}
+                className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition font-medium text-sm"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleAgregarConPeso}
+                className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition font-medium text-sm flex items-center justify-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                Agregar al Carrito
+              </button>
             </div>
           </div>
         </div>
