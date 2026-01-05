@@ -41,9 +41,9 @@ export function MenuGestion({ onMenuSelect }: MenuGestionProps) {
     },
     {
       id: 'historial',
-      label: 'Historial',
+      label: 'Historial de venta avanzado',
       icon: <History className="w-6 h-6" />,
-      description: 'Revisa el historial de operaciones'
+      description: 'Revisa el historial completo de todas las ventas del negocio realizadas'
     },
     {
       id: 'gestor-ventas',

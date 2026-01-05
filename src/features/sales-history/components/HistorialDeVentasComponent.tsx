@@ -230,8 +230,8 @@ export function HistorialVentas({ onClose }: HistorialVentasProps) {
         {/* Estadísticas */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 flex-shrink-0">
           <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <p className="text-sm text-purple-600 mb-1">Total de Ventas</p>
-            <p className="text-2xl text-purple-900">${totalVentas.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+            <p className="text-sm text-purple-600 mb-1">Total de Ventas Realizadas</p>
+            <p className="text-2xl text-purple-900">{ventasFiltradas.length}</p>
           </div>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-600 mb-1">Ventas con Tarjeta</p>
