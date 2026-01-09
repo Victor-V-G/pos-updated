@@ -6,9 +6,16 @@ import {
   ChevronRight,
   ChevronUp,
   CreditCard,
-  Banknote
+  Banknote,
+  HelpCircle,
+  X,
+  Trash2,
+  AlertTriangle
 } from "lucide-react";
-import { obtenerVentasPromise } from "@/core/infrastructure/firebase";
+import {
+  obtenerVentasPromise,
+  eliminarVentaPromise,
+} from "@/core/infrastructure/firebase";
 import "@/assets/styles/historial-de-venta-style.css";
 
 interface FirebaseProductoVenta {
@@ -52,7 +59,9 @@ interface VentaNormalizada {
 }
 
 interface HistorialVentasProps {
-  onClose: () => void;
+  onClose?: () => void;
+  setOpenManager?: () => void;
+  SetOpenManagerGestionComponentSetter?: (value: boolean) => void;
 }
 
 const VENTAS_POR_PAGINA = 4;
@@ -105,7 +114,7 @@ const convertirHoraAMinutos = (hora: string): number => {
   return resultado;
 };
 
-export function HistorialDeVentasAvanzado({ onClose }: HistorialVentasProps) {
+export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenManagerGestionComponentSetter }: HistorialVentasProps) {
   const [ventasFirebase, setVentasFirebase] = useState<FirebaseVenta[]>([]);
   const [ventaExpandida, setVentaExpandida] = useState<string | null>(null);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<string | null>(null);
@@ -116,6 +125,9 @@ export function HistorialDeVentasAvanzado({ onClose }: HistorialVentasProps) {
   const [error, setError] = useState<string | null>(null);
   const [ordenHora, setOrdenHora] = useState<"asc" | "desc">("desc");
   const [ordenTotal, setOrdenTotal] = useState<"asc" | "desc" | "ninguno">("ninguno");
+  const [showAyuda, setShowAyuda] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -157,9 +169,9 @@ export function HistorialDeVentasAvanzado({ onClose }: HistorialVentasProps) {
           const [fechaCruda = "", horaCruda = ""] = venta.fechaHora.split(",");
           fecha = fechaCruda.trim().replace(/\//g, "-");
           hora = horaCruda.trim();
-        } else if (venta.fechaHora.toDate) {
+        } else if (typeof venta.fechaHora === "object" && venta.fechaHora !== null && "toDate" in venta.fechaHora) {
           // Es un Timestamp de Firebase
-          const date = venta.fechaHora.toDate();
+          const date = (venta.fechaHora as any).toDate();
           const dateStr = date.toLocaleString("es-CL");
           const [fechaCruda = "", horaCruda = ""] = dateStr.split(",");
           fecha = fechaCruda.trim().replace(/\//g, "-");
@@ -346,15 +358,81 @@ export function HistorialDeVentasAvanzado({ onClose }: HistorialVentasProps) {
     setVentaExpandida(null);
   };
 
+  const handleDeleteVenta = async () => {
+    if (!deletingId) return;
+
+    try {
+      setLoading(true);
+      await eliminarVentaPromise(deletingId);
+      const nuevasVentas = ventasFirebase.filter(v => v.id !== deletingId);
+      setVentasFirebase(nuevasVentas);
+      
+      // Resetear selección si es la que se estaba borrando
+      if (ventaSeleccionada === deletingId) {
+        setVentaSeleccionada(null);
+      }
+      if (ventaExpandida === deletingId) {
+        setVentaExpandida(null);
+      }
+      
+      setShowConfirmDelete(false);
+      setDeletingId(null);
+    } catch (err) {
+      console.error("Error eliminando venta:", err);
+      setError("No se pudo eliminar la venta. Intenta nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-start pt-0 px-4">
       <div className="w-full max-w-7xl h-[85vh] bg-white rounded-lg shadow-lg p-6 flex flex-col">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between flex-shrink-0">
-          <div>
-            <h1 className="text-4xl text-gray-900 mb-2">Historial de ventas Avanzado</h1>
-            <p className="text-gray-600">Historial completo de ventas del minimarket</p>
+        <div className="mb-4 flex-shrink-0">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-4xl text-gray-900">Historial de ventas Avanzado</h1>
+            <div className="flex items-center gap-2">
+              {ventaSeleccionada && (
+                <button
+                  onClick={() => {
+                    setDeletingId(ventaSeleccionada);
+                    setShowConfirmDelete(true);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 text-red-600 hover:bg-red-100 rounded-lg transition"
+                  title="Eliminar venta seleccionada"
+                >
+                  <Trash2 className="w-5 h-5" />
+                  <span className="font-medium">Eliminar venta</span>
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (SetOpenManagerGestionComponentSetter) {
+                    SetOpenManagerGestionComponentSetter(true);
+                  }
+                  if (setOpenManager) {
+                    setOpenManager();
+                  } else if (onClose) {
+                    onClose();
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-lg transition"
+                title="Volver atrás"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="font-medium">Volver al menu</span>
+              </button>
+              <button
+                onClick={() => setShowAyuda(true)}
+                className="p-2 rounded-full hover:bg-gray-100 transition"
+                title="Ayuda y atajos"
+              >
+                <HelpCircle className="w-8 h-8 text-gray-600" />
+              </button>
+            </div>
           </div>
+          <p className="text-gray-600">Historial completo de ventas del minimarket</p>
         </div>
 
         {/* Filtros */}
@@ -685,6 +763,241 @@ export function HistorialDeVentasAvanzado({ onClose }: HistorialVentasProps) {
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      {showConfirmDelete && deletingId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+            <div className="flex items-start gap-4 mb-4">
+              <div className="flex-shrink-0">
+                <AlertTriangle className="w-8 h-8 text-red-600" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-bold text-gray-900">Confirmar eliminación</h2>
+                <p className="text-sm text-gray-600 mt-1">Esta acción no se puede deshacer</p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  setDeletingId(null);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {ventasFirebase.find(v => v.id === deletingId) && (() => {
+              const venta = ventasFirebase.find(v => v.id === deletingId);
+              return (
+                <>
+                  <p className="text-gray-600 mb-3 text-sm">
+                    ¿Deseas eliminar esta venta?
+                  </p>
+                  <div className="bg-red-50 border border-red-200 p-4 rounded-lg mb-6 space-y-2">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Fecha y Hora</p>
+                        <p className="text-sm text-gray-900">{venta?.fechaHora || "-"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Método de Pago</p>
+                        <p className="text-sm text-gray-900">
+                          {venta?.metodoPago === "DEBITO" ? "Tarjeta de Débito" : "Efectivo"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <hr className="border-red-200" />
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Total de Venta</p>
+                        <p className="text-lg font-bold text-red-700">${venta?.TotalGeneral?.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) || "0"}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Pago del Cliente</p>
+                        <p className="text-sm text-gray-900">${(venta?.pagoCliente || 0).toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Vuelto Entregado</p>
+                        <p className="text-sm text-gray-900">${(venta?.vueltoEntregado || 0).toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-semibold uppercase">Productos</p>
+                        <p className="text-sm text-gray-900">{venta?.ProductosVenta?.length || 0} artículo(s)</p>
+                      </div>
+                    </div>
+
+                    {venta?.ProductosVenta && venta.ProductosVenta.length > 0 && (
+                      <>
+                        <hr className="border-red-200" />
+                        <div>
+                          <p className="text-xs text-gray-500 font-semibold uppercase mb-2">Detalle de Productos</p>
+                          <div className="space-y-1">
+                            {venta.ProductosVenta.map((prod, idx) => (
+                              <div key={idx} className="text-xs text-gray-800 flex justify-between items-center bg-white bg-opacity-50 p-2 rounded">
+                                <span className="font-medium truncate flex-1">{prod.NombreProducto || `Producto ${idx + 1}`}</span>
+                                <span className="text-gray-600 ml-2">
+                                  {prod.cantidad} {prod.TipoProducto === "peso" ? "kg" : "un"} × ${(prod.PrecioUnitario || prod.Precio || 0).toLocaleString("es-CL")}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </>
+              );
+            })()}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowConfirmDelete(false);
+                  setDeletingId(null);
+                }}
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg transition font-medium"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteVenta}
+                disabled={loading}
+                className="flex-1 px-4 py-2 text-white bg-red-600 hover:bg-red-700 disabled:bg-red-300 rounded-lg transition font-medium flex items-center justify-center gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                {loading ? "Eliminando..." : "Eliminar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Ayuda */}
+      {showAyuda && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            {/* Header del Modal */}
+            <div className="sticky top-0 bg-gray-50 border-b border-gray-300 p-6 flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900">Ayuda - Atajos y Funciones</h2>
+              <button
+                onClick={() => setShowAyuda(false)}
+                className="p-1 hover:bg-gray-200 rounded transition"
+              >
+                <X className="w-6 h-6 text-gray-600" />
+              </button>
+            </div>
+
+            {/* Contenido del Modal */}
+            <div className="p-6 space-y-6">
+              {/* Atajos de Teclado */}
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Atajos de Teclado</h3>
+                <div className="space-y-2 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium">↑</span>
+                      <span className="font-medium text-gray-700">Arriba</span>
+                    </div>
+                    <span className="text-gray-600 text-sm text-right max-w-xs">Navega a la venta anterior en la página actual. Si está expandida, hace scroll en los productos.</span>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium">↓</span>
+                      <span className="font-medium text-gray-700">Abajo</span>
+                    </div>
+                    <span className="text-gray-600 text-sm text-right max-w-xs">Navega a la venta siguiente en la página actual. Si está expandida, hace scroll en los productos.</span>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium">←</span>
+                      <span className="font-medium text-gray-700">Izquierda</span>
+                    </div>
+                    <span className="text-gray-600 text-sm text-right max-w-xs">Va a la página anterior del historial.</span>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block bg-gray-800 text-white px-3 py-1 rounded text-sm font-medium">→</span>
+                      <span className="font-medium text-gray-700">Derecha</span>
+                    </div>
+                    <span className="text-gray-600 text-sm text-right max-w-xs">Va a la página siguiente del historial.</span>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-block bg-gray-800 text-white px-4 py-1 rounded text-sm font-medium">↲</span>
+                      <span className="font-medium text-gray-700">Enter</span>
+                    </div>
+                    <span className="text-gray-600 text-sm text-right max-w-xs">Expande o contrae los detalles de la venta seleccionada.</span>
+                  </div>
+                </div>
+              </section>
+
+              {/* Filtros */}
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Filtros</h3>
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                  <div>
+                    <p className="font-medium text-gray-900">Seleccionar Fecha</p>
+                    <p className="text-gray-600 text-sm">Elige una fecha para ver todas las ventas de ese día. El sistema mostrará solo las ventas registradas en esa fecha.</p>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div>
+                    <p className="font-medium text-gray-900">Ordenar por Hora</p>
+                    <p className="text-gray-600 text-sm"><span className="font-semibold">Descendente:</span> Muestra primero las ventas más recientes. <span className="font-semibold">Ascendente:</span> Muestra primero las ventas más antiguas.</p>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div>
+                    <p className="font-medium text-gray-900">Ordenar por Total</p>
+                    <p className="text-gray-600 text-sm"><span className="font-semibold">Mayor a menor:</span> Ordena de la venta más grande a la más pequeña. <span className="font-semibold">Menor a mayor:</span> Ordena de la más pequeña a la más grande.</p>
+                  </div>
+                  <hr className="border-gray-200" />
+                  <div>
+                    <p className="font-medium text-gray-900">Método de Pago</p>
+                    <p className="text-gray-600 text-sm"><span className="font-semibold">Todos del día:</span> Ver todas las ventas. <span className="font-semibold">Tarjeta:</span> Solo ventas con tarjeta. <span className="font-semibold">Efectivo:</span> Solo ventas en efectivo.</p>
+                  </div>
+                </div>
+              </section>
+
+              {/* Información General */}
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Información General</h3>
+                <div className="space-y-2 bg-gray-50 p-4 rounded-lg text-gray-600 text-sm">
+                  <p>• <span className="font-medium">Fila Amarilla:</span> Indica la venta actualmente seleccionada.</p>
+                  <p>• <span className="font-medium">Fila Azul:</span> Indica la venta expandida con sus detalles de productos.</p>
+                  <p>• <span className="font-medium">4 ventas por página:</span> El historial se divide en páginas para mejor visualización.</p>
+                  <p>• <span className="font-medium">Estadísticas dinámicas:</span> Los números en las tarjetas de arriba se actualizan según los filtros aplicados.</p>
+                </div>
+              </section>
+
+              {/* Consejo */}
+              <section className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
+                <p className="text-blue-900 text-sm">
+                  <span className="font-bold">Consejo:</span> Usa las flechas del teclado para navegar rápidamente. Presiona Enter para ver los detalles de los productos de una venta.
+                </p>
+              </section>
+            </div>
+
+            {/* Footer del Modal */}
+            <div className="sticky bottom-0 bg-gray-50 p-4 border-t border-gray-300 flex justify-end">
+              <button
+                onClick={() => setShowAyuda(false)}
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
