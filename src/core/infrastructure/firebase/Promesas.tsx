@@ -39,6 +39,68 @@ export const registrarProductoPromise = async (
   console.log("PRODUCTO REGISTRADO ID:", docRef.id);
 };
 
+export const obtenerProductoPorCodigoPromise = async (
+  codigoDeBarras: string
+): Promise<ProductoConIDInterface | null> => {
+  try {
+    const q = query(
+      collection(db, "Productos"),
+      where("CodigoDeBarras", "==", codigoDeBarras)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const docSnap = querySnapshot.docs[0];
+    const data = docSnap.data();
+
+    return {
+      id: docSnap.id,
+      NombreProducto: data.NombreProducto,
+      CodigoDeBarras: data.CodigoDeBarras,
+      Precio: data.Precio,
+      Stock: data.Stock,
+      TipoProducto: data.TipoProducto ?? "unidad",
+    };
+  } catch (error) {
+    console.error("Error al obtener producto por código:", error);
+    return null;
+  }
+};
+
+export const obtenerProductoPorNombrePromise = async (
+  nombreProducto: string
+): Promise<ProductoConIDInterface | null> => {
+  try {
+    const q = query(
+      collection(db, "Productos"),
+      where("NombreProducto", "==", nombreProducto)
+    );
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      return null;
+    }
+
+    const docSnap = querySnapshot.docs[0];
+    const data = docSnap.data();
+
+    return {
+      id: docSnap.id,
+      NombreProducto: data.NombreProducto,
+      CodigoDeBarras: data.CodigoDeBarras,
+      Precio: data.Precio,
+      Stock: data.Stock,
+      TipoProducto: data.TipoProducto ?? "unidad",
+    };
+  } catch (error) {
+    console.error("Error al obtener producto por nombre:", error);
+    return null;
+  }
+};
+
 export const obtenerProductosPromise = async () => {
   let listadoObtenidoGet: ProductoInterface[] = [];
   const querySnapshot = await getDocs(collection(db, "Productos"));
@@ -101,6 +163,36 @@ export const modificarProductoPromise = async (
     Stock: producto.Stock,
     TipoProducto: producto.TipoProducto ?? "unidad",
   });
+};
+
+export const reponerStockPromise = async (
+  id: string,
+  cantidad: number
+) => {
+  const docRef = doc(db, "Productos", id);
+  const snapshot = await getDoc(docRef);
+
+  if (!snapshot.exists()) return null;
+
+  const stockActual = Number(snapshot.data().Stock) || 0;
+  const stockNuevo = stockActual + Number(cantidad);
+
+  await updateDoc(docRef, { Stock: stockNuevo });
+
+   try {
+     const data = snapshot.data() as ProductoConIDInterface;
+     const nombre = data.NombreProducto || "Producto";
+     const codigo = data.CodigoDeBarras || "-";
+
+     await registrarMovimientosPromise(
+       "Reestock",
+       `Stock repuesto: nombre: ${nombre}, código de barras: ${codigo}, cantidad agregada: ${cantidad}, stock anterior: ${stockActual}, stock final: ${stockNuevo}`
+     );
+   } catch (err) {
+     console.error("Error registrando movimiento de reestock", err);
+   }
+
+  return stockNuevo;
 };
 
 export const eliminarProductoPromise = async (id: string) => {

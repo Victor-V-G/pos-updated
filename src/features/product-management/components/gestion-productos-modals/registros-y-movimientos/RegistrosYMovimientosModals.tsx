@@ -23,7 +23,12 @@ export const RegistrosYMovimientosModals = ({OpenManager, setOpenManager, SetOpe
         
             <div>
 
-                <RegistrosYMovimientosComponent/>
+                <RegistrosYMovimientosComponent
+                    onClose={() => {
+                        setOpenManager(false);
+                        SetOpenManagerGestionComponentSetter(true);
+                    }}
+                />
                 
                 <div className='modals-cerrar-button'>
 

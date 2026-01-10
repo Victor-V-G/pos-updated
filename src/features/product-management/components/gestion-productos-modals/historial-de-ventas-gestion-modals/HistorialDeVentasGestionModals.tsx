@@ -23,7 +23,7 @@ export const HistorialDeVentasGesitonModals = ({OpenManager , SetOpenManagerGest
                 
             <div>
 
-                <HistorialDeVentasGestion setOpenManager={setOpenManager} SetOpenManagerGestionComponentSetter={SetOpenManagerGestionComponentSetter} OpenManager OpenManagerSetter/>
+                <HistorialDeVentasGestion setOpenManager={() => setOpenManager(false)} SetOpenManagerGestionComponentSetter={SetOpenManagerGestionComponentSetter} OpenManager={OpenManager} OpenManagerSetter={setOpenManager}/>
                 
                 
             </div>

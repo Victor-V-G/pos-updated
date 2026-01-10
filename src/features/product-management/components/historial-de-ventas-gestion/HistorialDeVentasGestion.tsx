@@ -8,6 +8,7 @@ import {
   CreditCard,
   Banknote,
   HelpCircle,
+  XCircle,
   X,
   Trash2,
   AlertTriangle
@@ -247,6 +248,30 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
     const fechas = Array.from(new Set(ventasNormalizadas.map(v => v.fecha))).sort().reverse();
     return fechas;
   }, [ventasNormalizadas]);
+
+  const filtrosActivos = useMemo(() => {
+    const fechaBase = fechasDisponibles[0] || "";
+    return (
+      filtroMetodo !== "todos" ||
+      ordenHora !== "desc" ||
+      ordenTotal !== "ninguno" ||
+      fechaSeleccionada !== fechaBase
+    );
+  }, [fechaSeleccionada, filtroMetodo, ordenHora, ordenTotal, fechasDisponibles]);
+
+  const resetFiltros = () => {
+    setFiltroMetodo("todos");
+    setOrdenHora("desc");
+    setOrdenTotal("ninguno");
+    setPaginaActual(1);
+    setVentaExpandida(null);
+    setVentaSeleccionada(null);
+    if (fechasDisponibles.length > 0) {
+      setFechaSeleccionada(fechasDisponibles[0]);
+    } else {
+      setFechaSeleccionada("");
+    }
+  };
 
   // Inicializar con la primera fecha disponible cuando se cargan las ventas
   useEffect(() => {
@@ -536,6 +561,19 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
             >
               <Banknote className="w-4 h-4" />
               Efectivo ({ventasDelDia.filter((v) => v.metodo === "efectivo").length})
+            </button>
+            <button
+              onClick={resetFiltros}
+              disabled={!filtrosActivos}
+              className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
+                filtrosActivos
+                  ? "border-gray-300 text-gray-700 hover:bg-gray-100"
+                  : "border-gray-200 text-gray-400 cursor-not-allowed bg-gray-50"
+              }`}
+              title="Quitar todos los filtros"
+            >
+              <XCircle className="w-4 h-4" />
+              Quitar filtros
             </button>
           </div>
         </div>
@@ -964,6 +1002,17 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
                     <p className="font-medium text-gray-900">Método de Pago</p>
                     <p className="text-gray-600 text-sm"><span className="font-semibold">Todos del día:</span> Ver todas las ventas. <span className="font-semibold">Tarjeta:</span> Solo ventas con tarjeta. <span className="font-semibold">Efectivo:</span> Solo ventas en efectivo.</p>
                   </div>
+                </div>
+              </section>
+
+              {/* Eliminar una venta */}
+              <section>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">Eliminar una venta</h3>
+                <div className="space-y-2 bg-red-50 p-4 rounded-lg text-sm">
+                  <p className="text-red-800">1. Haz clic en una venta para seleccionarla: la fila se resalta en amarillo.</p>
+                  <p className="text-red-800">2. Opcional: presiona Enter para expandir y revisar el detalle antes de eliminar.</p>
+                  <p className="text-red-800">3. Pulsa el botón "Eliminar venta" en el encabezado; solo aparece cuando hay una venta seleccionada.</p>
+                  <p className="text-red-800">4. Confirma en la ventana: la eliminación es permanente y no se puede deshacer.</p>
                 </div>
               </section>
 
