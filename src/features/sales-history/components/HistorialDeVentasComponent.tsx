@@ -53,6 +53,9 @@ interface VentaNormalizada {
   pago: number;
   vuelto: number;
   productos: ProductoVenta[];
+  eliminada?: boolean;
+  fechaEliminacionStr?: string;
+  originalId?: string;
 }
 
 interface HistorialVentasProps {
@@ -132,7 +135,7 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
         const response = await obtenerVentasPromise();
         console.log("Ventas obtenidas:", response);
         if (response && Array.isArray(response)) {
-          setVentasFirebase(response);
+          setVentasFirebase(response as any);
         } else {
           console.warn("Respuesta inesperada:", response);
           setVentasFirebase([]);
@@ -171,6 +174,11 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
         }
       }
 
+      // Campos adicionales para ventas eliminadas
+      const eliminada = (venta as any).eliminada === true;
+      const originalId = (venta as any).originalId || (venta.id || String(idx + 1));
+      const fechaEliminacionStr = typeof (venta as any).fechaEliminacion === "string" ? (venta as any).fechaEliminacion : undefined;
+
       const productosNormalizados: ProductoVenta[] = (venta.ProductosVenta || []).map((p, prodIdx) => ({
         nombre: p.NombreProducto || `Producto ${prodIdx + 1}`,
         codigoBarras: p.CodigoDeBarras || "-",
@@ -188,7 +196,10 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
         metodo: venta.metodoPago === "DEBITO" ? "tarjeta" : "efectivo",
         pago: Number(venta.pagoCliente ?? venta.TotalGeneral ?? 0),
         vuelto: Number(venta.vueltoEntregado ?? 0),
-        productos: productosNormalizados
+        productos: productosNormalizados,
+        eliminada,
+        originalId,
+        fechaEliminacionStr,
       };
     });
   }, [ventasFirebase]);
@@ -398,7 +409,7 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
         </div>
 
         {/* Filtros */}
-        <div className="mb-4 flex gap-2 flex-wrap items-center flex-shrink-0">
+        <div className="mb-2 flex gap-2 flex-wrap items-center flex-shrink-0">
           <button
             onClick={() => {
               setFiltroMetodo("todos");
@@ -443,8 +454,11 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
             <Banknote className="w-4 h-4" />
             Efectivo ({ventasDelDia.filter((v) => v.metodo === "efectivo").length})
           </button>
+        </div>
 
-          <div className="flex items-center gap-2 ml-auto">
+        {/* Ordenamiento y Limpiar */}
+        <div className="mb-4 flex gap-2 items-center flex-shrink-0">
+          <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">Ordenar por hora:</label>
             <select
               value={ordenHora}
@@ -475,6 +489,20 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
               <option value="asc">Menor a mayor</option>
             </select>
           </div>
+
+          <button
+            onClick={() => {
+              setFiltroMetodo("todos");
+              setOrdenHora("desc");
+              setOrdenTotal("ninguno");
+              setPaginaActual(1);
+              setVentaExpandida(null);
+            }}
+            className="ml-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition font-medium"
+            title="Restaurar valores por defecto"
+          >
+            Limpiar filtros
+          </button>
         </div>
 
         {/* Estadísticas */}

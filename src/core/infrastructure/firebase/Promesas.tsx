@@ -334,7 +334,51 @@ export const obtenerVentasPromise = async () => {
 };
 
 export const eliminarVentaPromise = async (id: string) => {
-  await deleteDoc(doc(db, "Ventas", id));
+  // Antes de eliminar, guardar una copia en la colección de ventas eliminadas
+  const ventaRef = doc(db, "Ventas", id);
+  const ventaSnap = await getDoc(ventaRef);
+
+  if (ventaSnap.exists()) {
+    const data = ventaSnap.data();
+    // Guardar datos originales junto con metadatos de eliminación
+    await addDoc(collection(db, "VentasEliminadas"), {
+      ...data,
+      originalId: id,
+      eliminada: true,
+      fechaEliminacion: serverTimestamp(),
+    });
+  }
+
+  await deleteDoc(ventaRef);
   return true;
+};
+
+export const obtenerVentasEliminadasPromise = async () => {
+  // Ordenar por fecha de eliminación descendente; si no existe, por fecha original
+  const q = query(collection(db, "VentasEliminadas"), orderBy("fechaEliminacion", "desc"));
+  const rs = await getDocs(q);
+
+  return rs.docs.map((docSnap) => {
+    const raw = docSnap.data();
+    // Formatear fechaHora como en obtenerVentasPromise
+    const fechaHoraFormateada = raw.fechaHora?.toDate
+      ? raw.fechaHora.toDate().toLocaleString("es-CL")
+      : typeof raw.fechaHora === "string"
+      ? raw.fechaHora
+      : "Sin fecha";
+
+    const fechaEliminacionFormateada = raw.fechaEliminacion?.toDate
+      ? raw.fechaEliminacion.toDate().toLocaleString("es-CL")
+      : typeof raw.fechaEliminacion === "string"
+      ? raw.fechaEliminacion
+      : null;
+
+    return {
+      id: docSnap.id,
+      ...raw,
+      fechaHora: fechaHoraFormateada,
+      fechaEliminacion: fechaEliminacionFormateada,
+    };
+  });
 };
 

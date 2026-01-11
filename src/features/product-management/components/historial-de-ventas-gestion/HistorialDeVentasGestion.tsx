@@ -1,3 +1,4 @@
+import { obtenerVentasPromise, eliminarVentaPromise } from '@/core/infrastructure/firebase';
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -13,10 +14,7 @@ import {
   Trash2,
   AlertTriangle
 } from "lucide-react";
-import {
-  obtenerVentasPromise,
-  eliminarVentaPromise,
-} from "@/core/infrastructure/firebase";
+// (eliminado import duplicado)
 import "@/assets/styles/historial-de-venta-style.css";
 
 interface FirebaseProductoVenta {
@@ -57,6 +55,9 @@ interface VentaNormalizada {
   pago: number;
   vuelto: number;
   productos: ProductoVenta[];
+  eliminada?: boolean;
+  fechaEliminacionStr?: string;
+  originalId?: string;
 }
 
 interface HistorialVentasProps {
@@ -130,6 +131,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
+  
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const fechaActual = useMemo(() => formatearFechaHoy(), []);
@@ -141,7 +143,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
         const response = await obtenerVentasPromise();
         console.log("Ventas obtenidas:", response);
         if (response && Array.isArray(response)) {
-          setVentasFirebase(response);
+          setVentasFirebase(response as any);
         } else {
           console.warn("Respuesta inesperada:", response);
           setVentasFirebase([]);
@@ -180,6 +182,11 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
         }
       }
 
+      // Campos adicionales para ventas eliminadas
+      const eliminada = (venta as any).eliminada === true;
+      const originalId = (venta as any).originalId || (venta.id || String(idx + 1));
+      const fechaEliminacionStr = typeof (venta as any).fechaEliminacion === "string" ? (venta as any).fechaEliminacion : undefined;
+
       const productosNormalizados: ProductoVenta[] = (venta.ProductosVenta || []).map((p, prodIdx) => ({
         nombre: p.NombreProducto || `Producto ${prodIdx + 1}`,
         codigoBarras: p.CodigoDeBarras || "-",
@@ -197,7 +204,10 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
         metodo: venta.metodoPago === "DEBITO" ? "tarjeta" : "efectivo",
         pago: Number(venta.pagoCliente ?? venta.TotalGeneral ?? 0),
         vuelto: Number(venta.vueltoEntregado ?? 0),
-        productos: productosNormalizados
+        productos: productosNormalizados,
+        eliminada,
+        originalId,
+        fechaEliminacionStr,
       };
     });
   }, [ventasFirebase]);
@@ -473,6 +483,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
                   setPaginaActual(1);
                   setVentaExpandida(null);
                 }}
+                size={fechasDisponibles.length > 8 ? 8 : undefined}
                 className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {fechasDisponibles.map((fecha) => (
@@ -518,6 +529,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
 
           {/* Segunda fila: Método de pago */}
           <div className="flex gap-2 flex-wrap items-center">
+            
             <button
               onClick={() => {
                 setFiltroMetodo("todos");
@@ -775,19 +787,32 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
-                  <button
-                    key={pagina}
-                    onClick={() => irAPagina(pagina)}
-                    className={`w-10 h-10 rounded-lg transition ${
-                      paginaActual === pagina
-                        ? "bg-blue-600 text-white"
-                        : "border border-gray-300 text-gray-700 hover:bg-gray-100"
-                    }`}
-                  >
-                    {pagina}
-                  </button>
-                ))}
+                {(() => {
+                  const MAX_PAGINAS = 10;
+                  let inicio = Math.max(1, paginaActual - Math.floor(MAX_PAGINAS / 2));
+                  let fin = Math.min(totalPaginas, inicio + MAX_PAGINAS - 1);
+                  
+                  // Ajustar inicio si estamos cerca del final
+                  if (fin - inicio + 1 < MAX_PAGINAS) {
+                    inicio = Math.max(1, fin - MAX_PAGINAS + 1);
+                  }
+                  
+                  const paginasAMostrar = Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
+                  
+                  return paginasAMostrar.map((pagina) => (
+                    <button
+                      key={pagina}
+                      onClick={() => irAPagina(pagina)}
+                      className={`w-10 h-10 rounded-lg transition ${
+                        paginaActual === pagina
+                          ? "bg-blue-600 text-white"
+                          : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {pagina}
+                    </button>
+                  ));
+                })()}
               </div>
 
               <button

@@ -31,13 +31,13 @@ export function MenuGestion({ onMenuSelect }: MenuGestionProps) {
       id: 'registro-movimientos',
       label: 'Registro y Movimientos',
       icon: <ClipboardList className="w-6 h-6" />,
-      description: 'Consulta entradas y salidas de productos'
+      description: 'Historial completo de todas las acciones realizadas en el programa'
     },
     {
       id: 'gestionar-productos',
       label: 'Gestionar Productos',
       icon: <PackageSearch className="w-6 h-6" />,
-      description: 'Edita y actualiza productos existentes'
+      description: 'Edita, elimina, y repone stock de productos existentes'
     },
     {
       id: 'historial',

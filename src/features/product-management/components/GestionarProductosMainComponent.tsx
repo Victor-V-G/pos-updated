@@ -502,19 +502,32 @@ export function GestionarProductos({ onVolver }: { onVolver?: () => void }) {
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
-                  <button
-                    key={pagina}
-                    onClick={() => irAPagina(pagina)}
-                    className={`w-10 h-10 rounded-lg transition ${
-                      paginaActual === pagina
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    {pagina}
-                  </button>
-                ))}
+                {(() => {
+                  const MAX_PAGINAS = 10;
+                  let inicio = Math.max(1, paginaActual - Math.floor(MAX_PAGINAS / 2));
+                  let fin = Math.min(totalPaginas, inicio + MAX_PAGINAS - 1);
+                  
+                  // Ajustar inicio si estamos cerca del final
+                  if (fin - inicio + 1 < MAX_PAGINAS) {
+                    inicio = Math.max(1, fin - MAX_PAGINAS + 1);
+                  }
+                  
+                  const paginasAMostrar = Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
+                  
+                  return paginasAMostrar.map((pagina) => (
+                    <button
+                      key={pagina}
+                      onClick={() => irAPagina(pagina)}
+                      className={`w-10 h-10 rounded-lg transition ${
+                        paginaActual === pagina
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {pagina}
+                    </button>
+                  ));
+                })()}
               </div>
 
               <button

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft, Package, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, X, TrendingUp } from 'lucide-react';
-import { obtenerMovimientosPromise, obtenerProductoPorCodigoPromise, obtenerProductoPorNombrePromise } from '@/core/infrastructure/firebase';
+import { obtenerMovimientosPromise, obtenerProductoPorCodigoPromise, obtenerProductoPorNombrePromise, obtenerVentasEliminadasPromise } from '@/core/infrastructure/firebase';
 import { RegistrosYMovimientosInterface } from '@/shared/types';
 
 interface RegistroMovimientosProps {
@@ -8,13 +8,15 @@ interface RegistroMovimientosProps {
 }
 
 const ITEMS_POR_PAGINA = 5;
+const PAGINAS_VISIBLES = 10;
 
 export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosProps) {
   const [movimientos, setMovimientos] = useState<RegistrosYMovimientosInterface[]>([]);
   const [loading, setLoading] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
-  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'registrar' | 'editar' | 'eliminar' | 'reestock'>('todos');
+  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'registrar' | 'editar' | 'eliminar' | 'reestock' | 'ventaEliminada'>('todos');
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>('');
+  const [mostrarSelectorFechas, setMostrarSelectorFechas] = useState(false);
   const [movimientoDetalle, setMovimientoDetalle] = useState<RegistrosYMovimientosInterface | null>(null);
   const [indiceDetalle, setIndiceDetalle] = useState<number | null>(null);
   const [productoDetalle, setProductoDetalle] = useState<any>(null);
@@ -54,21 +56,85 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
   }, [movimientoDetalle]);
   const parsearFecha = (fechaHora: string) => {
     try {
-      const [fecha, hora] = fechaHora.split(", ");
-      const [dia, mes, año] = fecha.split("/").map(Number);
-      return new Date(año, mes - 1, dia, ...hora.split(":").map(Number));
+      if (!fechaHora) return new Date(0);
+      // Normalizar separadores y detectar AM/PM
+      const texto = fechaHora.replace(/\s+/g, ' ').trim();
+      const am = /(a\.?\s*m\.?)/i.test(texto);
+      const pm = /(p\.?\s*m\.?)/i.test(texto);
+
+      // Intentar extraer con regex: dd[/|-]MM[/|-]yyyy HH:MM[:SS] [AM|PM]
+      const re = /(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4}).*?(\d{1,2}):(\d{2})(?::(\d{2}))?/;
+      const m = texto.match(re);
+      if (m) {
+        let dia = Number(m[1]);
+        let mes = Number(m[2]);
+        let año = Number(m[3]);
+        let hora = Number(m[4]);
+        const min = Number(m[5]);
+        const seg = m[6] ? Number(m[6]) : 0;
+        if (pm && hora < 12) hora += 12;
+        if (am && hora === 12) hora = 0;
+        return new Date(año, mes - 1, dia, hora, min, seg);
+      }
+
+      // Fallback: intentar separar por coma "fecha, hora"
+      const partes = texto.split(', ');
+      if (partes.length === 2) {
+        const [fecha, horaStr] = partes;
+        const [dia, mes, año] = fecha.split(/[\/\-]/).map(Number);
+        let [hora, min, seg] = horaStr.split(':').map(Number);
+        if (pm && hora < 12) hora += 12;
+        if (am && hora === 12) hora = 0;
+        return new Date(año, mes - 1, dia, hora || 0, min || 0, seg || 0);
+      }
+
+      // Último recurso: Date.parse puede fallar en locales; devolver 0
+      const d = new Date(texto);
+      return isNaN(d.getTime()) ? new Date(0) : d;
     } catch (error) {
       console.error("Error parseando fecha:", fechaHora);
-      return new Date();
+      return new Date(0);
     }
+  };
+
+  const extraerFechaSinHora = (fechaHora: string) => {
+    if (!fechaHora) return '';
+    const texto = fechaHora.replace(/\s+/g, ' ').trim();
+    const m = texto.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})/);
+    return m ? m[1] : (texto.split(', ')[0] || texto);
   };
 
   useEffect(() => {
     const cargarMovimientos = async () => {
       try {
         setLoading(true);
-        const movimientosGet = await obtenerMovimientosPromise();
-        const ordenados = [...movimientosGet].sort((a, b) =>
+        const [movimientosGet, ventasEliminadas] = await Promise.all([
+          obtenerMovimientosPromise(),
+          obtenerVentasEliminadasPromise().catch(() => [])
+        ]);
+
+        // Transformar ventas eliminadas a formato de movimientos
+        const movimientosVentasEliminadas: RegistrosYMovimientosInterface[] = (ventasEliminadas as any[]).map((v: any) => {
+          const fechaEliminar = v.fechaEliminacion || v.fechaHora || 'Sin fecha';
+          const fechaOriginal = v.fechaHora || 'Sin fecha';
+          const total = typeof v.TotalGeneral === 'number' ? v.TotalGeneral : Number(v.TotalGeneral) || 0;
+          const metodo = v.metodoPago || '-';
+          const items = Array.isArray(v.ProductosVenta) ? v.ProductosVenta.length : 0;
+          return {
+            accion: 'Venta eliminada',
+            cambios: `Venta eliminada: método ${metodo}, total $${Math.round(total)}, productos ${items}${v.fechaHora ? ` (original ${v.fechaHora})` : ''}`,
+            fechaHora: fechaEliminar,
+            // Metadatos adicionales para mostrar en el detalle
+            productosVenta: v.ProductosVenta || [],
+            fechaEliminacion: fechaEliminar,
+            fechaOriginal,
+            totalVenta: total,
+            metodoPago: metodo,
+          } as any;
+        });
+
+        const combinados = [...movimientosGet, ...movimientosVentasEliminadas];
+        const ordenados = combinados.sort((a, b) =>
           parsearFecha(b.fechaHora).getTime() - parsearFecha(a.fechaHora).getTime()
         );
         setMovimientos(ordenados);
@@ -83,16 +149,20 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     cargarMovimientos();
   }, []);
 
-  // Obtener fechas únicas ordenadas
+  // Obtener fechas únicas ordenadas (más reciente a más antigua)
   const fechasUnicas = useMemo(() => {
-    const fechas = new Set(movimientos.map(m => m.fechaHora.split(", ")[0]));
-    return Array.from(fechas).sort().reverse();
+    const fechas = new Set(movimientos.map(m => extraerFechaSinHora(m.fechaHora)));
+    return Array.from(fechas).sort((a, b) => {
+      const fechaA = parsearFecha(a + ", 00:00");
+      const fechaB = parsearFecha(b + ", 00:00");
+      return fechaB.getTime() - fechaA.getTime();
+    });
   }, [movimientos]);
 
   // Filtrar movimientos
   let movimientosFiltrados = movimientos.filter(movimiento => {
     const accionLower = movimiento.accion.toLowerCase();
-    const fechaMovimiento = movimiento.fechaHora.split(", ")[0];
+    const fechaMovimiento = extraerFechaSinHora(movimiento.fechaHora);
     
     // Filtro por tipo (basado en accion)
     let coincideTipo = false;
@@ -103,9 +173,12 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     } else if (filtroTipo === 'editar') {
       coincideTipo = accionLower.includes('modificar') || accionLower.includes('editar');
     } else if (filtroTipo === 'eliminar') {
-      coincideTipo = accionLower.includes('eliminar');
+      // Solo eliminaciones de productos, no ventas
+      coincideTipo = accionLower.includes('eliminar') && !accionLower.includes('venta');
     } else if (filtroTipo === 'reestock') {
       coincideTipo = accionLower.includes('reestock');
+    } else if (filtroTipo === 'ventaEliminada') {
+      coincideTipo = accionLower.includes('venta') && accionLower.includes('eliminada');
     }
 
     // Filtro por fecha seleccionada
@@ -116,16 +189,57 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
   // Paginación
   const totalPaginas = Math.ceil(movimientosFiltrados.length / ITEMS_POR_PAGINA);
+
+  // Manejar navegación con flechas del teclado
+  useEffect(() => {
+    const manejarTeclas = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (paginaActual > 1) {
+          setPaginaActual(paginaActual - 1);
+        }
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (paginaActual < totalPaginas) {
+          setPaginaActual(paginaActual + 1);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', manejarTeclas);
+    return () => window.removeEventListener('keydown', manejarTeclas);
+  }, [paginaActual, totalPaginas]);
   const indiceInicio = (paginaActual - 1) * ITEMS_POR_PAGINA;
   const indiceFin = indiceInicio + ITEMS_POR_PAGINA;
   const movimientosPaginados = movimientosFiltrados.slice(indiceInicio, indiceFin);
+
+  const paginasVisibles = useMemo(() => {
+    if (totalPaginas <= PAGINAS_VISIBLES) {
+      return Array.from({ length: totalPaginas }, (_, i) => i + 1);
+    }
+
+    const mitadVentana = Math.floor(PAGINAS_VISIBLES / 2);
+    let inicio = paginaActual - mitadVentana;
+    let fin = paginaActual + mitadVentana - 1;
+
+    if (inicio < 1) {
+      inicio = 1;
+      fin = PAGINAS_VISIBLES;
+    } else if (fin > totalPaginas) {
+      fin = totalPaginas;
+      inicio = totalPaginas - PAGINAS_VISIBLES + 1;
+    }
+
+    return Array.from({ length: fin - inicio + 1 }, (_, i) => inicio + i);
+  }, [paginaActual, totalPaginas]);
 
   // Estadísticas
   const totalMovimientos = movimientos.length;
   const registros = movimientos.filter(m => m.accion.toLowerCase().includes('registrar')).length;
   const ediciones = movimientos.filter(m => m.accion.toLowerCase().includes('modificar') || m.accion.toLowerCase().includes('editar')).length;
-  const eliminaciones = movimientos.filter(m => m.accion.toLowerCase().includes('eliminar')).length;
+  const eliminaciones = movimientos.filter(m => m.accion.toLowerCase().includes('eliminar') && !m.accion.toLowerCase().includes('venta')).length;
   const reestocks = movimientos.filter(m => m.accion.toLowerCase().includes('reestock')).length;
+  const ventasEliminadasCount = movimientos.filter(m => m.accion.toLowerCase().includes('venta') && m.accion.toLowerCase().includes('eliminada')).length;
 
   const irAPagina = (pagina: number) => {
     setPaginaActual(pagina);
@@ -146,6 +260,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     const a = accion.toLowerCase();
     if (a.includes('registrar')) return <Package className="w-5 h-5" />;
     if (a.includes('modificar') || a.includes('editar')) return <Pencil className="w-5 h-5" />;
+    if (a.includes('venta') && a.includes('eliminada')) return <Trash2 className="w-5 h-5" />;
     if (a.includes('eliminar')) return <Trash2 className="w-5 h-5" />;
     if (a.includes('reestock')) return <TrendingUp className="w-5 h-5" />;
     return null;
@@ -155,6 +270,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     const a = accion.toLowerCase();
     if (a.includes('registrar')) return 'text-green-700 bg-green-100';
     if (a.includes('modificar') || a.includes('editar')) return 'text-blue-700 bg-blue-100';
+    if (a.includes('venta') && a.includes('eliminada')) return 'text-red-700 bg-red-100';
     if (a.includes('eliminar')) return 'text-red-700 bg-red-100';
     if (a.includes('reestock')) return 'text-amber-700 bg-amber-100';
     return 'text-gray-700 bg-gray-100';
@@ -255,11 +371,25 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     };
   };
 
+  const parseDetalleVentaEliminada = (mov: RegistrosYMovimientosInterface) => {
+    const texto = mov.cambios || '';
+    const regex = /método\s+([^,]+),\s*total\s*\$?([\d.,]+),\s*productos\s+(\d+)/i;
+    const match = texto.match(regex);
+    const metodo = match ? match[1].trim() : '-';
+    const totalStr = match ? match[2].replace(/\./g, '').replace(/,/g, '.') : '0';
+    const total = Number(totalStr) || 0;
+    const productos = match ? Number(match[3]) || 0 : 0;
+    return { metodo, total, productos };
+  };
+
   const resumenMovimiento = (mov: RegistrosYMovimientosInterface) => {
     const a = mov.accion.toLowerCase();
     if (a.includes('registrar')) {
       const { nombre } = parseDetalleMovimiento(mov);
       return nombre ? `Producto registrado: ${nombre}` : 'Producto registrado';
+    }
+    if (a.includes('venta') && a.includes('eliminada')) {
+      return mov.cambios;
     }
     if (a.includes('reestock')) {
       const { nombre, cantidadAgregada, stockPrevio, stock } = parseDetalleMovimiento(mov);
@@ -275,12 +405,12 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
   return (
     <div className="w-full h-full flex items-center justify-center">
-      <div className="w-full max-w-[90rem] bg-white rounded-lg shadow-lg p-8 flex flex-col">
+      <div className="w-full max-w-[90rem] h-[790px] min-h-[790px] max-h-[790px] bg-white rounded-lg shadow-md shadow-gray-200/80 border border-gray-100 p-8 flex flex-col overflow-hidden">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between flex-shrink-0">
           <div>
             <h1 className="text-4xl text-gray-900 mb-2">Registro y Movimientos</h1>
-            <p className="text-gray-600">Historial completo de todas las acciones realizadas en el inventario</p>
+            <p className="text-gray-600">Historial completo de todas las acciones realizadas en el programa</p>
           </div>
           <button
             type="button"
@@ -353,6 +483,20 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
             </button>
             <button
               onClick={() => {
+                setFiltroTipo('ventaEliminada');
+                setPaginaActual(1);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                filtroTipo === 'ventaEliminada'
+                  ? 'bg-red-600 text-white'
+                  : 'bg-red-100 text-red-700 hover:bg-red-200'
+              }`}
+            >
+              <Trash2 className="w-4 h-4" />
+              Ventas eliminadas ({ventasEliminadasCount})
+            </button>
+            <button
+              onClick={() => {
                 setFiltroTipo('reestock');
                 setPaginaActual(1);
               }}
@@ -379,26 +523,54 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
           {/* Filtros por fecha */}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-700">Seleccionar fecha:</label>
-            <select
-              value={fechaSeleccionada}
-              onChange={(e) => {
-                setFechaSeleccionada(e.target.value);
-                setPaginaActual(1);
-              }}
-              className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Todas las fechas</option>
-              {fechasUnicas.map((fecha) => (
-                <option key={fecha} value={fecha}>
-                  {fecha}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                onClick={() => setMostrarSelectorFechas(!mostrarSelectorFechas)}
+                className="px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px] text-left flex items-center justify-between"
+              >
+                <span>{fechaSeleccionada || 'Todas las fechas'}</span>
+                <span className="text-gray-500">▼</span>
+              </button>
+              
+              {mostrarSelectorFechas && (
+                <div className="absolute top-full left-0 mt-1 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10">
+                  <div className="max-h-[240px] overflow-y-auto">
+                    <button
+                      onClick={() => {
+                        setFechaSeleccionada('');
+                        setPaginaActual(1);
+                        setMostrarSelectorFechas(false);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-blue-50 text-gray-900 border-b border-gray-100"
+                    >
+                      Todas las fechas
+                    </button>
+                    {fechasUnicas.map((fecha) => (
+                      <button
+                        key={fecha}
+                        onClick={() => {
+                          setFechaSeleccionada(fecha);
+                          setPaginaActual(1);
+                          setMostrarSelectorFechas(false);
+                        }}
+                        className={`w-full text-left px-3 py-2 border-b border-gray-100 last:border-b-0 transition ${
+                          fechaSeleccionada === fecha
+                            ? 'bg-blue-100 text-blue-900 font-medium'
+                            : 'hover:bg-blue-50 text-gray-900'
+                        }`}
+                      >
+                        {fecha}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Tabla de Movimientos */}
-        <div className="overflow-hidden flex flex-col border border-gray-200 rounded-lg">
+        <div className="flex-1 min-h-0 overflow-hidden flex flex-col border border-gray-200 rounded-lg">
           {/* Encabezado */}
           <div className="bg-gray-50 border-b border-gray-200 px-4 py-3 flex-shrink-0">
             <div className="grid grid-cols-12 gap-4 text-sm text-gray-700">
@@ -461,7 +633,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
         {/* Paginación */}
         {movimientosFiltrados.length > 0 && (
-          <div className="mt-4 flex items-center justify-between flex-shrink-0">
+          <div className="mt-auto pt-4 flex items-center justify-between flex-shrink-0">
             <div className="text-sm text-gray-600">
               Mostrando {indiceInicio + 1} - {Math.min(indiceFin, movimientosFiltrados.length)} de {movimientosFiltrados.length} movimientos
             </div>
@@ -476,7 +648,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
               </button>
 
               <div className="flex items-center gap-1">
-                {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((pagina) => (
+                {paginasVisibles.map((pagina) => (
                   <button
                     key={pagina}
                     onClick={() => irAPagina(pagina)}
@@ -505,7 +677,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
       {movimientoDetalle && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-lg shadow-xl shadow-gray-300/70 w-full max-w-3xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-start justify-between p-6 border-b border-gray-200">
               <div>
                 <p className="text-sm text-gray-500 uppercase">{movimientoDetalle.accion.toUpperCase()}</p>
@@ -547,6 +719,62 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
                 const esModificacion = movimientoDetalle.accion.toLowerCase().includes('modificar') || 
                                       movimientoDetalle.accion.toLowerCase().includes('editar');
                 const esReestock = movimientoDetalle.accion.toLowerCase().includes('reestock');
+                const esVentaEliminada = movimientoDetalle.accion.toLowerCase().includes('venta') && movimientoDetalle.accion.toLowerCase().includes('eliminada');
+
+                if (esVentaEliminada) {
+                  const ventaInfo = parseDetalleVentaEliminada(movimientoDetalle);
+                  const productosVenta = (movimientoDetalle as any).productosVenta || [];
+                  const fechaOriginal = (movimientoDetalle as any).fechaOriginal || '-';
+                  const fechaEliminacion = (movimientoDetalle as any).fechaEliminacion || movimientoDetalle.fechaHora;
+                  const totalVenta = (movimientoDetalle as any).totalVenta ?? ventaInfo.total;
+                  const metodoPago = (movimientoDetalle as any).metodoPago || ventaInfo.metodo;
+                  return (
+                    <section className="bg-white border border-gray-200 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Detalle de venta eliminada</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-800">
+                        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+                          <p className="text-xs uppercase font-semibold text-red-700 mb-1">Productos en la venta</p>
+                          <p className="text-xl font-bold text-red-900">{ventaInfo.productos}</p>
+                        </div>
+                        <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
+                          <p className="text-xs uppercase font-semibold text-blue-700 mb-1">Total de la venta</p>
+                          <p className="text-xl font-bold text-blue-900">${totalVenta.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}</p>
+                        </div>
+                        <div className="p-4 rounded-lg bg-gray-50 border border-gray-200">
+                          <p className="text-xs uppercase font-semibold text-gray-700 mb-1">Método de pago</p>
+                          <p className="text-lg font-bold text-gray-900">{metodoPago}</p>
+                        </div>
+                        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+                          <p className="text-xs uppercase font-semibold text-amber-700 mb-1">Fechas</p>
+                          <div className="text-gray-900 text-sm space-y-1">
+                            <div><span className="font-semibold">Venta:</span> {fechaOriginal}</div>
+                            <div><span className="font-semibold">Eliminación:</span> {fechaEliminacion}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lista de productos vendidos */}
+                      <div className="mt-4">
+                        <h4 className="text-sm font-semibold text-gray-900 mb-2">Productos vendidos ({productosVenta.length})</h4>
+                        {productosVenta.length === 0 ? (
+                          <p className="text-gray-600 text-sm">No hay detalle de productos.</p>
+                        ) : (
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg divide-y divide-gray-200">
+                            {productosVenta.map((p: any, idx: number) => (
+                              <div key={idx} className="px-3 py-2 flex flex-col md:flex-row md:items-center md:gap-4 text-sm text-gray-800">
+                                <div className="font-semibold text-gray-900 flex-1">{p.NombreProducto || `Producto ${idx + 1}`}</div>
+                                <div className="text-gray-700">Cant: {p.cantidad ?? '-'}</div>
+                                <div className="text-gray-700">Tipo: {p.TipoProducto || '-'}</div>
+                                <div className="text-gray-700">Precio: {p.PrecioUnitario ?? p.Precio ?? '-'}</div>
+                                <div className="text-gray-900 font-semibold">Subtotal: {p.subtotal ?? '-'}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </section>
+                  );
+                }
                 
                 // Usar datos del producto si se cargó, si no usar los parseados
                 const datosProducto = productoDetalle || {
