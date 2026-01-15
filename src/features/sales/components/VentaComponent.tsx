@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote, HelpCircle, X, Scale, ShoppingCart } from "lucide-react";
+import { ScanBarcode, Plus, Minus, Trash2, CreditCard, Banknote, HelpCircle, X, Scale, ShoppingCart, Wifi, WifiOff } from "lucide-react";
 
 import { 
   obtenerProductosPromise, 
@@ -8,6 +8,7 @@ import {
 } from "@/core/infrastructure/firebase";
 import { ProductoInterface } from "@/core/domain/entities";
 import { ProductoVenta } from "@/shared/types";
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline";
 
 interface ProductoCarrito {
   codigoBarras: string;
@@ -45,6 +46,10 @@ export const VentaComponent = () => {
   const inputPesoRef = useRef<HTMLInputElement>(null);
   const carritoScrollRef = useRef<HTMLDivElement>(null);
 
+  // Hooks offline
+  const { saveSale, getProducts, isOnline } = useOfflineSync();
+  const onlineStatus = useOnlineStatus();
+
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -53,7 +58,7 @@ export const VentaComponent = () => {
   useEffect(() => {
     const cargarProductosPeso = async () => {
       try {
-        const productos = await obtenerProductosPromise();
+        const productos = await getProducts(obtenerProductosPromise);
         const productosPorPeso = productos.filter((p: ProductoInterface) => p.TipoProducto === "peso");
         setProductosPeso(productosPorPeso);
       } catch (error) {
@@ -144,7 +149,7 @@ export const VentaComponent = () => {
 
   const buscarProducto = async (codigo: string): Promise<ProductoInterface | null> => {
     try {
-      const productos = await obtenerProductosPromise();
+      const productos = await getProducts(obtenerProductosPromise);
       const encontrado = productos.find((p: ProductoInterface) => p.CodigoDeBarras === codigo);
       return encontrado || null;
     } catch (error) {
@@ -448,18 +453,23 @@ export const VentaComponent = () => {
       subtotal: item.subtotal,
     }));
 
-    const ok = await registrarVentaYActualizarStockPromise({
+    const ventaData = {
       ProductosVenta: productosVenta,
       TotalGeneral: total,
       metodoPago: "DEBITO",
       pagoCliente: null,
       vueltoEntregado: null,
-    });
+    };
+
+    // Usar saveSale con offline support
+    const result = await saveSale(ventaData, registrarVentaYActualizarStockPromise);
+    const ok = result && !result.error;
 
     setCargando(false);
 
     if (ok) {
-      const confirmar = confirm(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
+      const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
+      const confirmar = confirm(`Venta realizada exitosamente!${statusMsg}\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
       if (confirmar) {
         resetearVenta();
       } else {
@@ -507,18 +517,23 @@ export const VentaComponent = () => {
       subtotal: item.subtotal,
     }));
 
-    const ok = await registrarVentaYActualizarStockPromise({
+    const ventaData = {
       ProductosVenta: productosVenta,
       TotalGeneral: total,
       metodoPago: "EFECTIVO",
       pagoCliente: monto,
       vueltoEntregado: vuelto,
-    });
+    };
+
+    // Usar saveSale con offline support
+    const result = await saveSale(ventaData, registrarVentaYActualizarStockPromise);
+    const ok = result && !result.error;
 
     setCargando(false);
 
     if (ok) {
-      const confirmar = confirm(`Venta realizada exitosamente!\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
+      const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
+      const confirmar = confirm(`Venta realizada exitosamente!${statusMsg}\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
       if (confirmar) {
         resetearVenta();
       } else {
@@ -1189,7 +1204,9 @@ export const VentaComponent = () => {
                 <div className="space-y-2">
                   {productosPeso
                     .filter((producto) =>
-                      producto.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                      producto && producto.NombreProducto 
+                        ? String(producto.NombreProducto).toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                        : false
                     )
                     .map((producto) => (
                       <div
@@ -1220,7 +1237,9 @@ export const VentaComponent = () => {
                       </div>
                     ))}
                   {productosPeso.filter((producto) =>
-                    producto.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                    producto && producto.NombreProducto
+                      ? String(producto.NombreProducto).toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                      : false
                   ).length === 0 && busquedaProductoPeso && (
                     <div className="flex items-center justify-center py-8 text-gray-400">
                       <p>No se encontraron productos con ese nombre</p>
@@ -1239,7 +1258,9 @@ export const VentaComponent = () => {
                     {" "}| Mostrando:{" "}
                     <span className="font-semibold">
                       {productosPeso.filter((p) =>
-                        p.NombreProducto.toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                        p && p.NombreProducto
+                          ? String(p.NombreProducto).toLowerCase().includes(busquedaProductoPeso.toLowerCase())
+                          : false
                       ).length}
                     </span>
                   </span>

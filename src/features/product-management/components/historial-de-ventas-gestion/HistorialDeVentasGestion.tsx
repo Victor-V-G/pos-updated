@@ -1,4 +1,5 @@
 import { obtenerVentasPromise, eliminarVentaPromise, obtenerTransaccionesCajaPromise } from '@/core/infrastructure/firebase';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -12,7 +13,9 @@ import {
   XCircle,
   X,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 // (eliminado import duplicado)
 import "@/assets/styles/historial-de-venta-style.css";
@@ -110,13 +113,32 @@ const normalizarFechaHoraCL = (fechaHora?: any) => {
     return separarFechaHora(fechaHora);
   }
 
+  // Manejar Firestore Timestamp con método toDate()
   if (typeof fechaHora === "object" && fechaHora !== null && "toDate" in fechaHora) {
-    const dateStr = (fechaHora as any).toDate().toLocaleString("es-CL", {
-      timeZone: "America/Santiago",
-    });
-    return separarFechaHora(dateStr);
+    try {
+      const dateStr = (fechaHora as any).toDate().toLocaleString("es-CL", {
+        timeZone: "America/Santiago",
+      });
+      return separarFechaHora(dateStr);
+    } catch (error) {
+      console.error('Error convirtiendo Timestamp con toDate:', error);
+    }
   }
 
+  // Manejar Firestore Timestamp con formato {seconds, nanoseconds}
+  if (typeof fechaHora === "object" && fechaHora !== null && "seconds" in fechaHora) {
+    try {
+      const date = new Date(fechaHora.seconds * 1000);
+      const dateStr = date.toLocaleString("es-CL", {
+        timeZone: "America/Santiago",
+      });
+      return separarFechaHora(dateStr);
+    } catch (error) {
+      console.error('Error convirtiendo Timestamp {seconds, nanoseconds}:', error);
+    }
+  }
+
+  console.warn('Formato de fechaHora no reconocido:', fechaHora);
   return { fecha: "", hora: "" };
 };
 
@@ -162,6 +184,9 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -172,7 +197,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
       try {
         setLoading(true);
         const [ventasResponse, transaccionesResponse] = await Promise.all([
-          obtenerVentasPromise(),
+          getSales(obtenerVentasPromise),
           obtenerTransaccionesCajaPromise(),
         ]);
 
@@ -201,37 +226,43 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
     };
 
     cargarVentas();
-  }, []);
+  }, [getSales]);
 
   const ventasNormalizadas = useMemo<VentaNormalizada[]>(() => {
-    return (ventasFirebase || []).map((venta, idx) => {
-      const { fecha, hora } = normalizarFechaHoraCL(venta.fechaHora);
+    return (ventasFirebase || [])
+      .filter(venta => venta && venta.id) // Filtrar ventas válidas
+      .map((venta, idx) => {
+        const { fecha, hora } = normalizarFechaHoraCL(venta.fechaHora);
 
-      // Campos adicionales para ventas eliminadas
-      const eliminada = (venta as any).eliminada === true;
-      const originalId = (venta as any).originalId || (venta.id || String(idx + 1));
-      const fechaEliminacionStr = typeof (venta as any).fechaEliminacion === "string" ? (venta as any).fechaEliminacion : undefined;
+        // Asegurar que fecha y hora sean strings (nunca objetos Timestamp)
+        const fechaStr = String(fecha || formatearFechaHoy());
+        const horaStr = String(hora || "00:00:00");
 
-      const productosNormalizados: ProductoVenta[] = (venta.ProductosVenta || []).map((p, prodIdx) => ({
-        nombre: p.NombreProducto || `Producto ${prodIdx + 1}`,
-        codigoBarras: p.CodigoDeBarras || "-",
-        tipo: p.TipoProducto === "peso" ? "peso" : "unidad",
-        cantidad: Number(p.cantidad || 0),
-        precioUnitario: Number(p.PrecioUnitario ?? p.Precio ?? 0),
-        subtotal: Number(p.subtotal || 0)
-      }));
+        // Campos adicionales para ventas eliminadas
+        const eliminada = (venta as any).eliminada === true;
+        const originalId = (venta as any).originalId || (venta.id || String(idx + 1));
+        const fechaEliminacionStr = typeof (venta as any).fechaEliminacion === "string" ? (venta as any).fechaEliminacion : undefined;
 
-      return {
-        id: venta.id || String(idx + 1),
-        fecha: fecha,
-        hora: hora,
-        total: Number(venta.TotalGeneral || 0),
-        metodo: venta.metodoPago === "DEBITO" ? "tarjeta" : "efectivo",
-        pago: Number(venta.pagoCliente ?? venta.TotalGeneral ?? 0),
-        vuelto: Number(venta.vueltoEntregado ?? 0),
-        productos: productosNormalizados,
-        eliminada,
-        originalId,
+        const productosNormalizados: ProductoVenta[] = (venta.ProductosVenta || []).map((p, prodIdx) => ({
+          nombre: p.NombreProducto || `Producto ${prodIdx + 1}`,
+          codigoBarras: p.CodigoDeBarras || "-",
+          tipo: p.TipoProducto === "peso" ? "peso" : "unidad",
+          cantidad: Number(p.cantidad || 0),
+          precioUnitario: Number(p.PrecioUnitario ?? p.Precio ?? 0),
+          subtotal: Number(p.subtotal || 0)
+        }));
+
+        return {
+          id: venta.id || String(idx + 1),
+          fecha: fechaStr, // String garantizado
+          hora: horaStr, // String garantizado
+          total: Number(venta.TotalGeneral || 0),
+          metodo: venta.metodoPago === "DEBITO" ? "tarjeta" : "efectivo",
+          pago: Number(venta.pagoCliente ?? venta.TotalGeneral ?? 0),
+          vuelto: Number(venta.vueltoEntregado ?? 0),
+          productos: productosNormalizados,
+          eliminada,
+          originalId,
         fechaEliminacionStr,
       };
     });
@@ -242,10 +273,14 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
       const fechaHoraRaw = transaccion.fechaHoraCL || transaccion.fechaHora;
       const { fecha, hora } = normalizarFechaHoraCL(fechaHoraRaw);
 
+      // Asegurar que fecha y hora sean strings
+      const fechaStr = String(fecha || "-");
+      const horaStr = String(hora || "-");
+
       return {
         id: transaccion.id || `transaccion-${idx + 1}`,
-        fecha: fecha || "-",
-        hora: hora || "-",
+        fecha: fechaStr,
+        hora: horaStr,
         total: Number(transaccion.monto || 0),
         metodo: "transaccion",
         pago: 0,
@@ -985,6 +1020,10 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
 
             {ventasFirebase.find(v => v.id === deletingId) && (() => {
               const venta = ventasFirebase.find(v => v.id === deletingId);
+              // Convertir fechaHora a string si es un Timestamp
+              const { fecha, hora } = normalizarFechaHoraCL(venta?.fechaHora);
+              const fechaHoraStr = fecha && hora ? `${fecha}, ${hora}` : "-";
+              
               return (
                 <>
                   <p className="text-gray-600 mb-3 text-sm">
@@ -994,7 +1033,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <p className="text-xs text-gray-500 font-semibold uppercase">Fecha y Hora</p>
-                        <p className="text-sm text-gray-900">{venta?.fechaHora || "-"}</p>
+                        <p className="text-sm text-gray-900">{fechaHoraStr}</p>
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 font-semibold uppercase">Método de Pago</p>

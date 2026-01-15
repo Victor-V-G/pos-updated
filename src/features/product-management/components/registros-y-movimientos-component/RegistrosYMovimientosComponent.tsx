@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { ArrowLeft, Package, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, X, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Package, Pencil, Trash2, ChevronLeft, ChevronRight, ChevronDown, X, TrendingUp, Wifi, WifiOff } from 'lucide-react';
 import { obtenerMovimientosPromise, obtenerProductoPorCodigoPromise, obtenerProductoPorNombrePromise, obtenerVentasEliminadasPromise } from '@/core/infrastructure/firebase';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 import { RegistrosYMovimientosInterface } from '@/shared/types';
 
 interface RegistroMovimientosProps {
@@ -21,6 +22,10 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
   const [indiceDetalle, setIndiceDetalle] = useState<number | null>(null);
   const [productoDetalle, setProductoDetalle] = useState<any>(null);
   const [loadingProducto, setLoadingProducto] = useState(false);
+  
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
 
   // Cargar datos del producto cuando se abre el modal
   useEffect(() => {
@@ -161,7 +166,12 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
   // Filtrar movimientos
   let movimientosFiltrados = movimientos.filter(movimiento => {
-    const accionLower = movimiento.accion.toLowerCase();
+    // Validar que exista la propiedad necesaria
+    if (!movimiento || !movimiento.accion) {
+      return false;
+    }
+    
+    const accionLower = String(movimiento.accion).toLowerCase();
     const fechaMovimiento = extraerFechaSinHora(movimiento.fechaHora);
     
     // Filtro por tipo (basado en accion)
@@ -174,7 +184,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
       coincideTipo = accionLower.includes('modificar') || accionLower.includes('editar');
     } else if (filtroTipo === 'eliminar') {
       // Solo eliminaciones de productos, no ventas
-      coincideTipo = accionLower.includes('eliminar') && !accionLower.includes('venta');
+      coincideTipo = (accionLower.includes('eliminar') || accionLower.includes('eliminación')) && !accionLower.includes('venta');
     } else if (filtroTipo === 'reestock') {
       coincideTipo = accionLower.includes('reestock');
     } else if (filtroTipo === 'ventaEliminada') {
@@ -235,11 +245,11 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
 
   // Estadísticas
   const totalMovimientos = movimientos.length;
-  const registros = movimientos.filter(m => m.accion.toLowerCase().includes('registrar')).length;
-  const ediciones = movimientos.filter(m => m.accion.toLowerCase().includes('modificar') || m.accion.toLowerCase().includes('editar')).length;
-  const eliminaciones = movimientos.filter(m => m.accion.toLowerCase().includes('eliminar') && !m.accion.toLowerCase().includes('venta')).length;
-  const reestocks = movimientos.filter(m => m.accion.toLowerCase().includes('reestock')).length;
-  const ventasEliminadasCount = movimientos.filter(m => m.accion.toLowerCase().includes('venta') && m.accion.toLowerCase().includes('eliminada')).length;
+  const registros = movimientos.filter(m => m && m.accion ? String(m.accion).toLowerCase().includes('registrar') : false).length;
+  const ediciones = movimientos.filter(m => m && m.accion ? String(m.accion).toLowerCase().includes('modificar') || String(m.accion).toLowerCase().includes('editar') : false).length;
+  const eliminaciones = movimientos.filter(m => m && m.accion ? (String(m.accion).toLowerCase().includes('eliminar') || String(m.accion).toLowerCase().includes('eliminación')) && !String(m.accion).toLowerCase().includes('venta') : false).length;
+  const reestocks = movimientos.filter(m => m && m.accion ? String(m.accion).toLowerCase().includes('reestock') : false).length;
+  const ventasEliminadasCount = movimientos.filter(m => m && m.accion ? String(m.accion).toLowerCase().includes('venta') && String(m.accion).toLowerCase().includes('eliminada') : false).length;
 
   const irAPagina = (pagina: number) => {
     setPaginaActual(pagina);
@@ -261,7 +271,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     if (a.includes('registrar')) return <Package className="w-5 h-5" />;
     if (a.includes('modificar') || a.includes('editar')) return <Pencil className="w-5 h-5" />;
     if (a.includes('venta') && a.includes('eliminada')) return <Trash2 className="w-5 h-5" />;
-    if (a.includes('eliminar')) return <Trash2 className="w-5 h-5" />;
+    if (a.includes('eliminar') || a.includes('eliminación')) return <Trash2 className="w-5 h-5" />;
     if (a.includes('reestock')) return <TrendingUp className="w-5 h-5" />;
     return null;
   };
@@ -271,7 +281,7 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     if (a.includes('registrar')) return 'text-green-700 bg-green-100';
     if (a.includes('modificar') || a.includes('editar')) return 'text-blue-700 bg-blue-100';
     if (a.includes('venta') && a.includes('eliminada')) return 'text-red-700 bg-red-100';
-    if (a.includes('eliminar')) return 'text-red-700 bg-red-100';
+    if (a.includes('eliminar') || a.includes('eliminación')) return 'text-red-700 bg-red-100';
     if (a.includes('reestock')) return 'text-amber-700 bg-amber-100';
     return 'text-gray-700 bg-gray-100';
   };
@@ -287,10 +297,10 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     const nombreMatch = mov.cambios.match(/nombre[:\s]*([^\n,]+)/i);
     const codigoMatch = mov.cambios.match(/c(o|ó)digo\s*de\s*barras[:\s]*([^\n,]+)/i);
     const precioMatch = mov.cambios.match(/precio[:\s]*\$?([^\n,]+)/i);
-    const stockMatch = mov.cambios.match(/stock\s*(final|nuevo)?[:\s]*([^\n,]+)/i);
-    const cantidadMatch = mov.cambios.match(/cantidad\s*(agregada|a\u00f1adida|sumada)[:\s]*([^\n,]+)/i);
+    const stockMatch = mov.cambios.match(/stock\s*(final|nuevo|que tenía)?[:\s]*([^\n,]+)/i);
+    const cantidadMatch = mov.cambios.match(/cantidad\s*(agregada|añadida|sumada)[:\s]*([^\n,]+)/i);
     const stockPrevioMatch = mov.cambios.match(/stock\s*(anterior|previo)[:\s]*([^\n,]+)/i);
-    const tipoMatch = mov.cambios.match(/tipo\s*de\s*producto[:\s]*([^\n,]+)/i);
+    const tipoMatch = mov.cambios.match(/tipo[:\s]*([^\n,]+)/i);
 
     // Guardar valores extraídos por regex
     if (nombreMatch) parsed['nombre'] = nombreMatch[1].trim();
@@ -299,7 +309,10 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     if (stockMatch) parsed['stock'] = stockMatch[2].trim();
     if (cantidadMatch) parsed['cantidad agregada'] = cantidadMatch[2].trim();
     if (stockPrevioMatch) parsed['stock anterior'] = stockPrevioMatch[2].trim();
-    if (tipoMatch) parsed['tipo de producto'] = tipoMatch[1].trim();
+    if (tipoMatch) {
+      const tipoValue = tipoMatch[1].trim();
+      parsed['tipo de producto'] = tipoValue;
+    }
 
     // Ahora procesa líneas para detectar cambios y otros datos
     lineas.forEach(linea => {
@@ -313,31 +326,42 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
           anterior: anterior.trim(),
           nuevo: nuevo.trim()
         });
+        
+        // Agregar a campos modificados con múltiples variaciones
         camposModificados.add(campoNormalizado);
+        if (campoNormalizado.includes('precio')) camposModificados.add('precio');
+        if (campoNormalizado.includes('stock')) camposModificados.add('stock');
+        if (campoNormalizado.includes('tipo')) camposModificados.add('tipo de producto');
+        if (campoNormalizado.includes('nombre')) camposModificados.add('nombre');
+        if (campoNormalizado.includes('código')) camposModificados.add('código de barras');
+        
         // Guardar el valor nuevo en parsed
         parsed[campoNormalizado] = nuevo.trim();
 
         // Si el campo corresponde a precio/stock/tipo, llenar claves normalizadas
-        if (campoNormalizado.startsWith('precio')) {
+        if (campoNormalizado.includes('precio')) {
           parsed['precio'] = nuevo.trim();
           const nombreEnCampo = campo.match(/precio\s*de\s*(.+)$/i);
           if (nombreEnCampo && nombreEnCampo[1]) {
             parsed['nombre'] = nombreEnCampo[1].trim();
           }
           camposModificados.add('precio');
-        } else if (campoNormalizado.startsWith('stock')) {
+        } else if (campoNormalizado.includes('stock')) {
           parsed['stock'] = nuevo.trim();
           const nombreEnCampo = campo.match(/stock\s*de\s*(.+)$/i);
           if (nombreEnCampo && nombreEnCampo[1]) {
             parsed['nombre'] = nombreEnCampo[1].trim();
           }
           camposModificados.add('stock');
-        } else if (campoNormalizado.startsWith('tipo')) {
+        } else if (campoNormalizado.includes('tipo')) {
           parsed['tipo de producto'] = nuevo.trim();
           camposModificados.add('tipo de producto');
-        } else if (campoNormalizado.startsWith('nombre')) {
+        } else if (campoNormalizado.includes('nombre')) {
           parsed['nombre'] = nuevo.trim();
           camposModificados.add('nombre');
+        } else if (campoNormalizado.includes('código')) {
+          parsed['código de barras'] = nuevo.trim();
+          camposModificados.add('código de barras');
         }
       } else {
         // Intenta parsear como clave: valor
@@ -391,6 +415,14 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     if (a.includes('venta') && a.includes('eliminada')) {
       return mov.cambios;
     }
+      if (a.includes('eliminar')) {
+        const { nombre, tipoProducto } = parseDetalleMovimiento(mov);
+        if (nombre) {
+          const tipo = tipoProducto ? (tipoProducto.includes('Peso') || tipoProducto.includes('kg') ? '(kg)' : '(unidad)') : '';
+          return `Producto eliminado: ${nombre} ${tipo}`;
+        }
+        return 'Producto eliminado';
+      }
     if (a.includes('reestock')) {
       const { nombre, cantidadAgregada, stockPrevio, stock } = parseDetalleMovimiento(mov);
       if (nombre && cantidadAgregada && stockPrevio && stock) {
@@ -781,7 +813,11 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
                   NombreProducto: detalle.nombre,
                   CodigoDeBarras: detalle.codigo,
                   Precio: detalle.precio ? detalle.precio.replace(/\$/g, '').trim() : '',
-                  TipoProducto: detalle.tipoProducto,
+                    TipoProducto: detalle.tipoProducto || (detalle.cambios?.find(c => c.campo.toLowerCase().includes('tipo'))?.nuevo) || (
+                      // Fallback: buscar "Por Peso" o "Por Unidad" en el string completo
+                       movimientoDetalle.cambios.includes('Por Peso') ? 'Por Peso (kg)' :
+                       movimientoDetalle.cambios.includes('Unidad') ? 'Unidad' : ''
+                    ),
                   Stock: detalle.stock,
                 };
 
@@ -790,8 +826,23 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
                   { label: 'Nombre del Producto', valor: datosProducto.NombreProducto, key: 'nombre' },
                   { label: 'Código de Barras', valor: datosProducto.CodigoDeBarras, key: 'código de barras' },
                   { label: 'Stock', valor: datosProducto.Stock ? `${datosProducto.Stock}` : '', key: 'stock' },
-                  { label: 'Precio', valor: datosProducto.Precio ? (String(datosProducto.Precio).startsWith('$') ? String(datosProducto.Precio) : `$${datosProducto.Precio}`) : '', key: 'precio' },
-                  { label: 'Tipo (Unidad o Kg)', valor: datosProducto.TipoProducto, key: 'tipo de producto' },
+                  { 
+                    label: 'Precio', 
+                    valor: datosProducto.Precio 
+                      ? `$${String(datosProducto.Precio).replace(/^\$/, '')} por ${datosProducto.TipoProducto === 'peso' ? 'KG' : 'unidad'}` 
+                      : '', 
+                    key: 'precio' 
+                  },
+                  { 
+                    label: 'Tipo (Unidad o Kg)', 
+                    valor: (() => {
+                      const tipo = String(datosProducto.TipoProducto || '').toLowerCase().trim();
+                      if (tipo.includes('peso') || tipo.includes('kg')) return 'Por KG';
+                      if (tipo.includes('unidad')) return 'Por Unidad';
+                      return datosProducto.TipoProducto || '-';
+                    })(),
+                    key: 'tipo de producto' 
+                  },
                 ];
 
                 // Mostrar siempre todos los campos para mantener consistencia con Reestock
@@ -810,7 +861,50 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
                       {camposConValor.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           {camposConValor.map((campo) => {
-                            const fueModificado = detalle.camposModificados && detalle.camposModificados.has(campo.key.toLowerCase());
+                            // Verificar si el campo fue modificado (ser más flexible con la comparación)
+                            let fueModificado = false;
+                            if (detalle.camposModificados && detalle.camposModificados.size > 0) {
+                              // Buscar coincidencia directa o parcial
+                              const keyNormalizado = campo.key.toLowerCase().replace(/\s+/g, '');
+                              
+                              // Verificar cada campo modificado
+                              fueModificado = Array.from(detalle.camposModificados).some(campoMod => {
+                                const campoModStr = String(campoMod).toLowerCase().replace(/\s+/g, '');
+                                
+                                // Buscar coincidencias variadas
+                                return (
+                                  campoModStr === keyNormalizado ||  // Coincidencia exacta
+                                  campoModStr.includes(keyNormalizado) ||  // El modificado incluye la clave
+                                  keyNormalizado.includes(campoModStr) ||  // La clave incluye el modificado
+                                  (keyNormalizado.includes('precio') && campoModStr.includes('precio')) ||
+                                  (keyNormalizado.includes('stock') && campoModStr.includes('stock')) ||
+                                  (keyNormalizado.includes('tipo') && campoModStr.includes('tipo')) ||
+                                  (keyNormalizado.includes('nombre') && campoModStr.includes('nombre')) ||
+                                  (keyNormalizado.includes('codigo') && (campoModStr.includes('codigo') || campoModStr.includes('código')))
+                                );
+                              });
+                            }
+                            
+                            // También verificar si hay cambios detallados para este campo
+                            if (!fueModificado && detalle.cambios && detalle.cambios.length > 0) {
+                              const tieneChangeDetallado = detalle.cambios.some(c => {
+                                const nombreCampoNormalizado = c.campo.toLowerCase().replace(/\s+/g, '');
+                                const keyNormalizado = campo.key.toLowerCase().replace(/\s+/g, '');
+                                
+                                return (
+                                  nombreCampoNormalizado === keyNormalizado ||
+                                  nombreCampoNormalizado.includes(keyNormalizado) ||
+                                  keyNormalizado.includes(nombreCampoNormalizado) ||
+                                  (keyNormalizado.includes('precio') && nombreCampoNormalizado.includes('precio')) ||
+                                  (keyNormalizado.includes('stock') && nombreCampoNormalizado.includes('stock')) ||
+                                  (keyNormalizado.includes('tipo') && nombreCampoNormalizado.includes('tipo')) ||
+                                  (keyNormalizado.includes('nombre') && nombreCampoNormalizado.includes('nombre')) ||
+                                  (keyNormalizado.includes('codigo') && (nombreCampoNormalizado.includes('codigo') || nombreCampoNormalizado.includes('código')))
+                                );
+                              });
+                              fueModificado = tieneChangeDetallado;
+                            }
+                            
                             return (
                               <div
                                 key={campo.key}

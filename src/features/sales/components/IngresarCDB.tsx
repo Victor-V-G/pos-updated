@@ -1,15 +1,17 @@
 import { useEffect, useState } from "react";
 import { obtenerProductosPromise } from "@/core/infrastructure/firebase";
+import { useOfflineSync } from "@/core/infrastructure/offline";
 import { ProductoInterface } from "@/core/domain/entities";
 
 export const IngresarCDB = ({ setProductoFindSetter }: any) => {
   const [CodigoDeBarras, setCodigoDeBarras] = useState("");
+  const { getProducts } = useOfflineSync();
 
   useEffect(() => {
     if (CodigoDeBarras.trim() === "") return;
 
     const buscar = async () => {
-      const productos = await obtenerProductosPromise();
+      const productos = await getProducts(obtenerProductosPromise);
 
       const encontrado = productos.filter(
         (p: ProductoInterface) => p.CodigoDeBarras === CodigoDeBarras
@@ -22,7 +24,7 @@ export const IngresarCDB = ({ setProductoFindSetter }: any) => {
     };
 
     buscar();
-  }, [CodigoDeBarras]);
+  }, [CodigoDeBarras, getProducts]);
 
   return (
     <div className="container mt-3">

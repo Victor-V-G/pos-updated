@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, XCircle, ChevronDown, ArrowLeft, HelpCircle, AlertTriangle } from 'lucide-react';
-import { obtenerProductosPromiseUpdate, guardarReporteDesfasePromise } from '@/core/infrastructure/firebase';
+import { Search, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, XCircle, ChevronDown, ArrowLeft, HelpCircle, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { obtenerProductosPromiseUpdate, guardarReporteDesfasePromise, crearAlertaPromise } from '@/core/infrastructure/firebase';
 import { ProductoConIDInterface } from '@/core/domain/entities';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 import '@/assets/styles/gestion-productos-styles/crud-style/crud-style.css';
 
 type EstadoStock = 'sin-stock' | 'critico' | 'bajo' | 'en-stock';
@@ -35,16 +36,25 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
   const [anotacionDesfase, setAnotacionDesfase] = useState('');
   const [enviandoDesfase, setEnviandoDesfase] = useState(false);
 
+  // Hooks offline
+  const { getProducts, isOnline } = useOfflineSync();
+  const onlineStatus = useOnlineStatus();
+
   useEffect(() => {
-    obtenerProductosPromiseUpdate().then(setProductos);
+    getProducts(obtenerProductosPromiseUpdate).then(setProductos);
     setRefreshProductos(false);
   }, [refreshProductos]);
 
   // Filtrar y ordenar productos
   let productosFiltrados = productos.filter(producto => {
+    // Validar que existan las propiedades necesarias
+    if (!producto || !producto.NombreProducto || !producto.CodigoDeBarras) {
+      return false;
+    }
+    
     const coincideBusqueda = 
-      producto.NombreProducto.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.CodigoDeBarras.toLowerCase().includes(busqueda);
+      String(producto.NombreProducto).toLowerCase().includes(busqueda.toLowerCase()) ||
+      String(producto.CodigoDeBarras).toLowerCase().includes(busqueda);
     
     const estadoStock = obtenerEstadoStock(Number(producto.Stock));
     const coincideEstado = filtroEstado === 'todos' || estadoStock === filtroEstado;
@@ -142,7 +152,7 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
 
     setEnviandoDesfase(true);
     try {
-      await guardarReporteDesfasePromise({
+      const reporteId = await guardarReporteDesfasePromise({
         idProducto: productoDesfase.id,
         nombreProducto: productoDesfase.NombreProducto,
         codigoBarras: productoDesfase.CodigoDeBarras,
@@ -152,6 +162,19 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
         anotacion: anotacionDesfase,
         fecha: new Date().toISOString(),
         estado: 'pendiente'
+      });
+      
+      // Crear alerta para el nuevo reporte de desfase
+      const diferencia = Number(stockReal) - Number(productoDesfase.Stock);
+      await crearAlertaPromise({
+        idAlerta: `${productoDesfase.id}_desfase`,
+        tipo: "desfase",
+        producto: productoDesfase.NombreProducto,
+        idProducto: productoDesfase.id,
+        mensaje: `Desfase reportado: ${diferencia > 0 ? '+' : ''}${diferencia} unidades. Sistema: ${productoDesfase.Stock}, Real: ${stockReal}`,
+        valorDesfase: diferencia,
+        stockRestante: Number(stockReal),
+        leida: false,
       });
       
       console.log('Reporte de desfase guardado:', {
@@ -688,7 +711,7 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
             </div>
 
             {/* Content */}
-            <div className="px-6 py-4 space-y-4">
+            <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
               {/* Información del Producto */}
               <div className="bg-gray-50 rounded-lg p-4 space-y-2">
                 <div>
@@ -710,7 +733,7 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
               {/* Stock Real */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Stock Real (físico) *
+                  Stock Real (cantidad total que hay físicamente) *
                 </label>
                 <input
                   type="number"
@@ -719,10 +742,45 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
                   disabled={enviandoDesfase}
                   min="0"
                   step={productoDesfase.TipoProducto === 'peso' ? '0.1' : '1'}
-                  placeholder={`Cantidad real en ${productoDesfase.TipoProducto === 'peso' ? 'kg' : 'unidades'}`}
+                  placeholder={`Ingresa la cantidad total en ${productoDesfase.TipoProducto === 'peso' ? 'kg' : 'unidades'}`}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-gray-100"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Ejemplo: Si el sistema dice 100 kg pero tienes 102 kg en realidad, ingresa 102
+                </p>
               </div>
+
+              {/* Cálculo en Tiempo Real */}
+              {stockReal && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                  <p className="text-sm font-semibold text-blue-900">Cálculo de desfase:</p>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                      <p className="text-xs text-blue-700">Stock Sistema</p>
+                      <p className="text-lg font-bold text-blue-900">{productoDesfase.Stock}</p>
+                    </div>
+                    <div className="flex items-center justify-center">
+                      <span className="text-lg font-bold text-blue-900">→</span>
+                    </div>
+                    <div>
+                      <p className="text-xs text-blue-700">Stock Real</p>
+                      <p className="text-lg font-bold text-blue-900">{stockReal}</p>
+                    </div>
+                  </div>
+                  <div className="border-t border-blue-200 pt-2">
+                    <p className="text-sm text-blue-900">
+                      <strong>Diferencia:</strong> {Number(stockReal) - Number(productoDesfase.Stock) > 0 ? '+' : ''}{Number(stockReal) - Number(productoDesfase.Stock)} {productoDesfase.TipoProducto === 'peso' ? 'kg' : 'unidades'}
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      {Number(stockReal) > Number(productoDesfase.Stock) 
+                        ? '✓ Tienes MÁS stock del que el sistema registra' 
+                        : Number(stockReal) < Number(productoDesfase.Stock)
+                        ? '⚠️ Tienes MENOS stock del que el sistema registra'
+                        : '✓ El stock coincide'}
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Anotación */}
               <div>

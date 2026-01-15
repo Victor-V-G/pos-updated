@@ -1,6 +1,7 @@
 import { ProductoInterface } from '@/core/domain/entities';
 import { useState } from 'react';
 import { registrarMovimientosPromise, registrarProductoPromise } from '@/core/infrastructure/firebase';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 import { ArrowLeft, Package, X } from 'lucide-react';
 
 const InitialStateProducto: ProductoInterface = {
@@ -17,6 +18,10 @@ interface ProductFormProps {
 
 export function ProductForm({ onClose }: ProductFormProps) {
   const [Producto, setProducto] = useState<ProductoInterface>(InitialStateProducto);
+  
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
 
   const handleInputProducto = (name: string, value: string) => {
     setProducto({ ...Producto, [name]: value });

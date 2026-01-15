@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { ArrowLeft, TrendingUp, DollarSign, ShoppingCart, Clock, Package, Calendar } from 'lucide-react';
+import { ArrowLeft, TrendingUp, DollarSign, ShoppingCart, Clock, Package, Calendar, Wifi, WifiOff } from 'lucide-react';
 import { obtenerVentasPromise, obtenerReportesSemanalesPromise, obtenerReportesMensualesPromise, guardarReporteSemanalPromise, guardarReporteMessualPromise, eliminarReporteSemanalPromise, obtenerTransaccionesCajaPromise } from '@/core/infrastructure/firebase/Promesas';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 
 interface ReportesProps {
   onClose: () => void;
@@ -57,12 +58,16 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
   const [semanaFiltrada, setSemanaFiltrada] = useState<string>('');
   const [mesFiltrado, setMesFiltrado] = useState<string>('');
   const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
 
   // Función reutilizable para cargar datos
   const cargarDatos = useCallback(async () => {
     try {
       const [respuestaVentas, respuestaSemanales, respuestaMensuales, respuestaTransacciones] = await Promise.all([
-        obtenerVentasPromise(),
+        getSales(obtenerVentasPromise),
         obtenerReportesSemanalesPromise(),
         obtenerReportesMensualesPromise(),
         obtenerTransaccionesCajaPromise(),
@@ -72,9 +77,17 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
       
       if (respuestaVentas && Array.isArray(respuestaVentas)) {
         console.log('✅ Ventas cargadas:', respuestaVentas.length, respuestaVentas);
-        setVentasFirebase(respuestaVentas as unknown as Venta[]);
+        // Normalizar ventas: TotalGeneral -> total
+        const ventasNormalizadas = respuestaVentas.map((v: any) => ({
+          ...v,
+          total: Number(v.total || v.TotalGeneral || 0),
+          metodo: v.metodo || v.metodoPago || '',
+          productos: v.productos || v.ProductosVenta || []
+        }));
+        setVentasFirebase(ventasNormalizadas as unknown as Venta[]);
       } else {
         console.log('⚠️ No hay ventas o formato incorrecto:', respuestaVentas);
+        setVentasFirebase([]);
       }
 
       if (respuestaTransacciones && Array.isArray(respuestaTransacciones)) {
@@ -763,7 +776,7 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
         </div>
 
         {/* Contenido scrolleable */}
-        <div className="flex-1 overflow-y-auto space-y-6 pb-8">
+        <div className="flex-1 space-y-6 pb-8">
           {vistaActiva === 'actual' ? (
             <>
               {/* Vista Actual - Resumen del Día/Semana/Mes */}
@@ -896,14 +909,14 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
           </div>
 
           {/* Venta Más Grande del Día + Total en Caja */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch -mt-1">
+            <div className="h-full">
               <h2 className="text-xl text-gray-900 mb-3 flex items-center gap-2">
                 <ShoppingCart className="w-5 h-5 text-blue-600" />
                 Venta Destacada del Día
               </h2>
               {ventaMasGrande ? (
-                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-300 rounded-lg p-4 shadow-md">
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-300 rounded-lg p-3 shadow-md h-full">
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <p className="text-sm text-gray-600 mb-1 font-medium">Venta de Mayor Valor del Día</p>
@@ -926,18 +939,18 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-300 rounded-lg p-4 shadow-md min-h-[180px] flex items-center justify-center">
+                <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-300 rounded-lg p-3 shadow-md min-h-[160px] h-full flex items-center justify-center">
                   <p className="text-center text-gray-500 text-base">No hay ventas registradas hoy</p>
                 </div>
               )}
             </div>
 
-            <div>
+            <div className="h-full">
               <h2 className="text-xl text-gray-900 mb-3 flex items-center gap-2">
                 <DollarSign className="w-5 h-5 text-emerald-600" />
                 Total figura en caja hoy
               </h2>
-              <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 border-2 border-emerald-300 rounded-lg p-4 shadow-md min-h-[180px] flex flex-col justify-center">
+              <div className="bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 border-2 border-emerald-300 rounded-lg p-3 shadow-md min-h-[160px] h-full flex flex-col justify-center">
                 <p className="text-sm text-emerald-700 font-medium mb-1">Ventas en efectivo + depósitos</p>
                 <p className="text-3xl text-emerald-900 font-bold">
                   ${totalCajaHoy.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}

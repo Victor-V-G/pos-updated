@@ -1,4 +1,5 @@
 import { modificarProductoPromise, obtenerIDProductoSearchModificarPromise, registrarMovimientosPromise, searchObtenerProductoPorIdPromise } from "@/core/infrastructure/firebase"
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline"
 import { IDDocumentosInterface } from "@/shared/types"
 import { ProductoInterface } from "@/core/domain/entities"
 import { useEffect, useState } from "react"
@@ -23,6 +24,9 @@ export const SearchModificarProductoManagerForm = ({ObtenerCodigoDeBarras, setRe
     const [IDRecuperado, setIDRecuperado] = useState<IDDocumentosInterface[]>([])
     /*----------------------------------------------------------------------------------------*/
 
+    // Offline functionality
+    const { getSales } = useOfflineSync();
+    const isOnline = useOnlineStatus();
 
     /*------------------------SE VALIDA QUE SE OBTUVO EL PRODUCTO-----------------------------*/
     const [SeObtuvo, setSeObtuvo] = useState(false)

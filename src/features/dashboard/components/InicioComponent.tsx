@@ -1,7 +1,8 @@
-import { ShoppingCart, Package, History, LayoutGrid } from 'lucide-react';
+import { ShoppingCart, Package, History, LayoutGrid, Wifi, WifiOff } from 'lucide-react';
 import { SidebarInterfaceProps } from "@/shared/types";
 import { useEffect, useState } from 'react';
 import { obtenerVentasPromise, obtenerProductosPromise } from '@/core/infrastructure/firebase';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 
 export const InicioComponent = ({
   setOpenManagerInicio,
@@ -12,6 +13,10 @@ export const InicioComponent = ({
 }: SidebarInterfaceProps) => {
   const [ventasHoy, setVentasHoy] = useState(0);
   const [totalProductos, setTotalProductos] = useState(0);
+  
+  // Hooks offline
+  const { getSales, getProducts, isOnline } = useOfflineSync();
+  const onlineStatus = useOnlineStatus();
   
   const currentDate = new Date().toLocaleDateString('es-ES', {
     weekday: 'long',
@@ -29,8 +34,8 @@ export const InicioComponent = ({
     // Obtener ventas de hoy
     const cargarEstadisticas = async () => {
       try {
-        // Obtener ventas
-        const ventas = await obtenerVentasPromise();
+        // Obtener ventas con offline support
+        const ventas = await getSales(obtenerVentasPromise);
         
         // Fecha actual en formato dd-mm-yyyy
         const hoy = new Date();
@@ -58,8 +63,8 @@ export const InicioComponent = ({
         
         setVentasHoy(ventasDelDia.length);
         
-        // Obtener productos
-        const productos = await obtenerProductosPromise();
+        // Obtener productos con offline support
+        const productos = await getProducts(obtenerProductosPromise);
         const productosConStock = productos.filter((prod: any) => (prod.Stock || 0) >= 1).length;
         setTotalProductos(productosConStock);
       } catch (error) {

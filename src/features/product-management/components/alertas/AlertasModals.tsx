@@ -6,9 +6,12 @@ import {
   Clock,
   XCircle,
   CircleAlert,
-  Filter
+  Filter,
+  Wifi,
+  WifiOff
 } from 'lucide-react';
 import { obtenerAlertasPromise, generarAlertasDesdeReportesPromise } from '@/core/infrastructure/firebase';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 
 // Exportamos la interfaz desde Promesas
 interface AlertaInterface {
@@ -34,14 +37,17 @@ export function Alertas({ onClose }: AlertasProps) {
   const [alertas, setAlertas] = useState<AlertaInterface[]>([]);
   const [cargando, setCargando] = useState(true);
   const alertasPorPagina = 4;
+  
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
 
-  // Cargar alertas de Firebase
+  // Cargar alertas de Firebase (solo una vez, sin generar automáticamente)
   useEffect(() => {
     const cargarAlertas = async () => {
       try {
-          // Primero generar alertas de desfases pendientes
-          await generarAlertasDesdeReportesPromise();
-        
+        // NO generar alertas automáticamente - solo cargar las existentes
+        // Las alertas de desfase se crean cuando se reporta un nuevo desfase
         const alertasFirebase = await obtenerAlertasPromise();
         setAlertas(alertasFirebase);
       } catch (error) {
@@ -53,7 +59,7 @@ export function Alertas({ onClose }: AlertasProps) {
     };
 
     cargarAlertas();
-  }, []);
+  }, []); // Array vacío para que solo se ejecute una vez al montar
 
   // Filtrar alertas
   let alertasFiltradas = alertas.filter(alerta => {

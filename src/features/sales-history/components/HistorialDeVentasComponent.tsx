@@ -8,12 +8,15 @@ import {
   CreditCard,
   Banknote,
   HelpCircle,
-  X
+  X,
+  Wifi,
+  WifiOff
 } from "lucide-react";
 import {
   obtenerVentasPromise,
   obtenerTransaccionesCajaPromise,
 } from "@/core/infrastructure/firebase";
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline";
 import "@/assets/styles/historial-de-venta-style.css";
 
 interface FirebaseProductoVenta {
@@ -155,6 +158,10 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
   const [showAyuda, setShowAyuda] = useState(false);
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  // Offline functionality
+  const { getSales } = useOfflineSync();
+  const isOnline = useOnlineStatus();
 
   const fechaActual = useMemo(() => formatearFechaHoy(), []);
 
@@ -163,7 +170,7 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
       try {
         setLoading(true);
         const [ventasResponse, transaccionesResponse] = await Promise.all([
-          obtenerVentasPromise(),
+          getSales(obtenerVentasPromise),
           obtenerTransaccionesCajaPromise(),
         ]);
 
@@ -192,7 +199,7 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
     };
 
     cargarVentas();
-  }, []);
+  }, [getSales]);
 
   const ventasNormalizadas = useMemo<VentaNormalizada[]>(() => {
     return (ventasFirebase || []).map((venta, idx) => {
@@ -321,7 +328,7 @@ export function HistorialVentas({ onClose, setOpenManager, SetOpenManagerGestion
           try {
             setLoading(true);
             const [ventasResponse, transaccionesResponse] = await Promise.all([
-              obtenerVentasPromise(),
+              getSales(obtenerVentasPromise),
               obtenerTransaccionesCajaPromise(),
             ]);
 

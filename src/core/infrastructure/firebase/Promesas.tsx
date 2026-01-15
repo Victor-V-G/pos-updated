@@ -24,6 +24,7 @@ import {
 import { IDDocumentosInterface } from "@/shared/types";
 import { RegistrosYMovimientosInterface } from "@/shared/types";
 import { ProductoVenta } from "@/shared/types";
+import { saveReportDesfaseOffline, getReportesDesfaseOffline } from '@/core/infrastructure/offline/offlineSync';
 
 /*----------------------------------PRODUCTOS--------------------------------------*/
 
@@ -592,46 +593,69 @@ export const guardarReporteDesfasePromise = async (reporteDesfase: {
   fecha: string;
   estado: 'pendiente' | 'revisado' | 'resuelto';
 }) => {
+  const isOnline = navigator.onLine;
+  
   try {
-    const docRef = await addDoc(collection(db, "ReportesDesfase"), {
-      idProducto: reporteDesfase.idProducto,
-      nombreProducto: reporteDesfase.nombreProducto,
-      codigoBarras: reporteDesfase.codigoBarras,
-      stockSistema: reporteDesfase.stockSistema,
-      stockReal: reporteDesfase.stockReal,
-      diferencia: reporteDesfase.diferencia,
-      anotacion: reporteDesfase.anotacion,
-      fecha: reporteDesfase.fecha,
-      estado: reporteDesfase.estado,
-      fechaCreacion: serverTimestamp(),
-    });
-    console.log("REPORTE DESFASE GUARDADO ID:", docRef.id);
-    return docRef.id;
+    if (isOnline) {
+      // Intentar guardar en Firebase
+      const docRef = await addDoc(collection(db, "ReportesDesfase"), {
+        idProducto: reporteDesfase.idProducto,
+        nombreProducto: reporteDesfase.nombreProducto,
+        codigoBarras: reporteDesfase.codigoBarras,
+        stockSistema: reporteDesfase.stockSistema,
+        stockReal: reporteDesfase.stockReal,
+        diferencia: reporteDesfase.diferencia,
+        anotacion: reporteDesfase.anotacion,
+        fecha: reporteDesfase.fecha,
+        estado: reporteDesfase.estado,
+        fechaCreacion: serverTimestamp(),
+      });
+      console.log("✅ REPORTE DESFASE GUARDADO EN FIREBASE ID:", docRef.id);
+      return docRef.id;
+    } else {
+      // Sin conexión, guardar localmente
+      const reporteId = `offline_desfase_${Date.now()}_${Math.random()}`;
+      await saveReportDesfaseOffline({ ...reporteDesfase, id: reporteId }, false);
+      console.log("📱 REPORTE DESFASE GUARDADO LOCALMENTE ID:", reporteId);
+      return reporteId;
+    }
   } catch (error) {
-    console.error("Error al guardar reporte de desfase:", error);
-    throw error;
+    console.warn("⚠️ Error al guardar en Firebase, guardando localmente:", error);
+    // Si Firebase falla, guardar localmente como fallback
+    const reporteId = `offline_desfase_${Date.now()}_${Math.random()}`;
+    await saveReportDesfaseOffline({ ...reporteDesfase, id: reporteId }, false);
+    return reporteId;
   }
 };
 
 export const obtenerReportesDesfasePromise = async (): Promise<any[]> => {
+  const isOnline = navigator.onLine;
+  
   try {
-    const q = query(
-      collection(db, "ReportesDesfase"),
-      orderBy("fechaCreacion", "desc")
-    );
-    const querySnapshot = await getDocs(q);
-    
-    return querySnapshot.docs.map((docSnap) => {
-      const data = docSnap.data();
-      return {
-        id: docSnap.id,
-        ...data,
-        fechaCreacion: data.fechaCreacion?.toDate?.() || new Date(),
-      };
-    });
+    if (isOnline) {
+      // Obtener de Firebase
+      const q = query(
+        collection(db, "ReportesDesfase"),
+        orderBy("fechaCreacion", "desc")
+      );
+      const querySnapshot = await getDocs(q);
+      const firebaseReportes = querySnapshot.docs.map((docSnap) => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          fechaCreacion: data.fechaCreacion?.toDate?.() || new Date(),
+        };
+      });
+      return firebaseReportes;
+    } else {
+      // Obtener localmente
+      return await getReportesDesfaseOffline();
+    }
   } catch (error) {
     console.error("Error al obtener reportes de desfase:", error);
-    return [];
+    // Fallback a offline
+    return await getReportesDesfaseOffline();
   }
 };
 
@@ -649,15 +673,19 @@ interface AlertaInterface {
   leida: boolean;
 }
 
-export const crearAlertaPromise = async (alerta: Omit<AlertaInterface, 'id' | 'fecha'>): Promise<string | null> => {
+export const crearAlertaPromise = async (alerta: Omit<AlertaInterface, 'id' | 'fecha'> & { idAlerta?: string }): Promise<string | null> => {
   try {
-    const docRef = await addDoc(collection(db, "Alertas"), {
+    // Generar ID consistente basado en tipo e idProducto para evitar duplicados
+    const alertaId = alerta.idAlerta || `${alerta.idProducto}_${alerta.tipo}`;
+    
+    await setDoc(doc(db, "Alertas", alertaId), {
       ...alerta,
       fecha: serverTimestamp(),
       leida: false,
-    });
-    console.log("ALERTA CREADA ID:", docRef.id);
-    return docRef.id;
+    }, { merge: true });
+    
+    console.log("✅ ALERTA CREADA/ACTUALIZADA ID:", alertaId);
+    return alertaId;
   } catch (error) {
     console.error("Error al crear alerta:", error);
     return null;
@@ -744,28 +772,21 @@ export const verificarYGenerarAlertasPromise = async (
       const reportes = await obtenerReportesDesfasePromise();
       const reportesPendientes = reportes.filter((r: any) => r.estado === 'pendiente');
 
-      // Por cada reporte pendiente, crear una alerta de desfase si no existe
+      // Por cada reporte pendiente, crear una alerta de desfase con ID consistente
       for (const reporte of reportesPendientes) {
-        // Verificar si ya existe una alerta de desfase para este reporte
-        const q = query(
-          collection(db, "Alertas"),
-          where("idProducto", "==", reporte.idProducto),
-          where("tipo", "==", "desfase")
-        );
-        const querySnapshot = await getDocs(q);
-
-        // Solo crear alerta si no existe una de desfase para este producto
-        if (querySnapshot.empty) {
-          await crearAlertaPromise({
-            tipo: "desfase",
-            producto: reporte.nombreProducto,
-            idProducto: reporte.idProducto,
-            mensaje: `Desfase reportado: ${reporte.diferencia > 0 ? '+' : ''}${reporte.diferencia} unidades. Sistema: ${reporte.stockSistema}, Real: ${reporte.stockReal}`,
-            valorDesfase: reporte.diferencia,
-            stockRestante: reporte.stockReal,
-            leida: false,
-          });
-        }
+        // Usar ID consistente para evitar duplicados
+        const alertaId = `${reporte.idProducto}_desfase`;
+        
+        await crearAlertaPromise({
+          idAlerta: alertaId,
+          tipo: "desfase",
+          producto: reporte.nombreProducto,
+          idProducto: reporte.idProducto,
+          mensaje: `Desfase reportado: ${reporte.diferencia > 0 ? '+' : ''}${reporte.diferencia} unidades. Sistema: ${reporte.stockSistema}, Real: ${reporte.stockReal}`,
+          valorDesfase: reporte.diferencia,
+          stockRestante: reporte.stockReal,
+          leida: false,
+        });
       }
     } catch (error) {
       console.error("Error al generar alertas desde reportes:", error);

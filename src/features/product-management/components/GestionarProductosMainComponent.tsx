@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, XCircle, ChevronDown, ArrowLeft, HelpCircle } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, XCircle, ChevronDown, ArrowLeft, HelpCircle, Wifi, WifiOff } from 'lucide-react';
 import { obtenerProductosPromiseUpdate, reponerStockPromise } from '@/core/infrastructure/firebase';
 import { ProductoConIDInterface } from '@/core/domain/entities';
+import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 import '@/assets/styles/gestion-productos-styles/crud-style/crud-style.css';
 import ModificarProductoComponent from './modificar-productos-component/ModificarProductoMainComponent';
 import EliminarProductoComponent from './eliminar-productos-component/EliminarProductoComponent';
@@ -34,16 +35,25 @@ export function GestionarProductos({ onVolver }: { onVolver?: () => void }) {
   const [reponiendo, setReponiendo] = useState(false);
   const [mostrarAyuda, setMostrarAyuda] = useState(false);
 
+  // Hooks offline
+  const { getProducts, isOnline } = useOfflineSync();
+  const onlineStatus = useOnlineStatus();
+
   useEffect(() => {
-    obtenerProductosPromiseUpdate().then(setProductos);
+    getProducts(obtenerProductosPromiseUpdate).then(setProductos);
     setRefreshProductos(false);
   }, [refreshProductos]);
 
   // Filtrar y ordenar productos
   let productosFiltrados = productos.filter(producto => {
+    // Validar que existan las propiedades necesarias
+    if (!producto || !producto.NombreProducto || !producto.CodigoDeBarras) {
+      return false;
+    }
+    
     const coincideBusqueda = 
-      producto.NombreProducto.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.CodigoDeBarras.toLowerCase().includes(busqueda);
+      String(producto.NombreProducto).toLowerCase().includes(busqueda.toLowerCase()) ||
+      String(producto.CodigoDeBarras).toLowerCase().includes(busqueda);
     
     const estadoStock = obtenerEstadoStock(Number(producto.Stock));
     const coincideEstado = filtroEstado === 'todos' || estadoStock === filtroEstado;

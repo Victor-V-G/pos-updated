@@ -1,4 +1,5 @@
-import { eliminarProductoPromise } from "@/core/infrastructure/firebase";
+import { eliminarProductoPromise, registrarMovimientosPromise } from "@/core/infrastructure/firebase";
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline";
 import { EliminarProductoInterface } from "@/shared/types";
 import { Trash2, AlertTriangle, X } from "lucide-react";
 import { useState } from "react";
@@ -6,11 +7,24 @@ import { useState } from "react";
 export const EliminarProductoComponent = ({ producto, setRefrescarProductos }: EliminarProductoInterface) => {
     const [showConfirmDelete, setShowConfirmDelete] = useState(false);
     const [loading, setLoading] = useState(false);
+    
+    // Offline functionality
+    const { getSales } = useOfflineSync();
+    const isOnline = useOnlineStatus();
 
     const handleDeleteConfirm = async () => {
         try {
             setLoading(true);
+            
+            // Eliminar el producto
             await eliminarProductoPromise(producto.id);
+            
+            // Registrar el movimiento de eliminación
+            await registrarMovimientosPromise(
+                "Eliminación",
+                `Producto eliminado: nombre: ${producto.NombreProducto}, código de barras: ${producto.CodigoDeBarras}, tipo: ${producto.TipoProducto === "peso" ? "Por Peso (kg)" : "Unidad"}, precio: $${Number(producto.Precio).toLocaleString("es-CL")}, stock que tenía: ${producto.Stock} ${producto.TipoProducto === "peso" ? "kg" : "unid."}`
+            );
+            
             setShowConfirmDelete(false);
             setRefrescarProductos(true);
         } catch (error) {

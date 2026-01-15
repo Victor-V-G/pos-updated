@@ -1,4 +1,5 @@
 import { obtenerProductosPromise } from "@/core/infrastructure/firebase";
+import { useOfflineSync } from "@/core/infrastructure/offline";
 import { ProductoInterface } from "@/core/domain/entities";
 import { CodigoDeBarrasInputInterface } from "@/shared/types";
 import { useEffect, useState } from "react";
@@ -19,17 +20,20 @@ export const SearchMainComponent = ({RefrescarProductos, setRefrescarProductos} 
     const [ProductosRecuperados, setProductosRecuperados] = useState<ProductoInterface[]>([])
 
     const [CodigoDeBarrasInput, setCodigoDeBarrasInput] = useState(InitialStateCodigoDeBarrasInput)
+    
+    // Offline functionality
+    const { getProducts } = useOfflineSync();
 
 
     useEffect(() => {
-        obtenerProductosPromise().then((productoGet) => {
+        getProducts(obtenerProductosPromise).then((productoGet) => {
             setProductosRecuperados(productoGet)
             console.log("PRODUCTO RECUPERADO CORRECTAMENTE")
         }).catch((error) => {
             alert("OCURRIO UN ERROR AL RECUPERAR LOS PRODUCTOS")
             console.log(error)
         })
-    }, [])
+    }, [getProducts])
 
     
     const handleCodigoDeBarrasInput = (name : string , value : string) => {
@@ -40,14 +44,14 @@ export const SearchMainComponent = ({RefrescarProductos, setRefrescarProductos} 
 
 
     useEffect(() => {
-        obtenerProductosPromise().then((productoGet) => {
+        getProducts(obtenerProductosPromise).then((productoGet) => {
             setProductosRecuperados(productoGet)
             console.log("PRODUCTO RECUPERADO CORRECTAMENTE")
         }).catch((error) => {
             alert("OCURRIO UN ERROR AL RECUPERAR LOS PRODUCTOS")
             console.log(error)
         })
-    }, [RefrescarProductos == true])
+    }, [RefrescarProductos == true, getProducts])
 
 
     const ProductoFiltrado = ProductosRecuperados.filter(ElementoProductoFiltrado => ElementoProductoFiltrado.CodigoDeBarras == CodigoDeBarrasInput.CodigoDeBarrasInput)

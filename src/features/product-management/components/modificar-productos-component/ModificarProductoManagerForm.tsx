@@ -1,4 +1,5 @@
 import { modificarProductoPromise, registrarMovimientosPromise } from "@/core/infrastructure/firebase";
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline";
 import { ModificarProductoInterface } from "@/shared/types";
 import { useState } from "react";
 import { CheckCircle, AlertCircle } from "lucide-react";
@@ -11,6 +12,10 @@ export const ModificarProductoManagerFrom = ({ producto, setRefrescarProductos, 
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    
+    // Offline functionality
+    const { getSales } = useOfflineSync();
+    const isOnline = useOnlineStatus();
 
     const handleChange = (name: string, value: string) => {
         setForm(prev => ({ ...prev, [name]: value }));

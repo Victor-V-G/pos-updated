@@ -1,4 +1,5 @@
 import { eliminarProductoPromise, ObtenerIDProductoSearchEliminarPromise, registrarMovimientosPromise, searchObtenerProductoPorIdPromise } from "@/core/infrastructure/firebase";
+import { useOfflineSync, useOnlineStatus } from "@/core/infrastructure/offline";
 import { IDDocumentosInterface } from "@/shared/types";
 import { SearchEliminarInterface } from "@/shared/types";
 import { useEffect, useState } from "react";
@@ -7,6 +8,10 @@ import '@/assets/styles/gestion-productos-styles/search-productos-style/search-b
 export const SearchEliminarProductoComponent = ({ ObtenerCodigoDeBarras, setRefrescarProductos }: SearchEliminarInterface) => {
 
     const [IDRecuperado, setIDRecuperado] = useState<IDDocumentosInterface | null>(null);
+    
+    // Offline functionality
+    const { getSales } = useOfflineSync();
+    const isOnline = useOnlineStatus();
 
     useEffect(() => {
         const obtenerID = async () => {
