@@ -1,4 +1,4 @@
-import { obtenerVentasPromise, eliminarVentaPromise } from '@/core/infrastructure/firebase';
+import { obtenerVentasPromise, eliminarVentaPromise, obtenerTransaccionesCajaPromise } from '@/core/infrastructure/firebase';
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
@@ -37,6 +37,15 @@ interface FirebaseVenta {
   ProductosVenta?: FirebaseProductoVenta[];
 }
 
+interface FirebaseTransaccionCaja {
+  id?: string;
+  tipo?: "GIRO" | "DEPOSITO";
+  monto?: number;
+  descripcion?: string;
+  fechaHora?: any;
+  fechaHoraCL?: string;
+}
+
 interface ProductoVenta {
   nombre: string;
   codigoBarras: string;
@@ -51,10 +60,12 @@ interface VentaNormalizada {
   fecha: string;
   hora: string;
   total: number;
-  metodo: "tarjeta" | "efectivo";
+  metodo: "tarjeta" | "efectivo" | "transaccion";
   pago: number;
   vuelto: number;
   productos: ProductoVenta[];
+  transaccionTipo?: "giro" | "deposito";
+  descripcion?: string;
   eliminada?: boolean;
   fechaEliminacionStr?: string;
   originalId?: string;
@@ -64,6 +75,7 @@ interface HistorialVentasProps {
   onClose?: () => void;
   setOpenManager?: () => void;
   SetOpenManagerGestionComponentSetter?: (value: boolean) => void;
+  ventaIdParaSeleccionar?: string | null;
 }
 
 const VENTAS_POR_PAGINA = 4;
@@ -91,6 +103,23 @@ const separarFechaHora = (fechaHora?: string) => {
   };
 };
 
+const normalizarFechaHoraCL = (fechaHora?: any) => {
+  if (!fechaHora) return { fecha: "", hora: "" };
+
+  if (typeof fechaHora === "string") {
+    return separarFechaHora(fechaHora);
+  }
+
+  if (typeof fechaHora === "object" && fechaHora !== null && "toDate" in fechaHora) {
+    const dateStr = (fechaHora as any).toDate().toLocaleString("es-CL", {
+      timeZone: "America/Santiago",
+    });
+    return separarFechaHora(dateStr);
+  }
+
+  return { fecha: "", hora: "" };
+};
+
 const convertirHoraAMinutos = (hora: string): number => {
   // Ej: "11:04:23 a. m." o "2:15:28 p. m."
   const match = hora.match(/(\d{1,2}):(\d{2}):(\d{2})\s+(a|p)\.\s*m\./i);
@@ -116,12 +145,14 @@ const convertirHoraAMinutos = (hora: string): number => {
   return resultado;
 };
 
-export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenManagerGestionComponentSetter }: HistorialVentasProps) {
+export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenManagerGestionComponentSetter, ventaIdParaSeleccionar }: HistorialVentasProps) {
   const [ventasFirebase, setVentasFirebase] = useState<FirebaseVenta[]>([]);
+  const [transaccionesCaja, setTransaccionesCaja] = useState<FirebaseTransaccionCaja[]>([]);
   const [ventaExpandida, setVentaExpandida] = useState<string | null>(null);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<string | null>(null);
+  const [autoSeleccionAplicada, setAutoSeleccionAplicada] = useState<boolean>(false);
   const [paginaActual, setPaginaActual] = useState(1);
-  const [filtroMetodo, setFiltroMetodo] = useState<"todos" | "tarjeta" | "efectivo">("todos");
+  const [filtroMetodo, setFiltroMetodo] = useState<"todos" | "tarjeta" | "efectivo" | "giro" | "deposito">("todos");
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -140,18 +171,30 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
     const cargarVentas = async () => {
       try {
         setLoading(true);
-        const response = await obtenerVentasPromise();
-        console.log("Ventas obtenidas:", response);
-        if (response && Array.isArray(response)) {
-          setVentasFirebase(response as any);
+        const [ventasResponse, transaccionesResponse] = await Promise.all([
+          obtenerVentasPromise(),
+          obtenerTransaccionesCajaPromise(),
+        ]);
+
+        console.log("Ventas obtenidas:", ventasResponse);
+        if (ventasResponse && Array.isArray(ventasResponse)) {
+          setVentasFirebase(ventasResponse as any);
         } else {
-          console.warn("Respuesta inesperada:", response);
+          console.warn("Respuesta inesperada:", ventasResponse);
           setVentasFirebase([]);
+        }
+
+        if (transaccionesResponse && Array.isArray(transaccionesResponse)) {
+          setTransaccionesCaja(transaccionesResponse as any);
+        } else {
+          console.warn("Respuesta inesperada transacciones:", transaccionesResponse);
+          setTransaccionesCaja([]);
         }
       } catch (err) {
         console.error("Error cargando ventas:", err);
         setError("No se pudieron cargar las ventas. Intenta nuevamente.");
         setVentasFirebase([]);
+        setTransaccionesCaja([]);
       } finally {
         setLoading(false);
       }
@@ -162,25 +205,7 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
 
   const ventasNormalizadas = useMemo<VentaNormalizada[]>(() => {
     return (ventasFirebase || []).map((venta, idx) => {
-      // Manejar fechaHora que puede venir como string o timestamp
-      let fecha = "-";
-      let hora = "-";
-      
-      if (venta.fechaHora) {
-        if (typeof venta.fechaHora === "string") {
-          // Ya es string (ej: "4/1/2026, 1:54:36 a.m.")
-          const [fechaCruda = "", horaCruda = ""] = venta.fechaHora.split(",");
-          fecha = fechaCruda.trim().replace(/\//g, "-");
-          hora = horaCruda.trim();
-        } else if (typeof venta.fechaHora === "object" && venta.fechaHora !== null && "toDate" in venta.fechaHora) {
-          // Es un Timestamp de Firebase
-          const date = (venta.fechaHora as any).toDate();
-          const dateStr = date.toLocaleString("es-CL");
-          const [fechaCruda = "", horaCruda = ""] = dateStr.split(",");
-          fecha = fechaCruda.trim().replace(/\//g, "-");
-          hora = horaCruda.trim();
-        }
-      }
+      const { fecha, hora } = normalizarFechaHoraCL(venta.fechaHora);
 
       // Campos adicionales para ventas eliminadas
       const eliminada = (venta as any).eliminada === true;
@@ -212,14 +237,42 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
     });
   }, [ventasFirebase]);
 
+  const transaccionesNormalizadas = useMemo<VentaNormalizada[]>(() => {
+    return (transaccionesCaja || []).map((transaccion, idx) => {
+      const fechaHoraRaw = transaccion.fechaHoraCL || transaccion.fechaHora;
+      const { fecha, hora } = normalizarFechaHoraCL(fechaHoraRaw);
+
+      return {
+        id: transaccion.id || `transaccion-${idx + 1}`,
+        fecha: fecha || "-",
+        hora: hora || "-",
+        total: Number(transaccion.monto || 0),
+        metodo: "transaccion",
+        pago: 0,
+        vuelto: 0,
+        productos: [],
+        transaccionTipo: transaccion.tipo === "GIRO" ? "giro" : "deposito",
+        descripcion: transaccion.descripcion || "",
+      };
+    });
+  }, [transaccionesCaja]);
+
   const ventasDelDia = useMemo(() => {
-    return ventasNormalizadas.filter((venta) => venta.fecha === fechaSeleccionada);
-  }, [ventasNormalizadas, fechaSeleccionada]);
+    return [...ventasNormalizadas, ...transaccionesNormalizadas].filter(
+      (venta) => venta.fecha === fechaSeleccionada
+    );
+  }, [ventasNormalizadas, transaccionesNormalizadas, fechaSeleccionada]);
 
   const ventasFiltradas = useMemo(() => {
     let base = ventasDelDia;
     if (filtroMetodo !== "todos") {
-      base = base.filter((v) => v.metodo === filtroMetodo);
+      base = base.filter((v) => {
+        if (filtroMetodo === "giro" || filtroMetodo === "deposito") {
+          return v.metodo === "transaccion" && v.transaccionTipo === filtroMetodo;
+        }
+
+        return v.metodo === filtroMetodo;
+      });
     }
     
     // Aplicar ordenamiento
@@ -248,16 +301,26 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
   const indiceFin = indiceInicio + VENTAS_POR_PAGINA;
   const ventasPaginadas = ventasFiltradas.slice(indiceInicio, indiceFin);
 
-  const totalVentas = ventasFiltradas.reduce((sum, venta) => sum + venta.total, 0);
+  const totalVentas = ventasFiltradas.reduce((sum, venta) => {
+    return sum + venta.total;
+  }, 0);
   const ventasTarjeta = ventasFiltradas.filter((v) => v.metodo === "tarjeta").length;
   const ventasEfectivo = ventasFiltradas.filter((v) => v.metodo === "efectivo").length;
+  const transaccionesGiro = ventasDelDia.filter((v) => v.metodo === "transaccion" && v.transaccionTipo === "giro").length;
+  const transaccionesDeposito = ventasDelDia.filter((v) => v.metodo === "transaccion" && v.transaccionTipo === "deposito").length;
   const totalPaginas = Math.max(1, Math.ceil(ventasFiltradas.length / VENTAS_POR_PAGINA));
+  const ventaSeleccionadaData = useMemo(
+    () => ventasFiltradas.find(v => v.id === ventaSeleccionada) || null,
+    [ventasFiltradas, ventaSeleccionada]
+  );
 
   // Obtener todas las fechas únicas disponibles
   const fechasDisponibles = useMemo(() => {
-    const fechas = Array.from(new Set(ventasNormalizadas.map(v => v.fecha))).sort().reverse();
+    const fechas = Array.from(new Set(
+      [...ventasNormalizadas, ...transaccionesNormalizadas].map(v => v.fecha)
+    )).sort().reverse();
     return fechas;
-  }, [ventasNormalizadas]);
+  }, [ventasNormalizadas, transaccionesNormalizadas]);
 
   const filtrosActivos = useMemo(() => {
     const fechaBase = fechasDisponibles[0] || "";
@@ -290,14 +353,25 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
     }
   }, [fechasDisponibles]);
 
-  // Seleccionar automáticamente la primera venta cuando cambian las ventas paginadas
+  // Selección inicial por ID y comportamiento sin bloqueo
   useEffect(() => {
-    if (ventasPaginadas.length > 0 && !ventaSeleccionada) {
+    if (ventaIdParaSeleccionar && !autoSeleccionAplicada) {
+      // Preseleccionar solo una vez la venta proveniente de "Ver más detalles"
+      setVentaSeleccionada(ventaIdParaSeleccionar);
+      setVentaExpandida(ventaIdParaSeleccionar);
+
+      const ventaABuscar = ventasNormalizadas.find(v => v.id === ventaIdParaSeleccionar);
+      if (ventaABuscar && ventaABuscar.fecha && ventaABuscar.fecha !== fechaSeleccionada) {
+        setFechaSeleccionada(ventaABuscar.fecha);
+      }
+      setAutoSeleccionAplicada(true);
+    } else if (!ventaIdParaSeleccionar && ventasPaginadas.length > 0 && !ventaSeleccionada) {
+      // Seleccionar la primera venta de la página si no hay una selección previa
       setVentaSeleccionada(ventasPaginadas[0].id);
     } else if (ventasPaginadas.length === 0) {
       setVentaSeleccionada(null);
     }
-  }, [ventasPaginadas]);
+  }, [ventasPaginadas, ventaIdParaSeleccionar, ventasNormalizadas, fechaSeleccionada, autoSeleccionAplicada]);
 
   // Manejar navegación con teclas de flecha (solo en la tabla)
   useEffect(() => {
@@ -428,7 +502,17 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-4xl text-gray-900">Historial de ventas Avanzado</h1>
             <div className="flex items-center gap-2">
-              {ventaSeleccionada && (
+              {ventaExpandida && (
+                <button
+                  onClick={() => setVentaExpandida(null)}
+                  className="flex items-center gap-2 px-4 py-2 text-blue-700 hover:bg-blue-100 rounded-lg transition"
+                  title="Ocultar detalles"
+                >
+                  <ChevronUp className="w-5 h-5" />
+                  <span className="font-medium">Ocultar detalles</span>
+                </button>
+              )}
+              {ventaSeleccionadaData && ventaSeleccionadaData.metodo !== "transaccion" && (
                 <button
                   onClick={() => {
                     setDeletingId(ventaSeleccionada);
@@ -575,6 +659,36 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
               Efectivo ({ventasDelDia.filter((v) => v.metodo === "efectivo").length})
             </button>
             <button
+              onClick={() => {
+                setFiltroMetodo("giro");
+                setPaginaActual(1);
+                setVentaExpandida(null);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                filtroMetodo === "giro"
+                  ? "bg-purple-600 text-white"
+                  : "bg-purple-100 text-purple-700 hover:bg-purple-200"
+              }`}
+            >
+              <Banknote className="w-4 h-4" />
+              Giros ({transaccionesGiro})
+            </button>
+            <button
+              onClick={() => {
+                setFiltroMetodo("deposito");
+                setPaginaActual(1);
+                setVentaExpandida(null);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${
+                filtroMetodo === "deposito"
+                  ? "bg-orange-600 text-white"
+                  : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+              }`}
+            >
+              <Banknote className="w-4 h-4" />
+              Depósitos ({transaccionesDeposito})
+            </button>
+            <button
               onClick={resetFiltros}
               disabled={!filtrosActivos}
               className={`ml-auto flex items-center gap-2 px-4 py-2 rounded-lg border transition ${
@@ -677,41 +791,60 @@ export function HistorialDeVentasAvanzado({ onClose, setOpenManager, SetOpenMana
                                 <CreditCard className="w-4 h-4 text-blue-600" />
                                 <span className="text-blue-700">Tarjeta</span>
                               </>
-                            ) : (
+                            ) : venta.metodo === "efectivo" ? (
                               <>
                                 <Banknote className="w-4 h-4 text-green-600" />
                                 <span className="text-green-700">Efectivo</span>
+                              </>
+                            ) : (
+                              <>
+                                <Banknote className="w-4 h-4 text-purple-600" />
+                                <span className="text-purple-700">
+                                  {venta.transaccionTipo === "giro" ? "Giro" : "Depósito"}
+                                </span>
                               </>
                             )}
                           </div>
                         </div>
                         <div className="col-span-2 text-gray-900">
-                          {venta.pago > 0 ? `$${venta.pago.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : "-"}
+                          {venta.metodo === "transaccion"
+                            ? "-"
+                            : venta.pago > 0
+                            ? `$${venta.pago.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                            : "-"}
                         </div>
                         <div className="col-span-2 text-gray-900">
-                          {venta.vuelto > 0 ? `$${venta.vuelto.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}` : "-"}
+                          {venta.metodo === "transaccion"
+                            ? "-"
+                            : venta.vuelto > 0
+                            ? `$${venta.vuelto.toLocaleString("es-CL", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+                            : "-"}
                         </div>
                         <div className="col-span-1 flex justify-center">
-                          <button
-                            onClick={() => toggleVenta(venta.id)}
-                            className={`p-1 rounded transition ${
-                              ventaExpandida === venta.id
-                                ? "bg-blue-200 hover:bg-blue-300"
-                                : "hover:bg-gray-200"
-                            }`}
-                          >
-                            {ventaExpandida === venta.id ? (
-                              <ChevronUp className="w-5 h-5 text-blue-700" />
-                            ) : (
-                              <ChevronDown className="w-5 h-5 text-gray-600" />
-                            )}
-                          </button>
+                          {venta.metodo === "transaccion" ? (
+                            <span className="text-gray-400 text-xs">—</span>
+                          ) : (
+                            <button
+                              onClick={() => toggleVenta(venta.id)}
+                              className={`p-1 rounded transition ${
+                                ventaExpandida === venta.id
+                                  ? "bg-blue-200 hover:bg-blue-300"
+                                  : "hover:bg-gray-200"
+                              }`}
+                            >
+                              {ventaExpandida === venta.id ? (
+                                <ChevronUp className="w-5 h-5 text-blue-700" />
+                              ) : (
+                                <ChevronDown className="w-5 h-5 text-gray-600" />
+                              )}
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
 
                     {/* Detalle de productos expandible */}
-                    {ventaExpandida === venta.id && (
+                    {venta.metodo !== "transaccion" && ventaExpandida === venta.id && (
                       <div className="bg-blue-50 px-4 py-4 border-t border-blue-200 border-l-4 border-l-blue-500">
                         <h4 className="text-sm text-blue-900 mb-3">Productos ({venta.productos.length})</h4>
                         <div className="bg-white rounded-lg border border-blue-200 overflow-hidden">

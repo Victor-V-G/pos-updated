@@ -38,7 +38,21 @@ export const InicioComponent = ({
         
         // Filtrar ventas del día
         const ventasDelDia = ventas.filter((venta: any) => {
-          const fechaVenta = venta.fechaHora?.split(',')[0];
+          // Manejar diferentes formatos de fechaHora
+          let fechaVenta = '';
+          
+          if (venta.fechaHora) {
+            // Si es Timestamp de Firestore
+            if (typeof venta.fechaHora === 'object' && 'toDate' in venta.fechaHora) {
+              const date = venta.fechaHora.toDate();
+              fechaVenta = `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+            }
+            // Si es string
+            else if (typeof venta.fechaHora === 'string') {
+              fechaVenta = venta.fechaHora.split(',')[0].replace(/\//g, '-');
+            }
+          }
+          
           return fechaVenta === fechaActual;
         });
         

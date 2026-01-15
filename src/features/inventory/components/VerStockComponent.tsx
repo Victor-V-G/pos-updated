@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Search, ChevronLeft, ChevronRight, CircleAlert, CircleCheck, XCircle, ChevronDown, ArrowLeft, HelpCircle, AlertTriangle } from 'lucide-react';
-import { obtenerProductosPromiseUpdate } from '@/core/infrastructure/firebase';
+import { obtenerProductosPromiseUpdate, guardarReporteDesfasePromise } from '@/core/infrastructure/firebase';
 import { ProductoConIDInterface } from '@/core/domain/entities';
 import '@/assets/styles/gestion-productos-styles/crud-style/crud-style.css';
 
@@ -142,20 +142,19 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
 
     setEnviandoDesfase(true);
     try {
-      // TODO: Crear la promesa reportarDesfasePromise en Firebase
-      // await reportarDesfasePromise({
-      //   idProducto: productoDesfase.id,
-      //   nombreProducto: productoDesfase.NombreProducto,
-      //   codigoBarras: productoDesfase.CodigoDeBarras,
-      //   stockSistema: Number(productoDesfase.Stock),
-      //   stockReal: Number(stockReal),
-      //   diferencia: Number(stockReal) - Number(productoDesfase.Stock),
-      //   anotacion: anotacionDesfase,
-      //   fecha: new Date().toISOString(),
-      //   estado: 'pendiente' // pendiente, revisado, resuelto
-      // });
+      await guardarReporteDesfasePromise({
+        idProducto: productoDesfase.id,
+        nombreProducto: productoDesfase.NombreProducto,
+        codigoBarras: productoDesfase.CodigoDeBarras,
+        stockSistema: Number(productoDesfase.Stock),
+        stockReal: Number(stockReal),
+        diferencia: Number(stockReal) - Number(productoDesfase.Stock),
+        anotacion: anotacionDesfase,
+        fecha: new Date().toISOString(),
+        estado: 'pendiente'
+      });
       
-      console.log('Reporte de desfase:', {
+      console.log('Reporte de desfase guardado:', {
         producto: productoDesfase.NombreProducto,
         stockSistema: productoDesfase.Stock,
         stockReal: stockReal,
