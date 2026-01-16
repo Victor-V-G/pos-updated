@@ -440,10 +440,22 @@ export const VentaComponent = () => {
       return;
     }
 
+    const total = calcularTotal();
+
+    // Confirmar ANTES de ejecutar la venta
+    const confirmar = confirm(
+      `¿Confirmar pago con Tarjeta?\n\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito\n\nPresione Enter para confirmar o Escape para cancelar`
+    );
+
+    if (!confirmar) {
+      setMensaje("Pago cancelado");
+      setTimeout(() => setMensaje(""), 3000);
+      return;
+    }
+
     setCargando(true);
     setMensaje("Procesando pago con tarjeta...");
 
-    const total = calcularTotal();
     const productosVenta: ProductoVenta[] = carrito.map((item) => ({
       NombreProducto: item.nombre,
       CodigoDeBarras: item.codigoBarras,
@@ -469,14 +481,9 @@ export const VentaComponent = () => {
 
     if (ok) {
       const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
-      const confirmar = confirm(`Venta realizada exitosamente!${statusMsg}\nTotal: $${total.toLocaleString("es-CL")}\nMétodo: Tarjeta de Débito/Crédito\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
-      if (confirmar) {
-        resetearVenta();
-      } else {
-        setMensaje("Pago cancelado - Carrito mantenido");
-        setTimeout(() => setMensaje(""), 3000);
-        setFocusTrigger(prev => prev + 1);
-      }
+      setMensaje(`Venta realizada exitosamente!${statusMsg}`);
+      setTimeout(() => setMensaje(""), 4000);
+      resetearVenta();
     } else {
       setMensaje("Error al procesar la venta");
       setTimeout(() => setMensaje(""), 3000);
@@ -505,8 +512,20 @@ export const VentaComponent = () => {
       return;
     }
 
-    setCargando(true);
     const vuelto = monto - total;
+
+    // Confirmar ANTES de ejecutar la venta
+    const confirmar = confirm(
+      `¿Confirmar pago en Efectivo?\n\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}\n\nPresione Enter para confirmar o Escape para cancelar`
+    );
+
+    if (!confirmar) {
+      setMensaje("Pago cancelado");
+      setTimeout(() => setMensaje(""), 3000);
+      return;
+    }
+
+    setCargando(true);
 
     const productosVenta: ProductoVenta[] = carrito.map((item) => ({
       NombreProducto: item.nombre,
@@ -533,17 +552,9 @@ export const VentaComponent = () => {
 
     if (ok) {
       const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
-      const confirmar = confirm(`Venta realizada exitosamente!${statusMsg}\nTotal: $${total.toLocaleString("es-CL")}\nPagado: $${monto.toLocaleString("es-CL")}\nVuelto: $${vuelto.toLocaleString("es-CL")}\n\nPresione Enter para continuar o Escape para cancelar el pago\n(Cancelar mantiene el carrito)`);
-      if (confirmar) {
-        resetearVenta();
-      } else {
-        // Si cancela, volver a mostrar el input de código de barras
-        setMostrarPago(false);
-        setMontoPagado("");
-        setMensaje("Pago cancelado - Carrito mantenido");
-        setTimeout(() => setMensaje(""), 3000);
-        setFocusTrigger(prev => prev + 1);
-      }
+      setMensaje(`Venta realizada exitosamente!${statusMsg}`);
+      setTimeout(() => setMensaje(""), 4000);
+      resetearVenta();
     } else {
       setMensaje("Error al procesar la venta");
       setTimeout(() => setMensaje(""), 3000);
