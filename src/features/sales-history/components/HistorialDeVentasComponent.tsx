@@ -79,7 +79,7 @@ interface HistorialVentasProps {
   SetOpenManagerGestionComponentSetter?: (value: boolean) => void;
 }
 
-const VENTAS_POR_PAGINA = 4;
+const VENTAS_POR_PAGINA = 5;
 
 const formatearFechaHoy = () => {
   const formatter = new Intl.DateTimeFormat("es-CL", {

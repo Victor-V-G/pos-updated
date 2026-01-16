@@ -161,7 +161,7 @@ export const VentaComponent = () => {
   const handleEscanear = async () => {
     if (!codigoBarras.trim()) {
       setMensaje("Ingresa un código de barras");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -173,6 +173,7 @@ export const VentaComponent = () => {
       setMensaje("Producto no encontrado, verifique que este registrado");
       setCodigoBarras("");
       setFocusTrigger(prev => prev + 1);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -212,8 +213,10 @@ export const VentaComponent = () => {
       // Mostrar mensaje según el tipo de producto
       if (producto.TipoProducto === "unidad") {
         setMensaje(`${producto.NombreProducto} - Unidad añadida correctamente`);
+        setTimeout(() => setMensaje(""), 5000);
       } else {
         setMensaje(`${producto.NombreProducto} - ${incremento}kg añadidos correctamente`);
+        setTimeout(() => setMensaje(""), 5000);
       }
     } else {
       // Agregar nuevo producto al carrito al inicio
@@ -228,6 +231,7 @@ export const VentaComponent = () => {
       };
       setCarrito((prev) => [nuevoProducto, ...prev]);
       setMensaje(`${producto.NombreProducto} agregado al carrito`);
+      setTimeout(() => setMensaje(""), 5000);
     }
 
     setCodigoBarras("");
@@ -237,7 +241,7 @@ export const VentaComponent = () => {
   const handleAgregarConPeso = () => {
     if (!productoPesoTemporal || !pesoBruto.trim()) {
       setMensaje("Por favor ingresa el peso del producto");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -255,7 +259,7 @@ export const VentaComponent = () => {
 
     if (isNaN(pesoFinal) || pesoFinal <= 0) {
       setMensaje("Ingresa un peso válido");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -282,6 +286,7 @@ export const VentaComponent = () => {
         return itemActualizado ? [itemActualizado, ...resto] : actualizado;
       });
       setMensaje(`${productoPesoTemporal.NombreProducto} - ${pesoFinal.toFixed(3)}kg añadidos correctamente`);
+      setTimeout(() => setMensaje(""), 5000);
     } else {
       // Agregar nuevo producto al carrito con el peso ingresado al inicio
       const nuevoProducto: ProductoCarrito = {
@@ -294,6 +299,7 @@ export const VentaComponent = () => {
       };
       setCarrito((prev) => [nuevoProducto, ...prev]);
       setMensaje(`${productoPesoTemporal.NombreProducto} - ${pesoFinal.toFixed(3)}kg agregado al carrito`);
+      setTimeout(() => setMensaje(""), 5000);
     }
 
     // Cerrar modal y limpiar
@@ -436,7 +442,7 @@ export const VentaComponent = () => {
   const handlePagarTarjeta = async () => {
     if (carrito.length === 0) {
       setMensaje("El carrito está vacío");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -449,7 +455,7 @@ export const VentaComponent = () => {
 
     if (!confirmar) {
       setMensaje("Pago cancelado");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -482,18 +488,18 @@ export const VentaComponent = () => {
     if (ok) {
       const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
       setMensaje(`Venta realizada exitosamente!${statusMsg}`);
-      setTimeout(() => setMensaje(""), 4000);
+      setTimeout(() => setMensaje(""), 5000);
       resetearVenta();
     } else {
       setMensaje("Error al procesar la venta");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
     }
   };
 
   const handlePagarEfectivo = async () => {
     if (carrito.length === 0) {
       setMensaje("El carrito está vacío");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -502,13 +508,13 @@ export const VentaComponent = () => {
 
     if (isNaN(monto) || monto <= 0) {
       setMensaje("Ingresa un monto válido");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
     if (monto < total) {
       setMensaje(`El monto es insuficiente. Falta: $${(total - monto).toLocaleString("es-CL")}`);
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -521,7 +527,7 @@ export const VentaComponent = () => {
 
     if (!confirmar) {
       setMensaje("Pago cancelado");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
       return;
     }
 
@@ -553,11 +559,11 @@ export const VentaComponent = () => {
     if (ok) {
       const statusMsg = result.offline ? " (Guardado offline - Se sincronizará)" : "";
       setMensaje(`Venta realizada exitosamente!${statusMsg}`);
-      setTimeout(() => setMensaje(""), 4000);
+      setTimeout(() => setMensaje(""), 5000);
       resetearVenta();
     } else {
       setMensaje("Error al procesar la venta");
-      setTimeout(() => setMensaje(""), 3000);
+      setTimeout(() => setMensaje(""), 5000);
     }
   };
 
@@ -603,7 +609,7 @@ export const VentaComponent = () => {
     setMensaje(
       `${tipoTransaccion === "giro" ? "Giro" : "Depósito"} registrado: $${monto.toLocaleString("es-CL")}`
     );
-    setTimeout(() => setMensaje(""), 3000);
+    setTimeout(() => setMensaje(""), 5000);
 
     setMostrarTransaccion(false);
     setTipoTransaccion("giro");
@@ -827,25 +833,34 @@ export const VentaComponent = () => {
           </div>
 
           {/* Panel Derecho - Resumen y Pago */}
-          <div className="flex flex-col gap-3 overflow-hidden">
+          <div className="flex flex-col gap-5 overflow-hidden">
             {/* Resumen del Total */}
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-300 rounded-lg p-4 shrink-0 shadow-md">
-              <h2 className="text-xl text-gray-900 mb-3 font-bold">Resumen de Venta</h2>
-              <div className="space-y-2.5 mb-2">
-                <div className="flex justify-between items-center bg-white rounded-lg p-2.5 border border-blue-200">
-                  <span className="text-sm text-gray-700 font-semibold">Productos:</span>
-                  <span className="text-2xl text-blue-600 font-extrabold">{carrito.length}</span>
+            <div className="bg-gradient-to-br from-blue-50 via-blue-100 to-blue-50 border-2 border-blue-300 rounded-xl p-4 shrink-0 shadow-lg hover:shadow-xl transition-shadow">
+              <h2 className="text-lg text-gray-900 mb-2 font-bold flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5 text-blue-600" />
+                Resumen de Venta
+              </h2>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                  <span className="text-sm text-gray-600 font-medium">Productos:</span>
+                  <span className="text-3xl text-blue-600 font-extrabold">{carrito.length}</span>
                 </div>
-                <div className="flex justify-between items-center bg-white rounded-lg p-2.5 border border-blue-200">
-                  <span className="text-sm text-gray-700 font-semibold">Subtotal:</span>
-                  <span className="text-lg text-blue-600 font-extrabold">
+                <div className="flex justify-between items-center bg-white rounded-lg p-2 border border-blue-200 shadow-sm hover:shadow-md transition-shadow">
+                  <span className="text-sm text-gray-600 font-medium">Subtotal:</span>
+                  <span className="text-2xl text-blue-600 font-bold">
                     ${total.toLocaleString("es-CL")}
                   </span>
                 </div>
-                <div className="border-t-2 border-green-300 pt-2.5 mt-1.5">
-                  <div className="flex justify-between items-center bg-gradient-to-r from-blue-500 to-green-600 rounded-lg p-3">
-                    <span className="text-base text-white font-bold">TOTAL:</span>
-                    <span className="text-3xl text-white font-extrabold">
+                <div className="border-t-2 border-blue-200 pt-2 mt-1">
+                  <div
+                    className={`flex justify-between items-center rounded-lg p-3 shadow-lg ${
+                      carrito.length === 0
+                        ? "bg-gradient-to-r from-gray-400 to-gray-500"
+                        : "bg-gradient-to-r from-blue-600 to-cyan-600"
+                    }`}
+                  >
+                    <span className="text-base text-white font-bold tracking-wide">TOTAL A PAGAR:</span>
+                    <span className="text-4xl text-white font-extrabold">
                       ${total.toLocaleString("es-CL")}
                     </span>
                   </div>
@@ -854,59 +869,77 @@ export const VentaComponent = () => {
             </div>
 
             {/* Métodos de Pago */}
-            <div className="flex-1 flex flex-col gap-3">
+            <div className="flex-1 flex flex-col gap-3.5 min-h-0">
               {!mostrarPago ? (
                 <>
-                  <h2 className="text-lg text-gray-900 shrink-0 font-semibold">
+                  <h2 className="text-base text-gray-900 shrink-0 font-semibold flex items-center gap-2">
+                    <CreditCard className="w-4 h-4 text-blue-600" />
                     Método de Pago
                   </h2>
 
                   <button
                     onClick={handlePagarTarjeta}
                     disabled={carrito.length === 0 || cargando}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg transition shrink-0 font-medium text-sm"
+                    className={`w-full flex items-center justify-center gap-2 rounded-lg transition shrink-0 font-semibold text-xs text-white py-2 px-3 shadow-lg duration-200 ${
+                      carrito.length === 0
+                        ? "bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-700 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-800 hover:shadow-xl hover:scale-105"
+                    }`}
                   >
-                    <CreditCard className="w-6 h-6" />
-                    <span>Pagar con Tarjeta</span>
+                    <CreditCard className="w-4 h-4" />
+                    <div className="flex flex-col items-start">
+                      <span>Pagar con Tarjeta</span>
+                      <span className="text-xs font-normal opacity-90">Débito / Crédito</span>
+                    </div>
                   </button>
 
                   <button
                     onClick={() => {
                       if (carrito.length === 0) {
                         setMensaje("El carrito está vacío");
-                        setTimeout(() => setMensaje(""), 3000);
+                        setTimeout(() => setMensaje(""), 5000);
                         return;
                       }
                       setMostrarPago(true);
                     }}
                     disabled={carrito.length === 0 || cargando}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white py-3 rounded-lg transition shrink-0 font-medium text-sm"
+                    className={`w-full flex items-center justify-center gap-2 rounded-lg transition shrink-0 font-semibold text-xs text-white py-2 px-3 shadow-lg duration-200 ${
+                      carrito.length === 0
+                        ? "bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-500 via-green-600 to-teal-700 hover:from-emerald-600 hover:via-green-700 hover:to-teal-800 hover:shadow-xl hover:scale-105"
+                    }`}
                   >
-                    <Banknote className="w-6 h-6" />
-                    <span>Pagar con Efectivo</span>
+                    <Banknote className="w-4 h-4" />
+                    <div className="flex flex-col items-start">
+                      <span>Pagar con Efectivo</span>
+                      <span className="text-xs font-normal opacity-90">Dinero en caja</span>
+                    </div>
                   </button>
                 </>
               ) : (
                 <>
-                  <div className="flex items-center justify-between shrink-0">
-                    <h2 className="text-lg text-gray-900 font-semibold">Pago en Efectivo</h2>
+                  <div className="flex items-center justify-between shrink-0 bg-green-50 rounded-lg p-4 border-l-4 border-green-600 shadow-md">
+                    <h2 className="text-lg text-gray-900 font-bold flex items-center gap-2">
+                      <Banknote className="w-5 h-5 text-green-600" />
+                      Pago en Efectivo
+                    </h2>
                     <button
                       onClick={() => {
                         setMostrarPago(false);
                         setMontoPagado("");
                       }}
-                      className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition text-sm font-medium"
+                      className="px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg transition text-xs font-semibold"
                     >
                       Cancelar
                     </button>
                   </div>
 
                   <div className="shrink-0">
-                    <label className="block mb-1 text-sm text-gray-700 font-medium">
+                    <label className="block mb-3 text-base text-gray-700 font-bold">
                       Monto Recibido
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-600 font-bold text-xl">
                         $
                       </span>
                       <input
@@ -922,15 +955,24 @@ export const VentaComponent = () => {
                         placeholder="0"
                         step="100"
                         min="0"
-                        className="w-full pl-7 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition text-sm"
+                        className="w-full pl-11 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition text-lg font-semibold"
                       />
                     </div>
                   </div>
 
+                  {montoPagado && parseFloat(montoPagado) < total && (
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border-2 border-amber-300 rounded-lg p-3 shrink-0 shadow-md">
+                      <p className="text-sm text-amber-700 mb-1 font-bold uppercase tracking-wide">Falta por pagar:</p>
+                      <p className="text-3xl text-amber-700 font-extrabold">
+                        ${(total - parseFloat(montoPagado)).toLocaleString("es-CL")}
+                      </p>
+                    </div>
+                  )}
+
                   {montoPagado && parseFloat(montoPagado) >= total && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3 shrink-0">
-                      <p className="text-xs text-green-800 mb-1 font-medium">Vuelto a entregar:</p>
-                      <p className="text-lg text-green-900 font-bold">
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-lg p-3 shrink-0 shadow-md">
+                      <p className="text-sm text-green-700 mb-1 font-bold uppercase tracking-wide">Vuelto a entregar:</p>
+                      <p className="text-3xl text-green-700 font-extrabold">
                         ${(parseFloat(montoPagado) - total).toLocaleString("es-CL")}
                       </p>
                     </div>
@@ -938,8 +980,12 @@ export const VentaComponent = () => {
 
                   <button
                     onClick={handlePagarEfectivo}
-                    disabled={cargando}
-                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:bg-gray-400 text-white py-3 rounded-lg transition shrink-0 font-medium text-sm"
+                    disabled={cargando || carrito.length === 0}
+                    className={`w-full py-3 rounded-lg transition shrink-0 font-bold text-base text-white shadow-lg duration-200 ${
+                      carrito.length === 0
+                        ? "bg-gradient-to-r from-gray-400 to-gray-500 cursor-not-allowed"
+                        : "bg-gradient-to-r from-emerald-500 via-green-600 to-green-700 hover:from-emerald-600 hover:via-green-700 hover:to-green-800 hover:shadow-xl hover:scale-105"
+                    }`}
                   >
                     {cargando ? "Procesando..." : "Finalizar Venta"}
                   </button>
@@ -947,7 +993,7 @@ export const VentaComponent = () => {
               )}
 
               {/* Botón para limpiar carrito */}
-              {carrito.length > 0 && (
+              {carrito.length > 0 && !mostrarPago && (
                 <button
                   onClick={() => {
                     const confirmar = confirm("¿Está seguro que desea cancelar la venta?\n\nPresione Enter para cancelar o Escape para continuar con la venta");
@@ -956,9 +1002,9 @@ export const VentaComponent = () => {
                     }
                   }}
                   disabled={cargando}
-                  className="w-full flex items-center justify-center gap-2 bg-red-100 hover:bg-red-200 disabled:bg-gray-200 text-red-700 py-2 rounded-lg transition shrink-0 mt-auto font-medium text-sm"
+                  className="w-full flex items-center justify-center gap-1 bg-gradient-to-r from-red-500 via-red-600 to-rose-700 hover:from-red-600 hover:via-red-700 hover:to-rose-800 disabled:from-gray-400 disabled:to-gray-400 disabled:cursor-not-allowed text-white py-1.5 px-2.5 rounded-lg transition shrink-0 mt-auto font-semibold text-xs shadow-md hover:shadow-lg hover:scale-105 disabled:scale-100 disabled:shadow-none duration-200"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                   <span>Cancelar Venta</span>
                 </button>
               )}
@@ -1156,7 +1202,7 @@ export const VentaComponent = () => {
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
                 <p className="text-xs text-yellow-900">
-                  <strong>⚠️ Producto no encontrado:</strong> Si un producto no está registrado, fotografíelo y avise al propietario del local para agregarlo al sistema.
+                  <strong>Producto no encontrado:</strong> Si un producto no está registrado, fotografíelo y avise al propietario del local para agregarlo al sistema.
                 </p>
               </div>
             </div>

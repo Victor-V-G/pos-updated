@@ -13,6 +13,8 @@ export const InicioComponent = ({
 }: SidebarInterfaceProps) => {
   const [ventasHoy, setVentasHoy] = useState(0);
   const [totalProductos, setTotalProductos] = useState(0);
+  const [currentTime, setCurrentTime] = useState('');
+  const [mounted, setMounted] = useState(false);
   
   // Hooks offline
   const { getSales, getProducts, isOnline } = useOfflineSync();
@@ -25,10 +27,21 @@ export const InicioComponent = ({
     day: 'numeric'
   });
 
-  const currentTime = new Date().toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  });
+  // Actualizar hora solo en el cliente para evitar hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+    const updateTime = () => {
+      setCurrentTime(new Date().toLocaleTimeString('es-ES', {
+        hour: '2-digit',
+        minute: '2-digit'
+      }));
+    };
+    
+    updateTime(); // Actualizar inmediatamente
+    const interval = setInterval(updateTime, 1000); // Actualizar cada segundo
+    
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     // Obtener ventas de hoy
@@ -161,7 +174,7 @@ export const InicioComponent = ({
           <div className="flex items-center justify-center gap-4 text-gray-500">
             <span className="capitalize">{currentDate}</span>
             <span>•</span>
-            <span>{currentTime}</span>
+            <span suppressHydrationWarning>{mounted ? currentTime : '--:--'}</span>
           </div>
         </div>
 

@@ -176,7 +176,7 @@ export function Alertas({ onClose }: AlertasProps) {
 
   return (
     <div className="w-full h-full flex items-center justify-center px-20 py-0">
-      <div className="w-full h-auto bg-white rounded-lg shadow-lg p-8 flex flex-col">
+      <div className="w-full h-[850px] bg-white rounded-lg shadow-lg p-8 flex flex-col">
         {/* Header */}
         <div className="mb-3 flex items-center justify-between shrink-0">
           <div>

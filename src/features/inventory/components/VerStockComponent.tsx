@@ -7,7 +7,7 @@ import '@/assets/styles/gestion-productos-styles/crud-style/crud-style.css';
 
 type EstadoStock = 'sin-stock' | 'critico' | 'bajo' | 'en-stock';
 
-const ITEMS_POR_PAGINA = 5;
+const ITEMS_POR_PAGINA = 6;
 
 // Función para determinar el estado del stock
 function obtenerEstadoStock(stock: number): EstadoStock {

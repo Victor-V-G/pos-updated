@@ -41,7 +41,7 @@ export const LoginModals = ({setOpenManagerLogin } : LoginInterfaceProps) => {
                 <p className="text-base text-gray-500 mt-3 text-center">INGRESE LA CONTRASEÑA PARA ACCEDER AL PANEL DE CONTROL</p>
             </div>
             
-            <form className="w-full space-y-8" onSubmit={(e) => { e.preventDefault(); handleVerificarPassword(); }}>
+            <form className="w-full space-y-8 mt-40" onSubmit={(e) => { e.preventDefault(); handleVerificarPassword(); }}>
                 <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-900 text-gray-400">
                         <Lock size={22} />
