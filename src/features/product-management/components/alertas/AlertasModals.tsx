@@ -8,9 +8,11 @@ import {
   CircleAlert,
   Filter,
   Wifi,
-  WifiOff
+  WifiOff,
+  Check,
+  CheckCircle
 } from 'lucide-react';
-import { obtenerAlertasPromise, generarAlertasDesdeReportesPromise } from '@/core/infrastructure/firebase';
+import { obtenerAlertasPromise, generarAlertasDesdeReportesPromise, marcarAlertaComoLeidaPromise } from '@/core/infrastructure/firebase';
 import { useOfflineSync, useOnlineStatus } from '@/core/infrastructure/offline';
 
 // Exportamos la interfaz desde Promesas
@@ -31,7 +33,7 @@ interface AlertasProps {
 }
 
 export function Alertas({ onClose }: AlertasProps) {
-  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'sin-stock' | 'stock-critico' | 'stock-bajo' | 'desfase'>('todos');
+  const [filtroTipo, setFiltroTipo] = useState<'todos' | 'sin-stock' | 'stock-critico' | 'stock-bajo' | 'desfase' | 'leidas'>('todos');
   const [ordenFecha, setOrdenFecha] = useState<'recientes' | 'antiguas'>('recientes');
   const [paginaActual, setPaginaActual] = useState(1);
   const [alertas, setAlertas] = useState<AlertaInterface[]>([]);
@@ -61,8 +63,28 @@ export function Alertas({ onClose }: AlertasProps) {
     cargarAlertas();
   }, []); // Array vacío para que solo se ejecute una vez al montar
 
+  const handleMarcarLeida = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const exito = await marcarAlertaComoLeidaPromise(id);
+      if (exito) {
+        // Actualizar estado local marcando como leída en lugar de eliminar
+        setAlertas(prev => prev.map(a => 
+          a.id === id ? { ...a, leida: true } : a
+        ));
+      }
+    } catch (error) {
+      console.error('Error al marcar alerta como leída:', error);
+    }
+  };
+
   // Filtrar alertas
   let alertasFiltradas = alertas.filter(alerta => {
+    if (filtroTipo === 'leidas') {
+      return alerta.leida;
+    }
+    // Solo mostrar alertas NO leídas para los demás filtros
+    if (alerta.leida) return false;
     return filtroTipo === 'todos' || alerta.tipo === filtroTipo;
   });
 
@@ -82,12 +104,14 @@ export function Alertas({ onClose }: AlertasProps) {
   const indiceFinal = indiceInicial + alertasPorPagina;
   const alertasActuales = alertasFiltradas.slice(indiceInicial, indiceFinal);
 
-  // Estadísticas de alertas
-  const totalAlertas = alertas.length;
-  const sinStock = alertas.filter(a => a.tipo === 'sin-stock').length;
-  const stockCritico = alertas.filter(a => a.tipo === 'stock-critico').length;
-  const stockBajo = alertas.filter(a => a.tipo === 'stock-bajo').length;
-  const desfases = alertas.filter(a => a.tipo === 'desfase').length;
+  // Estadísticas de alertas (solo contar las NO leídas para los filtros principales)
+  const totalAlertas = alertas.filter(a => !a.leida).length;
+  const sinStock = alertas.filter(a => a.tipo === 'sin-stock' && !a.leida).length;
+  const stockCritico = alertas.filter(a => a.tipo === 'stock-critico' && !a.leida).length;
+  const stockBajo = alertas.filter(a => a.tipo === 'stock-bajo' && !a.leida).length;
+  const desfases = alertas.filter(a => a.tipo === 'desfase' && !a.leida).length;
+  const leidasCount = alertas.filter(a => a.leida).length;
+
 
   const formatearFecha = (fecha: Date) => {
     return new Date(fecha).toLocaleString('es-ES', {
@@ -255,6 +279,18 @@ export function Alertas({ onClose }: AlertasProps) {
               <CircleAlert className="w-4 h-4" />
               Desfases ({desfases})
             </button>
+            <button
+              onClick={() => setFiltroTipo('leidas')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition font-medium ${
+                filtroTipo === 'leidas'
+                  ? 'bg-green-600 text-white shadow-md'
+                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+              }`}
+            >
+              <CheckCircle className="w-4 h-4" />
+              Leídas ({leidasCount})
+            </button>
+
 
             {/* Separador */}
             <div className="h-8 w-px bg-gray-300"></div>
@@ -272,7 +308,7 @@ export function Alertas({ onClose }: AlertasProps) {
         </div>
 
         {/* Lista de Alertas */}
-        <div className="flex-1 border-2 border-gray-200 rounded-lg flex flex-col">
+        <div className="flex-1 border-2 border-gray-200 rounded-lg flex flex-col overflow-hidden">
           {cargando ? (
             <div className="flex items-center justify-center h-full text-gray-400">
               <div className="text-center">
@@ -290,7 +326,7 @@ export function Alertas({ onClose }: AlertasProps) {
             </div>
           ) : (
             <div className="flex flex-col h-full">
-              <div className="divide-y divide-gray-200">
+              <div className="divide-y divide-gray-200 flex-1 overflow-y-auto">
                 {alertasActuales.map((alerta) => (
                 <div
                   key={alerta.id}
@@ -323,8 +359,19 @@ export function Alertas({ onClose }: AlertasProps) {
                         </div>
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="flex items-center gap-1.5 text-gray-600 text-sm">
+                    <div className="text-right shrink-0 flex flex-col items-end gap-2">
+                       {/* Solo mostrar botón de marcar como leída si no está leída */}
+                       {!alerta.leida && (
+                       <button
+                        onClick={(e) => handleMarcarLeida(alerta.id, e)}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition border border-green-200 text-sm font-medium"
+                        title="Marcar como leída (desaparecerá de la lista)"
+                      >
+                        <Check className="w-4 h-4" />
+                        Marcar como leída
+                      </button>
+                      )}
+                      <div className="flex items-center gap-1.5 text-gray-600 text-sm mt-1">
                         <Clock className="w-4 h-4" />
                         <span className="font-semibold">{formatearHora(alerta.fecha)}</span>
                       </div>

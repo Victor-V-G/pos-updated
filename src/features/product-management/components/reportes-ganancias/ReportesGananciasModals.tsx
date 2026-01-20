@@ -518,14 +518,19 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
             const fecha = obtenerFecha(v.fechaHora);
             return fecha >= lunesAnterior && fecha <= domingoAnterior;
           });
+          
+          // Solo incluir depósitos en ganancias
           const transaccionesSemanaPasada = transaccionesNormalizadas.filter(t => {
             const fecha = obtenerFecha(t.fechaHora);
-            return fecha >= lunesAnterior && fecha <= domingoAnterior;
+            const enRango = fecha >= lunesAnterior && fecha <= domingoAnterior;
+            const esDeposito = String(t.metodo || '').toUpperCase() === 'DEPOSITO';
+            return enRango && esDeposito;
           });
           
           const gananciaSemanaAnterior =
             ventasSemanaPasada.reduce((sum, v) => sum + v.total, 0) +
             transaccionesSemanaPasada.reduce((sum, t) => sum + t.total, 0);
+            
           const totalProductos = contarProductosVentas(ventasSemanaPasada);
           
           const nombreMes = lunesAnterior.toLocaleDateString('es-ES', { month: 'long' });
@@ -540,7 +545,11 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
             año: lunesAnterior.getFullYear(),
             mes: nombreMes,
           });
+          
           console.log(`✅ Reporte semanal #${numeroSemana} ${lunesAnterior.getFullYear()} generado automáticamente con ${ventasSemanaPasada.length} ventas`);
+          
+          // Recargar datos para reflejar el nuevo reporte en la lista
+          await cargarDatos();
         } else {
           console.log(`ℹ️ Reporte semanal #${numeroSemana} ${lunesAnterior.getFullYear()} ya existe`);
         }
@@ -548,7 +557,7 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
     } catch (error) {
       console.error('❌ Error guardando reporte semanal:', error);
     }
-  }, [ventasFirebase, reportesSemanales]);
+  }, [ventasFirebase, reportesSemanales, transaccionesNormalizadas, cargarDatos]);
 
   // Función para guardar reporte del mes anterior si es el primer día del mes
   const guardarReportesMesAnterior = useCallback(async () => {
@@ -597,14 +606,16 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
               mes: nombreMes,
               año: ultimoDiaMesAnterior.getFullYear(),
             });
-            console.log('Reporte mensual guardado automáticamente');
+            console.log('✅ Reporte mensual guardado automáticamente');
+            // Recargar datos
+            await cargarDatos();
           }
         }
       }
     } catch (error) {
       console.error('Error guardando reporte mensual:', error);
     }
-  }, [ventasFirebase, reportesMensuales]);
+  }, [ventasFirebase, reportesMensuales, transaccionesNormalizadas, cargarDatos]);
 
   // Función para generar reporte manualmente de cualquier semana
   const generarReporteSemanaManual = useCallback(async () => {
@@ -714,12 +725,13 @@ export function Reportes({ onClose, onAbrirHistorial }: ReportesProps) {
   }, [ventasFirebase, reportesSemanales, cargarDatos]);
 
   // Usar useEffect para guardar reportes automáticamente
-  // DESHABILITADO: La generación automática se reemplazó por el botón manual
-  // para evitar conflictos con fechas y timezone
-  // useEffect(() => {
-  //   guardarReporteSemanaAnterior();
-  //   guardarReportesMesAnterior();
-  // }, [guardarReporteSemanaAnterior, guardarReportesMesAnterior]);
+  useEffect(() => {
+    // Solo intentar guardar si no está cargando y hay ventas registradas
+    if (!loading && ventasFirebase.length > 0) {
+      guardarReporteSemanaAnterior();
+      guardarReportesMesAnterior();
+    }
+  }, [loading, ventasFirebase.length, guardarReporteSemanaAnterior, guardarReportesMesAnterior]);
 
   if (loading) {
     return (

@@ -195,7 +195,7 @@ export function VerStock({ onVolver }: { onVolver?: () => void }) {
   };
 
   return (
-    <div className="w-full flex justify-center -mt-4 pb-8 px-4">
+    <div className="w-full flex justify-center mt-3 pb-8 px-4">
       <div className="w-full max-w-[90%] bg-white rounded-lg shadow-lg p-8 flex flex-col max-h-[95vh] overflow-y-auto">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">

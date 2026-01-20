@@ -296,11 +296,15 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     // Primero, intenta extraer con regex para capturar datos de cualquier formato
     const nombreMatch = mov.cambios.match(/nombre[:\s]*([^\n,]+)/i);
     const codigoMatch = mov.cambios.match(/c(o|ó)digo\s*de\s*barras[:\s]*([^\n,]+)/i);
-    const precioMatch = mov.cambios.match(/precio[:\s]*\$?([^\n,]+)/i);
+    // Mejora: Capturar solo el valor numérico después de "precio" o "precio unitario"
+    const precioMatch = mov.cambios.match(/precio\s*(?:unitario)?[:\s]*\$?([\d.,]+)/i);
     const stockMatch = mov.cambios.match(/stock\s*(final|nuevo|que tenía)?[:\s]*([^\n,]+)/i);
     const cantidadMatch = mov.cambios.match(/cantidad\s*(agregada|añadida|sumada)[:\s]*([^\n,]+)/i);
     const stockPrevioMatch = mov.cambios.match(/stock\s*(anterior|previo)[:\s]*([^\n,]+)/i);
     const tipoMatch = mov.cambios.match(/tipo[:\s]*([^\n,]+)/i);
+    
+    // Intenta extraer el tipo desde los paréntesis del stock (unidades o kg)
+    const tipoDesdeStockMatch = mov.cambios.match(/stock:.*?\((unidades|kg)\)/i);
 
     // Guardar valores extraídos por regex
     if (nombreMatch) parsed['nombre'] = nombreMatch[1].trim();
@@ -312,6 +316,9 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
     if (tipoMatch) {
       const tipoValue = tipoMatch[1].trim();
       parsed['tipo de producto'] = tipoValue;
+    } else if (tipoDesdeStockMatch) {
+      const tipoValue = tipoDesdeStockMatch[1].trim().toLowerCase();
+      parsed['tipo de producto'] = tipoValue === 'kg' ? 'peso' : 'unidad';
     }
 
     // Ahora procesa líneas para detectar cambios y otros datos
@@ -814,9 +821,9 @@ export function RegistrosYMovimientosComponent({ onClose }: RegistroMovimientosP
                   CodigoDeBarras: detalle.codigo,
                   Precio: detalle.precio ? detalle.precio.replace(/\$/g, '').trim() : '',
                     TipoProducto: detalle.tipoProducto || (detalle.cambios?.find(c => c.campo.toLowerCase().includes('tipo'))?.nuevo) || (
-                      // Fallback: buscar "Por Peso" o "Por Unidad" en el string completo
-                       movimientoDetalle.cambios.includes('Por Peso') ? 'Por Peso (kg)' :
-                       movimientoDetalle.cambios.includes('Unidad') ? 'Unidad' : ''
+                      // Fallback: buscar palabras clave en el string completo
+                       (movimientoDetalle.cambios.includes('Por Peso') || movimientoDetalle.cambios.toLowerCase().includes('(kg)')) ? 'peso' :
+                       (movimientoDetalle.cambios.includes('Unidad') || movimientoDetalle.cambios.toLowerCase().includes('(unidades)')) ? 'unidad' : ''
                     ),
                   Stock: detalle.stock,
                 };

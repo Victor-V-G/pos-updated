@@ -76,6 +76,7 @@ export const InicioComponent = ({
         
         setVentasHoy(ventasDelDia.length);
         
+        
         // Obtener productos con offline support
         const productos = await getProducts(obtenerProductosPromise);
         const productosConStock = productos.filter((prod: any) => (prod.Stock || 0) >= 1).length;

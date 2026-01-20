@@ -25,7 +25,7 @@ export const MigrationButton: React.FC = () => {
       console.log('Iniciando migración...');
       const migrateResult = await migrateProducts();
       setResult(migrateResult);
-      
+
       // Verificar automáticamente después de migrar
       console.log('Verificando migración...');
       const verifyResult = await verifyMigration();

@@ -792,3 +792,28 @@ export const verificarYGenerarAlertasPromise = async (
       console.error("Error al generar alertas desde reportes:", error);
     }
   };
+
+export const marcarAlertaComoLeidaPromise = async (id: string): Promise<boolean> => {
+  try {
+    const alertaRef = doc(db, "Alertas", id);
+    await updateDoc(alertaRef, {
+      leida: true,
+    });
+    console.log("ALERTA MARCADA COMO LEIDA ID:", id);
+    return true;
+  } catch (error) {
+    console.error("Error al marcar alerta como leída:", error);
+    return false;
+  }
+};
+
+export const eliminarAlertaPromise = async (id: string): Promise<boolean> => {
+  try {
+    await deleteDoc(doc(db, "Alertas", id));
+    console.log("ALERTA ELIMINADA ID:", id);
+    return true;
+  } catch (error) {
+    console.error("Error al eliminar alerta:", error);
+    return false;
+  }
+};
